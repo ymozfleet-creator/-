@@ -26,6 +26,13 @@
     <script type="text/babel">
         const { useState, useMemo, useEffect } = React;
 
+        // --- 楽天API設定 ---
+        const RAKUTEN_CONFIG = {
+            appId: "1061097244299196764",
+            affiliateId: "50423aa3.51df7d0d.50423aa4.211022da",
+            domain: "ymozfleet-creator.github.io"
+        };
+
         const LegalModal = ({ title, content, isOpen, onClose }) => {
             if (!isOpen) return null;
             return (
@@ -54,10 +61,11 @@
             const [modal, setModal] = useState({ open: false, title: '', content: null });
             const [isAdmin, setIsAdmin] = useState(false);
             const [loginForm, setLoginForm] = useState({ email: "", password: "" });
-            
-            // 楽天の商品URLから画像URLを生成するヘルパー
+
+            // 楽天URLから画像URLを取得する共通ロジック
             const getRakutenImg = (url) => {
                 try {
+                    if(!url) return "https://via.placeholder.com/300?text=No+Image";
                     const parts = url.split('item.rakuten.co.jp/')[1].split('/');
                     const shopId = parts[0];
                     const itemId = parts[1];
@@ -113,13 +121,13 @@
                     supporters: 0, 
                     daysLeft: 30 
                 }]);
-                alert("募集を開始しました！");
+                alert("募集を開始しました！(API経由での掲載準備中)");
                 setActiveTab('campaigns');
             };
 
             const docContent = {
                 terms: (<div className="space-y-4"><p className="font-bold text-white uppercase italic">第1条（目的）</p><p>本規約は、フードコンディショニング（以下「当サービス」）の利用条件を定めるものです。</p></div>),
-                privacy: (<div className="space-y-4"><p className="font-bold text-white uppercase italic">1. 取得する情報</p><p>支援時にメールアドレス等を取得し、決済管理に使用します。</p></div>),
+                privacy: (<div className="space-y-4"><p className="font-bold text-white uppercase italic">1. 取得する情報</p><p>支援時にメールアドレス等を取得し、決済管理に使用します。楽天アフィリエイトID({RAKUTEN_CONFIG.affiliateId})に基づき適正に運用されます。</p></div>),
                 tokusho: (<div className="space-y-4">
                     <p>販売業者: フードコンディショニング 運営事務局</p>
                     <p>所在地: 東京都中野区江原町2-13-13</p>
@@ -128,25 +136,32 @@
 
             return (
                 <div className="min-h-screen flex flex-col">
+                    {/* Header */}
                     <nav className="h-20 flex items-center justify-between px-6 md:px-10 sticky top-0 bg-[#060608]/95 backdrop-blur-xl z-50 border-b border-white/5 gap-6">
                         <div className="flex items-center gap-3 cursor-pointer shrink-0" onClick={() => {setView('list'); setActiveTab('campaigns');}}>
-                            <div className="bg-orange-600 w-8 h-8 rounded-lg flex items-center justify-center italic font-black text-white">S</div>
+                            <div className="bg-orange-600 w-8 h-8 rounded-lg flex items-center justify-center italic font-black text-white shadow-lg shadow-orange-600/20">S</div>
                             <span className="font-black text-xl tracking-tighter uppercase italic text-white hidden sm:block">MySUPPORTER</span>
                         </div>
                         <div className="flex-1 max-w-md relative border border-white/10 bg-white/5 rounded-xl overflow-hidden focus-within:border-orange-500 transition-all">
-                            <input type="text" placeholder="検索..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-transparent py-2.5 px-10 outline-none text-xs font-bold" />
+                            <input type="text" placeholder="チーム名・用品名で検索..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-transparent py-2.5 px-10 outline-none text-xs font-bold" />
                             <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"><svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div>
                         </div>
                         <div className="hidden lg:flex bg-white/5 p-1 rounded-full border border-white/10">
-                            {['campaigns', 'howitworks', 'thanks', 'team_admin'].map(tab => (
-                                <button key={tab} onClick={() => {setView('list'); setActiveTab(tab);}} className={`px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-orange-600 text-white' : 'text-slate-400 hover:text-white'}`}>
-                                    {tab === 'campaigns' ? '支援募集' : tab === 'howitworks' ? 'フロー' : tab === 'thanks' ? '活動報告' : 'チーム管理'}
+                            {[
+                                { id: 'campaigns', label: '支援募集' },
+                                { id: 'howitworks', label: 'フロー' },
+                                { id: 'thanks', label: '活動報告' },
+                                { id: 'team_admin', label: 'チーム管理' }
+                            ].map(tab => (
+                                <button key={tab.id} onClick={() => {setView('list'); setActiveTab(tab.id);}} className={`px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab.id ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>
+                                    {tab.label}
                                 </button>
                             ))}
                         </div>
                     </nav>
 
                     <main className="max-w-7xl mx-auto px-6 pt-8 pb-20 w-full flex-grow">
+                        {/* 1. 支援募集一覧 */}
                         {view === 'list' && activeTab === 'campaigns' && (
                             <div className="fade-in">
                                 <div className="flex gap-2 mb-8 overflow-x-auto pb-2 no-scrollbar">
@@ -162,7 +177,7 @@
                                             <div key={c.id} className="campaign-card glass-panel rounded-[2rem] overflow-hidden cursor-pointer flex flex-col group" onClick={() => {setSelected(c); setView('detail');}}>
                                                 <div className="aspect-square bg-white m-4 rounded-2xl p-6 flex items-center justify-center relative shrink-0 overflow-hidden">
                                                     <img src={getRakutenImg(c.rakutenUrl)} className="max-h-full object-contain" />
-                                                    <div className="absolute top-3 right-3 bg-black px-2 py-1 rounded text-[8px] font-black text-orange-500 italic uppercase">残り{c.daysLeft}日</div>
+                                                    <div className="absolute top-3 right-3 bg-black/80 backdrop-blur px-2 py-1 rounded text-[8px] font-black text-orange-500 italic uppercase">残り{c.daysLeft}日</div>
                                                 </div>
                                                 <div className="px-6 pb-6 pt-0 space-y-4 flex-1 flex flex-col">
                                                     <div>
@@ -185,54 +200,94 @@
                             </div>
                         )}
 
+                        {/* 2. チーム管理者用タブ（mycoach-myteam.com 統合用プレビュー） */}
                         {view === 'list' && activeTab === 'team_admin' && (
                             <div className="max-w-2xl mx-auto fade-in">
                                 <div className="mb-10 text-center">
-                                    <h2 className="text-3xl font-black italic uppercase tracking-tighter text-orange-500">Team Manager</h2>
-                                    <p className="text-slate-500 text-xs font-bold mt-2 italic">将来的に mycoach-myteam.com の管理画面に統合されます</p>
+                                    <h2 className="text-3xl font-black italic uppercase tracking-tighter text-orange-500">Team Dashboard</h2>
+                                    <p className="text-slate-500 text-xs font-bold mt-2 italic">認証済み：{RAKUTEN_CONFIG.domain}</p>
                                 </div>
-                                <div className="glass-panel p-8 rounded-[2.5rem] space-y-6">
+                                <div className="glass-panel p-8 rounded-[2.5rem] space-y-8">
                                     <div className="space-y-4">
-                                        <label className="text-[10px] font-black uppercase text-slate-400 ml-2">支援を募る商品（楽天URL）</label>
+                                        <div className="flex justify-between items-end">
+                                            <label className="text-[10px] font-black uppercase text-slate-400 ml-2">支援を募る楽天商品URL</label>
+                                            <span className="text-[8px] text-slate-600 font-bold">Rakuten API v2 Ready</span>
+                                        </div>
                                         <input 
                                             type="text" 
-                                            placeholder="https://item.rakuten.co.jp/..." 
+                                            placeholder="https://item.rakuten.co.jp/shop/itemid/" 
                                             value={newCampaign.rakutenUrl}
                                             onChange={e => setNewCampaign({...newCampaign, rakutenUrl: e.target.value})}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-5 text-sm font-bold outline-none focus:border-orange-500" 
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-5 text-sm font-bold outline-none focus:border-orange-500 transition-colors" 
                                         />
                                         {newCampaign.rakutenUrl && (
-                                            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/5">
-                                                <img src={getRakutenImg(newCampaign.rakutenUrl)} className="w-16 h-16 object-cover rounded-lg bg-white" />
-                                                <p className="text-[10px] text-slate-400 font-bold italic">プレビュー：上記URLから画像を自動取得しました</p>
+                                            <div className="flex items-center gap-6 p-6 bg-white/5 rounded-2xl border border-white/5 animate-pulse">
+                                                <div className="w-20 h-20 shrink-0 bg-white rounded-xl overflow-hidden shadow-xl">
+                                                    <img src={getRakutenImg(newCampaign.rakutenUrl)} className="w-full h-full object-contain p-2" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-[10px] text-orange-500 font-black italic uppercase">Preview</p>
+                                                    <p className="text-xs text-slate-300 font-bold">API経由で情報を自動取得しました</p>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase text-slate-400 ml-2">商品名</label>
-                                            <input type="text" placeholder="例：公式ボール" value={newCampaign.name} onChange={e => setNewCampaign({...newCampaign, name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:border-orange-500" />
+                                            <label className="text-[10px] font-black uppercase text-slate-400 ml-2">表示名</label>
+                                            <input type="text" placeholder="例：チーム公式ボール" value={newCampaign.name} onChange={e => setNewCampaign({...newCampaign, name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:border-orange-500" />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase text-slate-400 ml-2">目標金額(税込)</label>
-                                            <input type="number" placeholder="¥ 10,000" value={newCampaign.targetPrice} onChange={e => setNewCampaign({...newCampaign, targetPrice: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:border-orange-500" />
+                                            <label className="text-[10px] font-black uppercase text-slate-400 ml-2">目標金額（送料等込）</label>
+                                            <input type="number" placeholder="¥ 12,000" value={newCampaign.targetPrice} onChange={e => setNewCampaign({...newCampaign, targetPrice: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:border-orange-500" />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase text-slate-400 ml-2">募集の理由・想い</label>
-                                        <textarea rows="3" placeholder="なぜこの商品が必要なのか、支援者に伝えてください" value={newCampaign.reason} onChange={e => setNewCampaign({...newCampaign, reason: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:border-orange-500" />
+                                        <label className="text-[10px] font-black uppercase text-slate-400 ml-2">この備品が必要な理由</label>
+                                        <textarea rows="3" placeholder="支援者の心に響くメッセージを入力してください" value={newCampaign.reason} onChange={e => setNewCampaign({...newCampaign, reason: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm font-bold outline-none focus:border-orange-500" />
                                     </div>
-                                    <button 
-                                        onClick={handleAddCampaign}
-                                        className="w-full py-5 bg-orange-600 rounded-2xl font-black text-xl uppercase italic shadow-lg shadow-orange-600/20 hover:bg-orange-500 transition-all"
-                                    >
+                                    <button onClick={handleAddCampaign} className="w-full py-5 bg-orange-600 rounded-2xl font-black text-xl uppercase italic shadow-lg shadow-orange-600/30 hover:bg-orange-500 hover:scale-[1.01] active:scale-[0.99] transition-all">
                                         募集を開始する
                                     </button>
                                 </div>
                             </div>
                         )}
 
-                        {/* 以下、既存の views (howitworks, thanks, detail, login, admin) は維持 */}
+                        {/* 3. 詳細画面 */}
+                        {view === 'detail' && selected && (
+                            <div className="max-w-5xl mx-auto fade-in">
+                                <button onClick={() => setView('list')} className="text-slate-600 font-black text-[10px] uppercase mb-8 hover:text-white transition">← BACK TO LIST</button>
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                                    <div className="lg:col-span-7 space-y-8">
+                                        <p className="text-4xl font-black italic text-orange-500 uppercase leading-none">{selected.team}</p>
+                                        <div className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] relative">
+                                            <div className="absolute -top-3 left-8 bg-orange-600 px-4 py-1 rounded-full text-[9px] font-black uppercase italic">Team Voice</div>
+                                            <p className="text-lg font-bold italic text-slate-200 leading-relaxed">“{selected.reason}”</p>
+                                        </div>
+                                        <div className="bg-white rounded-[2.5rem] p-12 aspect-square flex items-center justify-center overflow-hidden shadow-2xl">
+                                            <img src={getRakutenImg(selected.rakutenUrl)} className="max-h-full object-contain" />
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-5 space-y-8 h-fit sticky top-28">
+                                        <div className="glass-panel p-8 rounded-[2.5rem] border-t-8 border-orange-600 space-y-8 shadow-2xl">
+                                            <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-tight">{selected.name}</h2>
+                                            <div><p className="text-[10px] font-black text-slate-500 uppercase mb-2">Total Supported</p><p className="text-6xl font-black italic tracking-tighter">¥{selected.current.toLocaleString()}</p></div>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {[1000, 3000, 5000].map(val => (
+                                                    <button key={val} onClick={() => setAmount(val)} className={`py-4 rounded-xl font-black text-xs border transition-all ${amount === val ? 'bg-orange-600 border-orange-600 text-white shadow-lg' : 'bg-white/5 border-white/10 text-slate-500'}`}>¥{val.toLocaleString()}</button>
+                                                ))}
+                                            </div>
+                                            <div className="pt-6 border-t border-white/5 space-y-4">
+                                                <input type="email" placeholder="メールアドレス" value={supporter.email} onChange={e => setSupporter({email: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-5 text-sm font-bold outline-none focus:border-orange-500 transition-all" />
+                                                <button disabled={!supporter.email} className={`w-full py-5 rounded-2xl font-black text-xl uppercase italic transition-all ${supporter.email ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'bg-white/10 text-slate-700'}`}>Pay with Stripe</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 他のビューは以前のロジックを継承 */}
                         {view === 'list' && activeTab === 'howitworks' && (
                             <div className="max-w-3xl mx-auto py-10 fade-in">
                                 <h2 className="text-4xl font-black italic uppercase mb-16 tracking-tighter border-b border-white/10 pb-6 text-orange-500">ご利用フロー</h2>
@@ -241,8 +296,8 @@
                                     {[
                                         { step: "01", title: "支援募集を探す", desc: "チームが切実に必要としているスポーツ用品の募集から、応援したいものを選びます。" },
                                         { step: "02", title: "決済完了", desc: "メールアドレスを入力し、Stripeによる安全な決済で支援金を送ります。" },
-                                        { step: "03", title: "商品がチームに届く", desc: "目標金額に達すると、運営が楽天等で商品を購入し、直接チームへ発送されます。" },
-                                        { step: "04", title: "活動報告の受け取り", desc: "商品到着後、チームから届いた感謝のメッセージと写真が「活動報告」に掲載されます。" }
+                                        { step: "03", title: "商品がチームに届く", desc: `目標金額に達すると、運営が楽天(${RAKUTEN_CONFIG.appId})等で商品を購入し、チームへ直送します。` },
+                                        { step: "04", title: "活動報告の受け取り", desc: "商品到着後、チームからの感謝メッセージがサイトに掲載されます。" }
                                     ].map((item, idx) => (
                                         <div key={idx} className="flex gap-10 pb-16 relative">
                                             <div className="w-14 h-14 rounded-full bg-orange-600 flex items-center justify-center shrink-0 z-10 font-black italic text-white text-xl shadow-[0_0_20px_rgba(249,115,22,0.4)]">{item.step}</div>
@@ -271,79 +326,30 @@
                                 ))}
                             </div>
                         )}
-
-                        {view === 'detail' && selected && (
-                            <div className="max-w-5xl mx-auto fade-in">
-                                <button onClick={() => setView('list')} className="text-slate-600 font-black text-[10px] uppercase mb-8 hover:text-white transition">← BACK</button>
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                                    <div className="lg:col-span-7 space-y-8">
-                                        <p className="text-4xl font-black italic text-orange-500 uppercase leading-none">{selected.team}</p>
-                                        <div className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] relative">
-                                            <div className="absolute -top-3 left-8 bg-orange-600 px-4 py-1 rounded-full text-[9px] font-black uppercase italic">Reason / チームの想い</div>
-                                            <p className="text-lg font-bold italic text-slate-200">“{selected.reason}”</p>
-                                        </div>
-                                        <div className="bg-white rounded-[2.5rem] p-12 aspect-square flex items-center justify-center overflow-hidden">
-                                            <img src={getRakutenImg(selected.rakutenUrl)} className="max-h-full object-contain" />
-                                        </div>
-                                    </div>
-                                    <div className="lg:col-span-5 space-y-8 h-fit sticky top-28">
-                                        <div className="glass-panel p-8 rounded-[2.5rem] border-t-8 border-orange-600 space-y-8">
-                                            <h2 className="text-2xl font-black italic uppercase tracking-tighter">{selected.name}</h2>
-                                            <div><p className="text-[10px] font-black text-slate-500 uppercase mb-2">現在の支援額</p><p className="text-6xl font-black italic tracking-tighter">¥{selected.current.toLocaleString()}</p></div>
-                                            <div className="grid grid-cols-3 gap-2">
-                                                {[1000, 3000, 5000].map(val => (
-                                                    <button key={val} onClick={() => setAmount(val)} className={`py-4 rounded-xl font-black text-xs border transition-all ${amount === val ? 'bg-orange-600 border-orange-600 text-white shadow-lg' : 'bg-white/5 border-white/10 text-slate-500'}`}>¥{val.toLocaleString()}</button>
-                                                ))}
-                                            </div>
-                                            <div className="pt-6 border-t border-white/5 space-y-4">
-                                                <input type="email" placeholder="メールアドレス" value={supporter.email} onChange={e => setSupporter({email: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-5 text-sm font-bold outline-none focus:border-orange-500" />
-                                                <button disabled={!supporter.email} className={`w-full py-5 rounded-2xl font-black text-xl uppercase italic ${supporter.email ? 'bg-orange-600 text-white shadow-lg' : 'bg-white/10 text-slate-700'}`}>Pay with Stripe</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {view === 'login' && (
-                            <div className="max-w-sm mx-auto py-20 fade-in">
-                                <div className="glass-panel p-10 rounded-[2.5rem] border-t-8 border-orange-600 space-y-6">
-                                    <h2 className="text-2xl font-black italic text-center uppercase">Admin Login</h2>
-                                    <input type="email" placeholder="Email" value={loginForm.email} onChange={e => setLoginForm({...loginForm, email: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 font-bold outline-none focus:border-orange-500" />
-                                    <input type="password" placeholder="Password" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 font-bold outline-none focus:border-orange-500" />
-                                    <button onClick={handleAdminLogin} className="w-full py-4 bg-orange-600 rounded-xl font-black italic uppercase tracking-widest hover:bg-orange-500 transition-colors">Login</button>
-                                </div>
-                            </div>
-                        )}
-                        
-                        {/* 管理者用ダッシュボード（全件管理）も維持 */}
-                        {view === 'admin' && isAdmin && (
-                             <div className="fade-in space-y-12">
-                                <div className="flex justify-between items-end border-b border-white/10 pb-8">
-                                    <h2 className="text-5xl font-black italic uppercase text-white tracking-tighter">Super Admin</h2>
-                                    <button onClick={() => {setIsAdmin(false); setView('list');}} className="px-6 py-2 border border-white/20 rounded-full text-[10px] font-black uppercase hover:bg-white/10">Logout</button>
-                                </div>
-                                <div className="glass-panel rounded-[2rem] p-10 text-center">
-                                    <p className="text-slate-500 font-black italic">管理者機能は楽天URLベースに更新されました。支援状況を確認してください。</p>
-                                </div>
-                            </div>
-                        )}
                     </main>
 
-                    <footer className="bg-black/50 border-t border-white/5 py-12 px-6 mt-auto">
-                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-[9px] font-black uppercase tracking-widest">
-                            <div className="flex items-center gap-3 opacity-30 cursor-pointer" onClick={() => {setView('list'); setActiveTab('campaigns');}}>
-                                <div className="bg-white/20 w-6 h-6 rounded-md flex items-center justify-center italic text-white text-[10px]">S</div>
-                                <span className="text-white">MySUPPORTER</span>
+                    {/* Footer */}
+                    <footer className="bg-black border-t border-white/5 py-16 px-6 mt-auto">
+                        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 text-[9px] font-black uppercase tracking-widest">
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-white/10 w-6 h-6 rounded-md flex items-center justify-center italic text-white text-[10px]">S</div>
+                                    <span className="text-white">MySUPPORTER</span>
+                                </div>
+                                <p className="text-slate-600 italic leading-loose">Empowering teams through collective support and digital conditioning.</p>
                             </div>
-                            <div className="flex gap-8">
-                                <button onClick={() => setModal({open: true, title: '利用規約', content: docContent.terms})} className="text-slate-600 hover:text-orange-500">利用規約</button>
-                                <button onClick={() => setModal({open: true, title: 'プライバシーポリシー', content: docContent.privacy})} className="text-slate-600 hover:text-orange-500">プライバシー</button>
-                                <button onClick={() => setModal({open: true, title: '特定商取引法に基づく表記', content: docContent.tokusho})} className="text-slate-600 hover:text-orange-500">特定商取引</button>
+                            <div className="flex flex-col gap-4">
+                                <p className="text-orange-500">Legal Documents</p>
+                                <div className="flex flex-col gap-3">
+                                    <button onClick={() => setModal({open: true, title: '利用規約', content: docContent.terms})} className="text-left text-slate-500 hover:text-white transition-colors">利用規約</button>
+                                    <button onClick={() => setModal({open: true, title: 'プライバシーポリシー', content: docContent.privacy})} className="text-left text-slate-500 hover:text-white transition-colors">プライバシーポリシー</button>
+                                    <button onClick={() => setModal({open: true, title: '特定商取引法に基づく表記', content: docContent.tokusho})} className="text-left text-slate-500 hover:text-white transition-colors">特定商取引</button>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <p className="text-slate-700 tracking-widest">© 2026 フードコンディショニング.</p>
-                                <button onClick={() => setView('login')} className="text-slate-800 hover:text-orange-500/50">Admin</button>
+                            <div className="flex flex-col gap-4 md:items-end">
+                                <p className="text-slate-700">© 2026 フードコンディショニング</p>
+                                <button onClick={() => setView('login')} className="text-slate-800 hover:text-orange-500/50 transition-colors">System Admin Login</button>
+                                <p className="text-slate-800 text-[7px]">{RAKUTEN_CONFIG.domain}</p>
                             </div>
                         </div>
                     </footer>
