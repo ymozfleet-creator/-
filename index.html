@@ -2355,9 +2355,9 @@ const API_BASE = (typeof window !== 'undefined' && window.MC_API_BASE)
 
 // ==================== DATA ====================
 const DEMO_COACHES = [
-  {id:'demo-c1',name:'田中 慎太郎',email:'tanaka@example.com',sport:'サッカー',spec:'ジュニア育成',area:'東京都',price:50000,rating:4.8,reviews:24,exp:12,bio:'元Jリーグ育成コーチ。子どもの個性を伸ばす指導を大切にしています。',avail:true,team:null,verified:true,color:'#2563eb',createdAt:'2025-01-15'},
-  {id:'demo-c2',name:'鈴木 美咲',email:'suzuki@example.com',sport:'バスケットボール',spec:'フィジカル強化',area:'神奈川県',price:40000,rating:4.5,reviews:18,exp:8,bio:'全国大会出場経験あり。基礎体力とメンタル両面からサポートします。',avail:true,team:null,verified:true,color:'#dc2626',createdAt:'2025-02-10'},
-  {id:'demo-c3',name:'佐藤 健一',email:'sato@example.com',sport:'野球',spec:'バッティング指導',area:'大阪府',price:60000,rating:4.9,reviews:42,exp:15,bio:'元プロ野球選手。実践的なバッティング技術と試合でのメンタル管理を指導。',avail:true,team:null,verified:true,color:'#059669',createdAt:'2025-01-20'},
+  {id:'demo-c1',name:'田中 慎太郎',email:'tanaka@example.com',sport:'サッカー',spec:'ジュニア育成',area:'東京都',price:50000,priceOnetime:15000,rating:4.8,reviews:24,exp:12,bio:'元Jリーグ育成コーチ。子どもの個性を伸ばす指導を大切にしています。',avail:true,team:null,verified:true,color:'#2563eb',createdAt:'2025-01-15'},
+  {id:'demo-c2',name:'鈴木 美咲',email:'suzuki@example.com',sport:'バスケットボール',spec:'フィジカル強化',area:'神奈川県',price:40000,priceOnetime:12000,rating:4.5,reviews:18,exp:8,bio:'全国大会出場経験あり。基礎体力とメンタル両面からサポートします。',avail:true,team:null,verified:true,color:'#dc2626',createdAt:'2025-02-10'},
+  {id:'demo-c3',name:'佐藤 健一',email:'sato@example.com',sport:'野球',spec:'バッティング指導',area:'大阪府',price:60000,priceOnetime:18000,rating:4.9,reviews:42,exp:15,bio:'元プロ野球選手。実践的なバッティング技術と試合でのメンタル管理を指導。',avail:true,team:null,verified:true,color:'#059669',createdAt:'2025-01-20'},
   {id:'demo-c4',name:'山本 彩香',email:'yamamoto@example.com',sport:'サッカー',spec:'GKコーチ',area:'東京都',price:45000,rating:4.3,reviews:11,exp:6,bio:'女子サッカーU-18代表帯同経験。GK専門トレーニングからフィールド指導まで。',avail:true,team:null,verified:false,color:'#7c3aed',createdAt:'2025-03-01'},
   {id:'demo-c5',name:'高橋 大輔',email:'takahashi@example.com',sport:'バスケットボール',spec:'戦術指導',area:'千葉県',price:55000,rating:4.7,reviews:31,exp:10,bio:'B.LEAGUE解説員経験あり。チーム戦術構築とリーダーシップ育成が専門。',avail:true,team:null,verified:true,color:'#ea580c',createdAt:'2025-02-20'},
   {id:'demo-c6',name:'伊藤 翔',email:'ito@example.com',sport:'野球',spec:'ピッチング指導',area:'愛知県',price:35000,rating:4.1,reviews:8,exp:4,bio:'大学野球で投手として活躍。少年野球を中心にピッチングフォーム改善を指導。',avail:true,team:null,verified:true,color:'#0891b2',createdAt:'2025-04-05'},
@@ -2423,6 +2423,7 @@ const DB = {
   announcements: [],
   customWorkouts: [],
   nutritionLog: {},
+  inventory: [],
   emailLog: [],
 };
 
@@ -2451,6 +2452,7 @@ const ROLE_NAV = {
     {cat:'チーム管理'},
     {k:'my-team',i:'fa-users-cog',l:'マイチーム'},
     {k:'fee',i:'fa-money-bill-wave',l:'月謝管理'},
+    {k:'inventory',i:'fa-boxes',l:'物品管理'},
     {cat:'コミュニケーション'},
     {k:'chat',i:'fa-comments',l:'メッセージ'},
     {k:'calendar',i:'fa-calendar-alt',l:'スケジュール'},
@@ -2511,6 +2513,7 @@ const PAGE_TITLE={
   'coach-search':'コーチを探す',
   'team-match':'チームマッチング',
   fee:'月謝管理',
+  inventory:'物品管理',
   calendar:'スケジュール',
   schedule:'スケジュール',
   'team-search':'チームを探す',
@@ -3731,7 +3734,7 @@ const PERSIST_FIELDS = [
   'moderationLog', 'userWarnings', 'suspendedUsers',
   'teamMatches', 'teamEvents', 'teamReviews', 'adhocInvoices', 'emailLog', 'teamFeeRates',
   'pendingRole', 'pendingEmail', 'pendingName', 'pendingUserId', 'pendingTeamId',
-  'announcements', 'customWorkouts', 'nutritionLog',
+  'announcements', 'customWorkouts', 'nutritionLog', 'inventory',
   'pendingTeamCode', 'pendingProfile', 'pendingParentTeamId',
 ];
 
@@ -4165,7 +4168,7 @@ function goTo(page){
   const r=DB.currentUser?.role;
   const ROLE_PAGES={
     admin:  ['dashboard','coaches','teams','payments','threads','chat','settings','calendar'],
-    team:   ['dashboard','fee','my-team','coach-search','team-match','threads','chat','calendar','profile','profile-settings'],
+    team:   ['dashboard','fee','my-team','coach-search','team-match','threads','chat','calendar','profile','profile-settings','inventory'],
     coach:  ['dashboard','team-search','profile','profile-settings','earnings','coach-players','coach-report','threads','chat','calendar','schedule'],
     player: ['dashboard','training','nutrition','ai','stats','chat','calendar','profile','profile-settings'],
     parent: ['dashboard','parent-fee','profile','profile-settings'],
@@ -4186,7 +4189,7 @@ function goTo(page){
     dashboard:()=>r==='admin'?adminDash():r==='team'?teamDash():r==='coach'?coachDash():r==='parent'?parentDash():playerDash(),
     coaches:coachMgmt,teams:teamMgmt,payments:payMgmt,threads:payThreadPage,
     'profile-settings':profileSettingsPage,chat:()=>r==='player'&&!isPlayerActivated()?playerLockedPage():chatPage(),settings:settingsPage,
-    'my-team':myTeam,'coach-search':()=>{if(!window._csTab)window._csTab='search';return coachSearch();},'team-match':teamMatchPage,fee:feeMgmt,calendar:()=>r==='player'&&!isPlayerActivated()?playerLockedPage():calPage(),
+    'my-team':myTeam,'coach-search':()=>{if(!window._csTab)window._csTab='search';return coachSearch();},'team-match':teamMatchPage,fee:feeMgmt,inventory:inventoryPage,calendar:()=>r==='player'&&!isPlayerActivated()?playerLockedPage():calPage(),
     schedule:()=>r==='player'&&!isPlayerActivated()?playerLockedPage():calPage(),'team-search':teamSearch,earnings:earningsPage,profile:profileSettingsPage,'coach-players':coachPlayersPage,'coach-report':coachReportPage,'parent-fee':parentFeePage,'parent-report':parentReportPage,
     nutrition:()=>r==='player'&&!isPlayerActivated()?playerLockedPage():nutritionPage(),
     training:()=>r==='player'&&!isPlayerActivated()?playerLockedPage():trainingPage(),
@@ -4194,7 +4197,8 @@ function goTo(page){
     stats:()=>r==='player'&&!isPlayerActivated()?playerLockedPage():statsPage(),
   };
   const fn=pages[page];
-  document.getElementById('page-body').innerHTML=fn?`<div class="page">${fn()}</div>`:`<div class="page"><div class="card" style="text-align:center;padding:48px"><div style="font-size:40px;margin-bottom:12px">🚧</div><div class="fw7 mb-8">このページは準備中です</div><div class="text-sm text-muted">近日公開予定です。しばらくお待ちください。</div></div></div>`;
+  try{ document.getElementById('page-body').innerHTML=fn?'<div class="page">'+fn()+'</div>':'<div class="page"><div class="card" style="text-align:center;padding:48px"><div style="font-size:40px;margin-bottom:12px">🚧</div><div class="fw7 mb-8">このページは準備中です</div></div></div>';
+  }catch(e){ document.getElementById('page-body').innerHTML='<div class="page"><div class="card" style="padding:24px"><div style="color:#ef4444;font-weight:700;margin-bottom:8px">⚠️ ページ描画エラー</div><pre style="font-size:11px;color:var(--txt3);white-space:pre-wrap">'+e.message+'</pre></div></div>'; console.error(e); }
   afterPage(page);
   updateBottomNav(page);
   // グラフ初期化
@@ -4378,7 +4382,7 @@ function adminDash(){
       </div>
       ${DB.coaches.length?DB.coaches.slice(0,5).map(c=>`<div class="dash-list-item" style="cursor:pointer" onclick="openCoachDetail('${c.id}')">
         <div class="avi" style="background:${c.color||'var(--org)'};${c.photo?'background-image:url('+c.photo+');background-size:cover;background-position:center':''};width:34px;height:34px;font-size:13px;flex-shrink:0">${c.photo?'':(c.name||'?')[0]}</div>
-        <div style="flex:1;min-width:0"><div class="fw7 text-sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sanitize(c.name,20)}</div><div class="text-xs text-muted">${sanitize(c.sport||'--',12)} · ¥${c.price?Math.round(c.price/10000)+'万/月':'--'} · ${c.exp||'--'}年</div></div>
+        <div style="flex:1;min-width:0"><div class="fw7 text-sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sanitize(c.name,20)}</div><div class="text-xs text-muted">${sanitize(c.sport||'--',12)} · ${c.exp||'--'}年</div></div>
         <span class="badge ${c.verified?'b-green':'b-yel'}" style="flex-shrink:0">${c.verified?'承認済':'審査中'}</span>
         ${!c.verified?`<button class="btn btn-primary btn-xs" onclick="event.stopPropagation();approveCoach('${c.id}')">承認</button>`:''}
       </div>`).join(''):'<div class="text-muted text-sm text-center" style="padding:24px">コーチ未登録</div>'}
@@ -4659,7 +4663,7 @@ function exportAdminReport(){
 }
 function coachMgmt(){if(DB.currentUser?.role!=='admin'){toast('このページは事務局のみ利用できます','e');return '<div class="pg-head"><div class="pg-title">アクセス拒否</div></div><div class="card text-center" style="padding:40px"><div style="font-size:40px;margin-bottom:12px">🔒</div><div class="fw7">このページへのアクセス権がありません</div></div>';}
   return`<div class="pg-head flex justify-between items-center"><div><div class="pg-title">コーチ管理</div><div class="pg-sub">登録コーチの審査・管理</div></div><button class="btn btn-primary btn-sm" onclick="openM(&quot;コーチ追加&quot;,coachAddForm())">+ コーチ追加</button></div>
-<div class="pcard-grid">${DB.coaches.map(c=>`<div class="profile-card" onclick="openCoachDetail('${c.id}')"><div style="position:relative;display:inline-block;margin-bottom:12px"><div class="avi avi-lg" style="background:${c.color||'var(--org)'};${c.photo?'background-image:url('+c.photo+');background-size:cover;background-position:center':''}">${c.photo?'':(c.name||'?')[0]}</div>${c.verified?`<div style="position:absolute;bottom:2px;right:2px;width:16px;height:16px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--surf)"><i class="fa fa-check" style="font-size:7px;color:#fff"></i></div>`:''}</div><div class="fw7 mb-4">${c.name}</div><div class="text-xs" style="color:var(--org);margin-bottom:8px">${c.sport} / ${c.spec}</div><div class="stars mb-8">${'★'.repeat(Math.round(c.rating))} <span class="text-xs text-muted">${c.rating}（${c.reviews}件）</span></div><div class="flex gap-6 justify-center flex-wrap mb-12"><span class="badge ${c.avail?'b-green':'b-red'}">${c.avail?'募集中':'契約中'}</span><span class="badge b-gray">${c.area}</span>${!c.verified?`<span class="badge b-yel">審査中</span>`:''}</div><div class="grid-2 text-center" style="margin-bottom:12px"><div><div class="fw8 text-sm">¥${(c.price/10000).toFixed(1)}万</div><div class="text-xs text-muted">月額</div></div><div><div class="fw8 text-sm">${c.exp}年</div><div class="text-xs text-muted">指導歴</div></div></div>${!c.verified?`<button class="btn btn-success btn-sm w-full" onclick="event.stopPropagation();approveCoach('${c.id}')">✓ 承認する</button>`:''}</div>`).join('')}</div>
+<div class="pcard-grid">${DB.coaches.map(c=>`<div class="profile-card" onclick="openCoachDetail('${c.id}')"><div style="position:relative;display:inline-block;margin-bottom:12px"><div class="avi avi-lg" style="background:${c.color||'var(--org)'};${c.photo?'background-image:url('+c.photo+');background-size:cover;background-position:center':''}">${c.photo?'':(c.name||'?')[0]}</div>${c.verified?`<div style="position:absolute;bottom:2px;right:2px;width:16px;height:16px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--surf)"><i class="fa fa-check" style="font-size:7px;color:#fff"></i></div>`:''}</div><div class="fw7 mb-4">${c.name}</div><div class="text-xs" style="color:var(--org);margin-bottom:8px">${c.sport} / ${c.spec}</div><div class="stars mb-8">${'★'.repeat(Math.round(c.rating))} <span class="text-xs text-muted">${c.rating}（${c.reviews}件）</span></div><div class="flex gap-6 justify-center flex-wrap mb-12"><span class="badge ${c.avail?'b-green':'b-red'}">${c.avail?'募集中':'契約中'}</span><span class="badge b-gray">${c.area}</span>${!c.verified?`<span class="badge b-yel">審査中</span>`:''}</div><div style="text-align:center;margin-bottom:12px"><div class="fw8 text-sm">${c.exp}年</div><div class="text-xs text-muted">指導歴</div></div>${!c.verified?`<button class="btn btn-success btn-sm w-full" onclick="event.stopPropagation();approveCoach('${c.id}')">✓ 承認する</button>`:''}</div>`).join('')}</div>
   <div class="card mt-20">
     <div class="fw7 mb-14" style="font-size:15px"><i class="fa fa-handshake" style="color:var(--org)"></i> マッチング申請一覧</div>
     ${DB.requests.length===0
@@ -5222,6 +5226,8 @@ function _deleteUser(userId){
   // DB内の関連データも削除
   DB.coaches=DB.coaches.filter(c=>c.id!==userId);
   DB.teams=DB.teams.filter(t=>t.id!==userId);
+  const _dp=DB.players.find(p=>p.id===userId);
+  if(_dp&&_dp.team){const _dt=DB.teams.find(t=>t.id===_dp.team);if(_dt&&_dt.members>0)_dt.members--;}
   DB.players=DB.players.filter(p=>p.id!==userId);
   saveDB();
   toast(sanitize(targetUser.name||'ユーザー',20)+'を削除しました','s');
@@ -5675,7 +5681,10 @@ function confirmDeletePlayer(pid){
 function _deletePlayer(pid){
   const idx=DB.players.findIndex(x=>x.id===pid);
   if(idx<0)return;
-  const name=DB.players[idx].name;
+  const p=DB.players[idx];
+  const name=p.name;
+  // チーム人数を同期
+  if(p.team){const team=DB.teams.find(t=>t.id===p.team);if(team&&team.members>0)team.members--;}
   DB.players.splice(idx,1);
   saveDB();closeM();toast(`${name}を削除しました`,'s');goTo('my-team');
 }
@@ -5746,8 +5755,6 @@ function coachSearch(){
       style="height:40px;font-size:12px;padding:0 12px;min-width:140px;cursor:pointer">
       <option value="default"  ${sortF==='default'?'selected':''}>並び順：おすすめ</option>
       <option value="rating"   ${sortF==='rating'?'selected':''}>評価が高い順</option>
-      <option value="price_asc" ${sortF==='price_asc'?'selected':''}>料金が低い順</option>
-      <option value="price_desc" ${sortF==='price_desc'?'selected':''}>料金が高い順</option>
       <option value="exp"      ${sortF==='exp'?'selected':''}>指導歴が長い順</option>
     </select>
     ${q||sportF!=='all'?`<button class="btn btn-ghost btn-sm" onclick="window._csQ='';window._csSport='all';window._csSort='default';refreshPage()">✕ リセット</button>`:''}
@@ -5788,15 +5795,11 @@ function coachSearch(){
       <p style="font-size:11px;color:var(--txt3);line-height:1.6;margin-bottom:10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${sanitize(c.bio||'',80)}</p>
       <div style="display:flex;justify-content:space-around;margin-bottom:10px;padding:8px 0;border-top:1px solid var(--b1);border-bottom:1px solid var(--b1)">
         <div style="text-align:center">
-          <div style="font-size:14px;font-weight:800;color:var(--org)">¥${c.price?(c.price/10000).toFixed(1)+'万':'--'}</div>
-          <div style="font-size:10px;color:var(--txt3)">月額</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-size:14px;font-weight:800">${c.exp||'--'}年</div>
+          <div style="font-size:14px;font-weight:800">${c.exp||'--'}<span style="font-size:10px;color:var(--txt3)">年</span></div>
           <div style="font-size:10px;color:var(--txt3)">指導歴</div>
         </div>
         <div style="text-align:center">
-          <div style="font-size:14px;font-weight:800;color:${c.avail?'var(--grn)':'var(--red)'}">${c.avail?'🟢':'🔴'}</div>
+          <div style="font-size:14px;font-weight:800;color:${c.avail?'var(--grn)':'var(--red)'}">${c.avail?'●':'●'}</div>
           <div style="font-size:10px;color:var(--txt3)">${c.avail?'募集中':'契約中'}</div>
         </div>
       </div>
@@ -6759,8 +6762,15 @@ function coachProfileEditPage(){
     +'<div class="form-group"><label class="label">専門分野</label><input id="cp-spec" class="input" value="'+sanitize(c.spec||'')+'"></div>'
     +'<div class="form-group"><label class="label">地域</label><input id="cp-area" class="input" value="'+sanitize(c.area||'')+'"></div>'
     +'<div class="form-group"><label class="label">指導歴（年）</label><input id="cp-exp" class="input" type="number" min="0" max="60" min="0" max="60" value="'+(c.exp||0)+'"></div>'
-    +'<div class="form-group"><label class="label">月額料金（¥）</label><input id="cp-price" class="input" type="number" min="0" max="9999999" min="0" max="9999999" value="'+(c.price||0)+'"></div>'
     +'</div>'
+    +'<div style="background:var(--surf2);border:1px solid var(--b1);border-radius:10px;padding:14px;margin-bottom:16px">'
+    +'<div class="fw7 mb-12" style="font-size:13px">💰 料金設定</div>'
+    +'<div class="grid-2" style="gap:12px">'
+    +'<div><div class="form-group"><label class="label">月額契約（¥）</label><input id="cp-price" class="input" type="number" min="0" max="9999999" value="'+(c.price||0)+'" '+(c.monthlyNegotiable?'disabled style="opacity:.5"':'')+' ></div>'
+    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><label class="toggle-switch"><input type="checkbox" id="cp-monthlyNeg" '+(c.monthlyNegotiable?'checked':'')+' onchange="var el=document.getElementById(\'cp-price\');el.disabled=this.checked;el.style.opacity=this.checked?\'.5\':\'1\'"><span class="toggle-slider"></span></label><span style="font-size:11px;color:var(--txt3)">ご相談ください</span></div></div>'
+    +'<div><div class="form-group"><label class="label">都度払い（1回・¥）</label><input id="cp-priceOnetime" class="input" type="number" min="0" max="9999999" value="'+(c.priceOnetime||0)+'" '+(c.onetimeNegotiable?'disabled style="opacity:.5"':'')+' ></div>'
+    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><label class="toggle-switch"><input type="checkbox" id="cp-onetimeNeg" '+(c.onetimeNegotiable?'checked':'')+' onchange="var el=document.getElementById(\'cp-priceOnetime\');el.disabled=this.checked;el.style.opacity=this.checked?\'.5\':\'1\'"><span class="toggle-slider"></span></label><span style="font-size:11px;color:var(--txt3)">ご相談ください</span></div></div>'
+    +'</div></div>'
     +'<div class="form-group"><label class="label">自己紹介</label><textarea id="cp-bio" class="input" rows="4">'+sanitize(c.bio||'')+'</textarea></div>'
     +'<div class="fw7 mb-12" style="margin-top:20px;font-size:15px">🎨 アバターカラー</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">'
@@ -6782,6 +6792,9 @@ function saveCoachProfileFull(){
   Object.entries(fields).forEach(([k,id])=>{const v=document.getElementById(id)?.value;if(v!==undefined)me[k]=sanitize(v,40);});
   me.exp=parseInt(document.getElementById('cp-exp')?.value)||me.exp;
   me.price=parseInt(document.getElementById('cp-price')?.value)||me.price;
+  me.priceOnetime=Math.max(0,parseInt(document.getElementById('cp-priceOnetime')?.value)||0);
+  const _negEl=document.getElementById('cp-onetimeNeg');if(_negEl)me.onetimeNegotiable=_negEl.checked;
+  const _mNegEl=document.getElementById('cp-monthlyNeg');if(_mNegEl)me.monthlyNegotiable=_mNegEl.checked;
   me.bio=sanitize(document.getElementById('cp-bio')?.value||'',300);
   me.color=document.getElementById('cp-color')?.value||me.color||'#ff6b2b';
   me.instagram=sanitize(document.getElementById('cp-ig')?.value||'',50);
@@ -7334,356 +7347,257 @@ const FOOD_DB=[
   {name:'オレンジジュース（200ml）',kcal:84,protein:1.4,carb:19.8,fat:0.2,fiber:0.4,vitB1:0.08,vitC:84,calcium:18,iron:0.2,cat:'飲料'},
 ];
 
-function nutritionPage(){
-  const tots=calcTotals();
-  const player=DB.players.find(x=>x.id===DB.currentUser?.id);
-  const weight=player?.weight||65;
-  // スポーツ選手向け目標値（あすけん「あす筋ボディメイクコース」参考）
-  const goal={kcal:Math.round(weight*40),protein:Math.round(weight*2),carb:Math.round(weight*5),fat:Math.round(weight*1),fiber:25,vitB1:1.4,vitC:100,calcium:800,iron:10};
-  const pctKcal=goal.kcal?Math.round(tots.kcal/goal.kcal*100):0;
-  const typeLabel={breakfast:'🌅 朝食',lunch:'☀️ 昼食',dinner:'🌙 夕食',snack:'🍌 補食'};
+// ── 食事管理 UI ヘルパー（全て文字列連結、テンプレートリテラル不使用）──
+function _nutSummaryBar(tots, goal, score, scoreEmoji) {
+  var pct = goal.kcal ? Math.round(tots.kcal / goal.kcal * 100) : 0;
+  var barC = pct > 110 ? '#ef4444' : pct >= 80 ? 'var(--teal)' : 'var(--org)';
+  var scC = score >= 80 ? 'var(--teal)' : score >= 60 ? 'var(--org)' : '#ef4444';
+  return '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surf);border:1px solid var(--b1);border-radius:14px;margin-bottom:12px">'
+    + '<div style="font-size:32px">' + scoreEmoji + '</div>'
+    + '<div style="flex:1"><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px">'
+    + '<span style="font-size:22px;font-weight:900;font-family:Montserrat,sans-serif">' + fmtNum(tots.kcal) + '</span>'
+    + '<span style="font-size:12px;color:var(--txt3)">/ ' + fmtNum(goal.kcal) + ' kcal</span>'
+    + '<span style="font-size:13px;font-weight:800;color:' + scC + ';margin-left:auto">' + score + '点</span></div>'
+    + '<div style="height:6px;background:var(--surf2);border-radius:3px;overflow:hidden">'
+    + '<div style="height:100%;width:' + Math.min(pct,100) + '%;background:' + barC + ';border-radius:3px"></div>'
+    + '</div></div></div>';
+}
 
-  // PFC目標比率（P20% F25% C55%）
-  const pfcTarget={p:20,f:25,c:55};
-  const totalMacroKcal=(tots.protein*4)+(tots.carb*4)+(tots.fat*9);
-  const pfcActual={
-    p:totalMacroKcal?Math.round(tots.protein*4/totalMacroKcal*100):0,
-    f:totalMacroKcal?Math.round(tots.fat*9/totalMacroKcal*100):0,
-    c:totalMacroKcal?Math.round(tots.carb*4/totalMacroKcal*100):0
-  };
+function _nutPFCBars(tots, goal, pfcActual, pfcTarget) {
+  var pfc = [
+    {k:'P', v:tots.protein, t:goal.protein, c:'#00cfaa', pct:pfcActual.p, tp:pfcTarget.p},
+    {k:'F', v:tots.fat, t:goal.fat, c:'#f59e0b', pct:pfcActual.f, tp:pfcTarget.f},
+    {k:'C', v:tots.carb, t:goal.carb, c:'#3b82f6', pct:pfcActual.c, tp:pfcTarget.c}
+  ];
+  var h = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">';
+  for (var i = 0; i < pfc.length; i++) {
+    var n = pfc[i], p = n.t ? Math.min(Math.round(n.v/n.t*100),100) : 0;
+    h += '<div style="background:var(--surf);border:1px solid var(--b1);border-radius:10px;padding:10px">'
+      + '<div style="display:flex;justify-content:space-between;margin-bottom:4px">'
+      + '<span style="font-size:12px;font-weight:800;color:' + n.c + '">' + n.k + '</span>'
+      + '<span style="font-size:12px;font-weight:800;font-family:Montserrat,sans-serif">' + fmtN(n.v) + '<span style="font-size:9px;color:var(--txt3);font-weight:400">/' + n.t + 'g</span></span></div>'
+      + '<div style="height:5px;background:var(--surf2);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + p + '%;background:' + n.c + ';border-radius:3px"></div></div>'
+      + '<div style="font-size:9px;color:var(--txt3);text-align:right;margin-top:2px">' + n.pct + '% (目標' + n.tp + '%)</div></div>';
+  }
+  return h + '</div>';
+}
 
-  // あすけん風スコア計算
-  const score=calcNutritionScore(tots,goal);
-  const scoreEmoji=score>=80?'😄':score>=60?'😊':score>=40?'😐':'😶';
-  const scoreMsg=score>=80?'素晴らしい！栄養バランスが整っています':score>=60?'いい調子です！もう少しバランスを整えましょう':score>=40?'あと一歩！不足栄養素を意識しましょう':'栄養バランスに偏りがあります。食事内容を見直しましょう';
+function _nutMealEntry() {
+  return '<div style="background:var(--surf);border:1px solid var(--b1);border-radius:14px;padding:16px;margin-bottom:12px">'
+    + '<div style="font-size:14px;font-weight:700;margin-bottom:10px">🍽️ 食事を記録</div>'
+    + '<select class="input" id="meal-type" style="padding:10px 14px;font-size:14px;font-weight:600;margin-bottom:10px;border-radius:10px">'
+    + '<option value="breakfast">🌅 朝食</option><option value="lunch" selected>☀️ 昼食</option>'
+    + '<option value="dinner">🌙 夕食</option><option value="snack">🍌 補食</option></select>'
+    + '<div style="margin-bottom:10px">'
+    + '<button class="btn w-full" style="padding:14px;font-size:14px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#ff6b2b,#f59e0b);color:#fff;font-weight:700;box-shadow:0 4px 14px rgba(249,115,22,.3)" onclick="document.getElementById(\'food-photo-input\').click()">'
+    + '📸 写真で食事記録</button>'
+    + '<input type="file" id="food-photo-input" accept="image/*" capture="environment" style="display:none" onchange="startPhotoMealFlow(this)">'
+    + '<div id="photo-analysis-status" style="display:none"></div></div>'
+    + '<div class="relative" style="margin-bottom:8px">'
+    + '<input class="input" id="food-q" placeholder="🔍 食品を検索（ごはん、鶏胸肉、バナナ…）" oninput="foodSearch(this.value)" maxlength="30" autocomplete="off" style="padding:10px 14px;font-size:13px">'
+    + '<div id="food-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surf);border:1px solid var(--b2);border-radius:12px;max-height:300px;overflow-y:auto;z-index:100;box-shadow:0 12px 32px rgba(0,0,0,.3)"></div></div>'
+    + '<details style="margin-top:8px"><summary style="font-size:12px;color:var(--org);cursor:pointer;font-weight:600">✏️ 手動で入力</summary>'
+    + '<div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px">'
+    + '<input class="input" id="m-name" maxlength="50" placeholder="食品名" style="grid-column:1/-1;font-size:12px">'
+    + '<input class="input" id="m-kcal" type="number" min="0" placeholder="kcal" style="font-size:12px">'
+    + '<input class="input" id="m-protein" type="number" min="0" step="0.1" placeholder="P(g)" style="font-size:12px">'
+    + '<input class="input" id="m-carb" type="number" min="0" step="0.1" placeholder="C(g)" style="font-size:12px">'
+    + '<input class="input" id="m-fat" type="number" min="0" step="0.1" placeholder="F(g)" style="font-size:12px">'
+    + '<button class="btn btn-primary btn-sm" style="grid-column:1/-1" onclick="addMealManual()">＋ 追加</button>'
+    + '</div></details></div>';
+}
 
-  // 不足・過剰栄養素を分析
-  const analysis=analyzeNutrients(tots,goal);
+function _nutTodayMeals(tots, goal) {
+  var typeLabel = {breakfast:'🌅 朝食',lunch:'☀️ 昼食',dinner:'🌙 夕食',snack:'🍌 補食'};
+  var meals = DB.meals.today || [];
+  var h = '<div style="background:var(--surf);border:1px solid var(--b1);border-radius:14px;padding:16px;margin-bottom:12px">';
+  h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+  h += '<span style="font-size:14px;font-weight:700">📋 今日の食事</span>';
+  h += '<span style="font-size:13px;font-weight:700;color:var(--org);font-family:Montserrat,sans-serif">' + fmtNum(tots.kcal) + ' <span style="font-size:11px;color:var(--txt3);font-weight:400">/ ' + fmtNum(goal.kcal) + ' kcal</span></span></div>';
+  if (!meals.length) {
+    return h + '<div style="text-align:center;padding:20px;color:var(--txt3)"><div style="font-size:32px;opacity:.3;margin-bottom:6px">🍽️</div><div style="font-size:13px">まだ記録がありません</div></div></div>';
+  }
+  var types = ['breakfast','lunch','dinner','snack'];
+  for (var ti = 0; ti < types.length; ti++) {
+    var type = types[ti];
+    var items = meals.filter(function(m){return m.type===type;});
+    if (!items.length) continue;
+    var sub = items.reduce(function(s,m){return s+(m.kcal||0);},0);
+    h += '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">';
+    h += '<span style="font-size:13px;font-weight:700">' + typeLabel[type] + '</span>';
+    h += '<span style="font-size:13px;color:var(--org);font-weight:700;font-family:Montserrat,sans-serif">' + sub + ' kcal</span></div>';
+    for (var j = 0; j < items.length; j++) {
+      var m = items[j];
+      h += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surf2);border-radius:10px;margin-bottom:4px">';
+      h += '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + sanitize(m.name,28) + '</div>';
+      h += '<div style="display:flex;gap:8px;font-size:12px"><span style="color:#00cfaa;font-weight:600">P' + fmtN(m.protein) + 'g</span><span style="color:#3b82f6;font-weight:600">C' + fmtN(m.carb) + 'g</span><span style="color:#f59e0b;font-weight:600">F' + fmtN(m.fat) + 'g</span></div></div>';
+      h += '<span style="font-size:14px;font-weight:800;font-family:Montserrat,sans-serif">' + m.kcal + '</span>';
+      h += '<button onclick="removeMeal(\'' + m.id + '\');goTo(\'nutrition\')" style="background:none;border:none;color:var(--txt3);cursor:pointer;font-size:13px;padding:4px;opacity:.4">✕</button></div>';
+    }
+    h += '</div>';
+  }
+  return h + '</div>';
+}
 
-  return`<div class="pg-head flex justify-between items-center" style="flex-wrap:wrap;gap:10px">
-    <div><div class="pg-title">食事・栄養管理</div><div class="pg-sub">PFCバランスと14種栄養素を可視化</div></div>
-    <div class="flex gap-6">
-      <button class="btn btn-ghost btn-sm" onclick="openNutritionAI()">🤖 AI栄養分析</button>
-      <button class="btn btn-ghost btn-sm" onclick="saveNutritionHistory();goTo('nutrition');toast('保存しました','s')">💾 保存</button>
-    </div>
-  </div>
+function _nutNutrientsWater(tots, goal) {
+  var nut = [
+    {l:'食物繊維',v:tots.fiber||0,t:goal.fiber,u:'g',c:'#a855f7'},
+    {l:'ビタミンB1',v:tots.vitB1||0,t:goal.vitB1,u:'mg',c:'#ec4899'},
+    {l:'ビタミンC',v:tots.vitC||0,t:goal.vitC,u:'mg',c:'#f97316'},
+    {l:'カルシウム',v:tots.calcium||0,t:goal.calcium,u:'mg',c:'#6366f1'},
+    {l:'鉄分',v:tots.iron||0,t:goal.iron,u:'mg',c:'#ef4444'}
+  ];
+  var h = '<div style="background:var(--surf);border:1px solid var(--b1);border-radius:14px;padding:16px;margin-bottom:12px">';
+  h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+  h += '<span style="font-size:14px;font-weight:700">📊 栄養素</span>';
+  h += '<span style="font-size:11px;color:var(--txt3)">💧 ' + (DB.meals.water||0) + '/8杯</span></div>';
+  for (var i = 0; i < nut.length; i++) {
+    var n = nut[i], pct = n.t ? Math.round(parseFloat(fmtN(n.v))/n.t*100) : 0;
+    var st = pct>=90&&pct<=130?'✓':pct>130?'↑':'↓';
+    var col = pct>=90&&pct<=130?'var(--grn)':pct>130?'#ef4444':n.c;
+    h += '<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px"><span>' + n.l + '</span>';
+    h += '<span style="font-weight:700">' + fmtN(n.v) + '/' + fmtN(n.t) + n.u + ' <span style="color:' + col + '">' + st + '</span></span></div>';
+    h += '<div style="height:5px;background:var(--surf2);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + Math.min(pct,100) + '%;background:' + col + ';border-radius:3px"></div></div></div>';
+  }
+  h += '<div style="display:flex;gap:4px;margin-top:10px;flex-wrap:wrap">';
+  for (var w = 0; w < 8; w++) {
+    var a = (DB.meals.water||0) > w;
+    h += '<div onclick="setWater(' + (w+1) + ');goTo(\'nutrition\')" style="width:32px;height:32px;border-radius:8px;border:2px solid ' + (a?'var(--teal)':'var(--b2)') + ';background:' + (a?'rgba(0,207,170,.12)':'transparent') + ';cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px">💧</div>';
+  }
+  h += '<span style="font-size:10px;color:var(--txt3);align-self:center;margin-left:4px">' + ((DB.meals.water||0)*250) + 'ml</span></div></div>';
+  return h;
+}
 
-  <!-- スコアカード（あすけん風） -->
-  <div class="dash-section" style="margin-bottom:16px;text-align:center;padding:24px">
-    <div style="font-size:48px;margin-bottom:4px">${scoreEmoji}</div>
-    <div style="font-size:36px;font-weight:800;color:${score>=80?'var(--teal)':score>=60?'var(--org)':'var(--red)'}">${score}<span style="font-size:16px;color:var(--txt3)">点</span></div>
-    <div style="font-size:13px;color:var(--txt2);margin-top:4px">${scoreMsg}</div>
-    ${analysis.advice?`<div style="margin-top:12px;padding:10px 16px;background:rgba(0,207,170,.06);border:1px solid rgba(0,207,170,.15);border-radius:12px;font-size:12px;color:var(--txt2);line-height:1.7;text-align:left">${analysis.advice}</div>`:''}
-  </div>
+function _nutAISection(analysis) {
+  var tips = getRealtimeCoaching();
+  var freq = getFrequentFoods(5);
+  var combos = detectMealCombos();
+  var histDays = Object.keys(DB.mealHistory||{}).length;
+  var hasTips = (tips && tips.length > 0);
+  var hasAdvice = !!analysis.advice;
 
-  <div class="dash-grid dash-grid-2" style="margin-bottom:16px">
-    <!-- 左：PFCバランス & 栄養素 -->
-    <div>
-      <!-- PFCバランスドーナツ -->
-      <div class="dash-section" style="margin-bottom:12px">
-        <div class="dash-section-head"><span class="dash-section-title">PFCバランス</span>
-          <span style="font-size:12px;color:var(--txt3)">目標 P${pfcTarget.p}% F${pfcTarget.f}% C${pfcTarget.c}%</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-          <div style="width:130px;height:130px;position:relative;flex-shrink:0">
-            <canvas id="nutrition-pfc-chart"></canvas>
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center">
-              <div style="font-size:20px;font-weight:800">${tots.kcal}</div>
-              <div style="font-size:10px;color:var(--txt3)">kcal</div>
-            </div>
-          </div>
-          <div style="flex:1;min-width:140px">
-            ${[
-              {label:'タンパク質(P)',value:tots.protein,target:goal.protein,unit:'g',color:'var(--teal)',pct:pfcActual.p,tPct:pfcTarget.p},
-              {label:'脂質(F)',value:tots.fat,target:goal.fat,unit:'g',color:'var(--yel)',pct:pfcActual.f,tPct:pfcTarget.f},
-              {label:'炭水化物(C)',value:tots.carb,target:goal.carb,unit:'g',color:'var(--blue)',pct:pfcActual.c,tPct:pfcTarget.c},
-            ].map(n=>`<div style="margin-bottom:10px">
-              <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
-                <span style="color:var(--txt3)">${n.label} <b style="color:${n.color}">${n.pct}%</b></span>
-                <span style="font-weight:700">${fmtN(n.value)}/${fmtN(n.target)}${n.unit}</span>
-              </div>
-              <div style="height:6px;background:var(--b2);border-radius:3px;overflow:hidden">
-                <div style="width:${Math.min(n.value/n.target*100,100)}%;height:100%;background:${n.color};border-radius:3px;transition:width .6s"></div>
-              </div>
-            </div>`).join('')}
-          </div>
-        </div>
-      </div>
+  // ── メインAIカード（常に表示・目立つデザイン）──
+  var h = '<div style="background:linear-gradient(135deg,rgba(0,207,170,.05),rgba(59,130,246,.05));border:1px solid var(--b1);border-radius:14px;margin-bottom:12px;overflow:hidden">';
 
-      <!-- 栄養素14項目グラフ（あすけん風） -->
-      <div class="dash-section" style="margin-bottom:12px">
-        <div class="dash-section-head"><span class="dash-section-title">📊 栄養素バランス</span></div>
-        ${[
-          {l:'エネルギー',v:tots.kcal,t:goal.kcal,u:'kcal',c:'var(--org)'},
-          {l:'タンパク質',v:tots.protein,t:goal.protein,u:'g',c:'var(--teal)'},
-          {l:'脂質',v:tots.fat,t:goal.fat,u:'g',c:'var(--yel)'},
-          {l:'炭水化物',v:tots.carb,t:goal.carb,u:'g',c:'var(--blue)'},
-          {l:'食物繊維',v:tots.fiber||0,t:goal.fiber,u:'g',c:'#a855f7'},
-          {l:'ビタミンB1',v:fmtN(tots.vitB1||0),t:goal.vitB1,u:'mg',c:'#ec4899'},
-          {l:'ビタミンC',v:tots.vitC||0,t:goal.vitC,u:'mg',c:'#f97316'},
-          {l:'カルシウム',v:tots.calcium||0,t:goal.calcium,u:'mg',c:'#6366f1'},
-          {l:'鉄分',v:fmtN(tots.iron||0),t:goal.iron,u:'mg',c:'#ef4444'},
-        ].map(n=>{
-          const pct=n.t?Math.round(parseFloat(n.v)/n.t*100):0;
-          const status=pct>=90&&pct<=130?'適正':pct>130?'過剰':'不足';
-          const statusColor=status==='適正'?'var(--grn)':status==='過剰'?'var(--red)':'var(--org)';
-          return`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--b1)">
-            <span style="width:70px;font-size:11px;color:var(--txt3);flex-shrink:0">${n.l}</span>
-            <div style="flex:1;height:8px;background:var(--b2);border-radius:4px;overflow:hidden;position:relative">
-              <div style="position:absolute;left:0;top:0;width:${Math.min(pct,150)}%;max-width:100%;height:100%;background:${n.c};border-radius:4px;transition:width .6s"></div>
-              <div style="position:absolute;left:${Math.min(100/1.5,66.7)}%;top:-2px;width:1px;height:12px;background:var(--txt3);opacity:.3"></div>
-            </div>
-            <span style="width:65px;font-size:11px;font-weight:600;text-align:right;flex-shrink:0">${fmtN(n.v)}/${fmtN(n.t)}${n.u}</span>
-            <span style="width:28px;font-size:9px;font-weight:700;color:${statusColor};text-align:center">${status}</span>
-          </div>`;
-        }).join('')}
-      </div>
+  // ヘッダー
+  h += '<div style="padding:14px 16px;display:flex;align-items:center;gap:10px">';
+  h += '<div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--blue));display:flex;align-items:center;justify-content:center;font-size:18px">🧠</div>';
+  h += '<div style="flex:1"><div style="font-size:14px;font-weight:800">AIコーチ</div>';
+  h += '<div style="font-size:10px;color:var(--txt3)">' + histDays + '日分のデータから分析</div></div>';
+  h += '<div style="display:flex;gap:4px">';
+  h += '<button class="btn btn-ghost" style="font-size:10px;padding:4px 8px" onclick="openWeeklyReportModal()">📊</button>';
+  h += '<button class="btn btn-ghost" style="font-size:10px;padding:4px 8px" onclick="openAILearningDashboard()">🧠</button></div></div>';
 
-      <!-- 水分摂取 -->
-      <div class="dash-section" style="margin-bottom:12px">
-        <div class="dash-section-head"><span class="dash-section-title">💧 水分摂取</span>
-          <span style="font-size:12px;color:var(--txt3)">${DB.meals.water||0}/8杯（${(DB.meals.water||0)*250}ml）</span>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          ${Array.from({length:8},(_,i)=>`<div onclick="setWater(${i+1});goTo('nutrition')" style="width:36px;height:36px;border-radius:10px;border:2px solid ${(DB.meals.water||0)>i?'var(--teal)':'var(--b2)'};background:${(DB.meals.water||0)>i?'rgba(0,207,170,.15)':'transparent'};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s">💧</div>`).join('')}
-        </div>
-      </div>
-    </div>
+  // ── 栄養アドバイス ──
+  if (hasAdvice) {
+    h += '<div style="padding:0 16px 10px">';
+    h += '<div style="padding:10px 14px;background:var(--surf);border-radius:10px;font-size:12px;color:var(--txt2);line-height:1.6">💡 ' + analysis.advice + '</div></div>';
+  }
 
-    <!-- 右：食事記録 -->
-    <div>
-      <!-- 🤖 AIリアルタイムコーチング -->
-      ${(()=>{
-        const tips = getRealtimeCoaching();
-        if (!tips.length) return '';
-        let h = '<div style="margin-bottom:10px">';
-        tips.forEach(t => {
-          const bg = t.type==='good'?'rgba(0,207,170,.06)':t.type==='warn'?'rgba(249,115,22,.06)':'rgba(59,130,246,.06)';
-          const bdr = t.type==='good'?'rgba(0,207,170,.15)':t.type==='warn'?'rgba(249,115,22,.15)':'rgba(59,130,246,.15)';
-          const col = t.type==='good'?'var(--teal)':t.type==='warn'?'var(--org)':'var(--blue)';
-          h += '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:'+bg+';border:1px solid '+bdr+';border-radius:10px;margin-bottom:3px;font-size:11px;color:'+col+'">';
-          h += '<span>'+t.icon+'</span><span>'+t.msg+'</span></div>';
-        });
-        h += '</div>';
-        return h;
-      })()}
+  // ── リアルタイムコーチング ──
+  if (hasTips) {
+    h += '<div style="padding:0 16px 12px">';
+    for (var i = 0; i < tips.length; i++) {
+      var t = tips[i];
+      var bg, col, bdr;
+      if (t.type === 'good') { bg='rgba(0,207,170,.08)'; col='var(--teal)'; bdr='rgba(0,207,170,.2)'; }
+      else if (t.type === 'warn') { bg='rgba(249,115,22,.06)'; col='var(--org)'; bdr='rgba(249,115,22,.15)'; }
+      else { bg='rgba(59,130,246,.06)'; col='var(--blue)'; bdr='rgba(59,130,246,.15)'; }
+      h += '<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:'+bg+';border:1px solid '+bdr+';border-radius:10px;margin-bottom:4px">';
+      h += '<span style="font-size:14px;flex-shrink:0;line-height:1.2">' + t.icon + '</span>';
+      h += '<span style="font-size:12px;color:'+col+';line-height:1.5">' + t.msg + '</span></div>';
+    }
+    h += '</div>';
+  }
 
-      <!-- 🔮 AIが予測するあなたの次の食事 -->
-      ${(()=>{
-        const pred = getPredictiveSuggestions();
-        if (!pred.length) return '';
-        const mealType = 'lunch'; // will be overridden by select
-        let h = '<div style="margin-bottom:10px;padding:10px 12px;background:var(--surf2);border-radius:12px;border:1px solid var(--b1)">';
-        h += '<div style="font-size:11px;font-weight:700;color:var(--org);margin-bottom:6px">🔮 AI予測: いつものメニュー</div>';
-        h += '<div style="display:flex;flex-wrap:wrap;gap:3px">';
-        pred.forEach(f => {
-          const dbIdx = FOOD_DB.findIndex(x => x.name === f.name);
-          const onclick = dbIdx >= 0 ? 'quickAddFood('+dbIdx+')' : 'quickAddMyFood(\''+f.name.replace(/'/g,"\\'")+'\')'
-          h += '<button onclick="'+onclick+'" style="padding:4px 9px;border-radius:16px;border:1px solid rgba(249,115,22,.2);background:rgba(249,115,22,.06);font-size:10px;cursor:pointer;color:var(--org)">';
-          h += f.name.split('（')[0]+' <span style="font-size:8px;color:var(--txt3)">'+fmtN(f.kcal)+'kcal</span></button>';
-        });
-        h += '</div></div>';
-        return h;
-      })()}
+  // ── クイック追加セクション（折りたたみ）──
+  var hasQuickAdd = (freq.length > 0 || (combos && combos.length > 0) || (analysis.recommended && analysis.recommended.length > 0));
+  if (hasQuickAdd) {
+    h += '<details style="border-top:1px solid var(--b1)">';
+    h += '<summary style="padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;color:var(--txt2);list-style:none;display:flex;align-items:center;gap:6px">';
+    h += '⚡ クイック追加・おすすめ';
+    h += '<span style="font-size:10px;color:var(--txt3);font-weight:400;margin-left:auto">▼</span></summary>';
+    h += '<div style="padding:6px 16px 14px">';
 
-      <!-- 食事追加フォーム -->
-      <div class="dash-section" style="margin-bottom:12px">
-        <div class="dash-section-head"><span class="dash-section-title">🍽️ 食事を記録</span></div>
-        <select class="input mb-8" id="meal-type" style="padding:8px 12px;font-size:13px">
-          <option value="breakfast">🌅 朝食</option><option value="lunch">☀️ 昼食</option>
-          <option value="dinner">🌙 夕食</option><option value="snack">🍌 補食</option>
-        </select>
-        <!-- 📸 写真で食事記録 -->
-        <div style="margin-bottom:10px">
-          <button class="btn w-full" style="padding:14px;font-size:14px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#ff6b2b,#f59e0b);color:#fff;font-weight:700;box-shadow:0 4px 14px rgba(249,115,22,.3)" onclick="document.getElementById('food-photo-input').click()">
-            <i class="fa fa-camera" style="font-size:20px"></i> 📸 写真で食事記録
-          </button>
-          <input type="file" id="food-photo-input" accept="image/*" capture="environment" style="display:none" onchange="startPhotoMealFlow(this)">
-          <div style="text-align:center;font-size:10px;color:var(--txt3);margin-top:4px">撮影 → AI解析 or カテゴリから選択</div>
-          <div id="photo-analysis-status" style="display:none;margin-top:8px"></div>
-        </div>
-        <div class="relative" style="margin-bottom:8px">
-          <input class="input" id="food-q" placeholder="🔍 食品を検索（ごはん、鶏胸肉、バナナ…）" oninput="foodSearch(this.value)" maxlength="30" autocomplete="off" style="padding:10px 14px;font-size:13px">
-          <div id="food-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surf);border:1px solid var(--b2);border-radius:12px;max-height:300px;overflow-y:auto;z-index:100;box-shadow:0 12px 32px rgba(0,0,0,.3)"></div>
-        </div>
-        <details style="margin-top:8px">
-          <summary style="font-size:12px;color:var(--org);cursor:pointer;font-weight:600">✏️ 手動で入力</summary>
-          <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
-            <input class="input" id="m-name" maxlength="50" placeholder="食品名" style="grid-column:1/-1;font-size:12px">
-            <input class="input" id="m-kcal" type="number" min="0" placeholder="kcal" style="font-size:12px">
-            <input class="input" id="m-protein" type="number" min="0" step="0.1" placeholder="P(g)" style="font-size:12px">
-            <input class="input" id="m-carb" type="number" min="0" step="0.1" placeholder="C(g)" style="font-size:12px">
-            <input class="input" id="m-fat" type="number" min="0" step="0.1" placeholder="F(g)" style="font-size:12px">
-            <button class="btn btn-primary btn-sm" style="grid-column:1/-1" onclick="addMealManual()">+ 追加</button>
-          </div>
-        </details>
-      </div>
-
-      <!-- 🧠 AI学習レコメンド -->
-      ${(()=>{
-        const mealType = document.getElementById('meal-type')?.value || 'lunch';
-        const freq = getFrequentFoods(8);
-        const timeRec = getTimeBasedRecommendations(mealType, 6);
-        const pattern = analyzeNutritionPattern();
-        const weekdayPat = analyzeWeekdayPattern();
-        const comboRec = detectMealCombos();
-        const defRec = getDeficiencyRecommendations();
-        const hasLearning = freq.length > 0 || timeRec.length > 0 || (DB.myFoods && DB.myFoods.length > 0);
-        const histDays = Object.keys(DB.mealHistory||{}).length;
-        const learnLevel = histDays >= 14 ? 3 : histDays >= 7 ? 2 : histDays >= 3 ? 1 : 0;
-        const levelNames = ['🌱 初期学習中','📊 パターン認識中','🧠 学習進行中','🎯 最適化モード'];
-        const levelColors = ['var(--txt3)','var(--blue)','var(--org)','var(--teal)'];
-
-        let h = '<div class="dash-section" style="margin-bottom:12px;border-left:3px solid var(--org)">';
-        h += '<div class="dash-section-head"><span class="dash-section-title">🧠 AI栄養アドバイザー</span>';
-        h += '<button class="btn btn-ghost btn-xs" onclick="openAILearningDashboard()">詳細 →</button></div>';
-
-        // 学習レベルバー
-        h += '<div style="margin-bottom:12px;padding:10px 12px;background:var(--surf);border-radius:10px;border:1px solid var(--b1)">';
-        h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">';
-        h += '<span style="font-size:12px;font-weight:700;color:'+levelColors[learnLevel]+'">'+levelNames[learnLevel]+'</span>';
-        h += '<span style="font-size:9px;color:var(--txt3)">'+histDays+'日分 · '+(DB.myFoods?.length||0)+'食品学習済み</span></div>';
-        h += '<div style="display:flex;gap:3px;height:4px">';
-        for (let lv=0; lv<4; lv++) {
-          h += '<div style="flex:1;border-radius:2px;background:'+( lv<=learnLevel ? levelColors[learnLevel] : 'var(--b2)' )+';opacity:'+(lv<=learnLevel?1:.3)+'"></div>';
-        }
-        h += '</div>';
-        if (learnLevel < 3) {
-          const nextDays = [3,7,14][learnLevel] - histDays;
-          h += '<div style="font-size:9px;color:var(--txt3);margin-top:4px">あと'+Math.max(1,nextDays)+'日記録すると次のレベルへ</div>';
-        }
-        h += '</div>';
-
-        // 栄養パターン警告（Insights）
-        if (pattern.insights.length) {
-          h += '<div style="margin-bottom:10px">';
-          pattern.insights.forEach(msg => {
-            h += '<div style="padding:8px 10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.12);border-radius:8px;font-size:11px;color:var(--red);margin-bottom:4px">'+msg+'</div>';
-          });
-          h += '</div>';
-        }
-
-        // 不足栄養素に基づくおすすめ
-        if (defRec.length) {
-          h += '<div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--teal);margin-bottom:5px">💡 今日のおすすめ（不足栄養素から提案）</div>';
-          h += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
-          defRec.forEach((r) => {
-            const dbIdx = FOOD_DB.findIndex(x => x.name === r.food.name);
-            if (dbIdx >= 0) {
-              h += '<button onclick="quickAddFood('+dbIdx+')" style="padding:5px 10px;border-radius:18px;border:1px solid rgba(0,207,170,.25);background:rgba(0,207,170,.08);font-size:10px;cursor:pointer;color:var(--teal);display:flex;align-items:center;gap:3px">';
-              h += r.food.name.split('（')[0]+'<span style="font-size:8px;color:var(--txt3)">'+r.reason+'</span></button>';
-            }
-          });
-          h += '</div></div>';
-        }
-
-        // 時間帯×曜日レコメンド
-        const hour = new Date().getHours();
-        const slotName = hour<10?'朝':hour<14?'昼':hour<18?'午後':'夜';
-        const dayName = ['日','月','火','水','木','金','土'][new Date().getDay()];
-        if (timeRec.length) {
-          h += '<div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--txt3);margin-bottom:5px">🕐 '+dayName+'曜・'+slotName+'のあなたの定番</div>';
-          h += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
-          timeRec.forEach((f,ti) => {
-            const dbIdx = FOOD_DB.findIndex(x => x.name === f.name);
-            const onclick = dbIdx >= 0 ? 'quickAddFood('+dbIdx+')' : 'quickAddMyFoodByIdx('+ti+',1)';
-            h += '<button onclick="'+onclick+'" style="padding:5px 10px;border-radius:18px;border:1px solid rgba(249,115,22,.2);background:rgba(249,115,22,.06);font-size:10px;cursor:pointer;color:var(--org)">';
-            h += f.name.split('（')[0]+' <span style="font-size:8px;color:var(--txt3)">'+(f.kcal||0)+'kcal</span></button>';
-          });
-          h += '</div></div>';
-        }
-
-        // コンボ（よく一緒に食べるもの）
-        if (comboRec.length) {
-          h += '<div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--txt3);margin-bottom:5px">🔗 よく一緒に食べる組み合わせ</div>';
-          comboRec.slice(0,3).forEach(combo => {
-            h += '<button onclick="addMealCombo(\''+combo.items.map(i=>i.replace(/'/g,"\\'")).join('|')+'\')" style="display:block;width:100%;padding:8px 10px;border-radius:10px;border:1px solid var(--b1);background:var(--surf);font-size:11px;cursor:pointer;color:var(--txt2);margin-bottom:3px;text-align:left">';
-            h += '<span style="color:var(--org)">🍱</span> '+combo.items.map(n=>n.split('（')[0]).join(' + ');
-            h += ' <span style="font-size:9px;color:var(--txt3)">· '+combo.totalKcal+'kcal · '+combo.count+'回</span></button>';
-          });
-          h += '</div>';
-        }
-
-        // よく食べるものランキング
-        if (freq.length) {
-          h += '<div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--txt3);margin-bottom:5px">⭐ マイ食品ランキング</div>';
-          h += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
-          freq.forEach((f,fi) => {
-            const dbIdx = FOOD_DB.findIndex(x => x.name === f.name);
-            const onclick = dbIdx >= 0 ? 'quickAddFood('+dbIdx+')' : 'quickAddMyFoodByIdx('+fi+')';
-            const medal = fi===0?'🥇':fi===1?'🥈':fi===2?'🥉':'';
-            h += '<button onclick="'+onclick+'" style="padding:5px 10px;border-radius:18px;border:1px solid var(--b1);background:var(--surf);font-size:10px;cursor:pointer;color:var(--txt2)">';
-            h += medal+'<span style="font-size:8px;color:var(--org);font-weight:700">'+(f.count||1)+'回</span> '+f.name.split('（')[0]+'</button>';
-          });
-          h += '</div></div>';
-        }
-
-        // 7日間PFCミニトレンド
-        if (pattern.patterns.length >= 3) {
-          const maxK = Math.max(...pattern.patterns.map(p=>p.totals.kcal), 1);
-          h += '<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;color:var(--txt3);margin-bottom:5px">📊 直近の栄養トレンド</div>';
-          h += '<div style="display:flex;gap:3px;align-items:flex-end;height:40px">';
-          pattern.patterns.forEach((p,pi) => {
-            const pct = Math.max(5, p.totals.kcal / maxK * 100);
-            const dayL = ['日','月','火','水','木','金','土'][new Date(p.date+'T12:00').getDay()];
-            h += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">';
-            h += '<div style="font-size:7px;color:var(--txt3)">'+(p.totals.kcal||0)+'</div>';
-            h += '<div style="width:100%;border-radius:3px 3px 1px 1px;height:'+pct+'%;background:linear-gradient(to top,var(--teal),var(--org));opacity:.8"></div>';
-            h += '<div style="font-size:8px;color:var(--txt3)">'+dayL+'</div></div>';
-          });
-          h += '</div></div>';
-        }
-
-        // 学習状況フッタ
-        h += '<div style="padding-top:6px;border-top:1px solid var(--b1);display:flex;align-items:center;justify-content:between;gap:6px">';
-        h += '<div style="width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite"></div>';
-        h += '<span style="font-size:9px;color:var(--txt3);flex:1">'+(DB.myFoods?.length||0)+'食品学習済み · '+histDays+'日分データ</span>';
-        h += '<button class="btn btn-ghost" style="font-size:9px;padding:2px 8px" onclick="openAILearningDashboard()">🧠 学習詳細</button>';
-        h += '<button class="btn btn-ghost" style="font-size:9px;padding:2px 8px" onclick="openWeeklyReportModal()">📊 週間レポート</button></div>';
-
-        h += '</div>';
-        return h;
-      })()}
-
-      <!-- 今日の食事記録 -->
-      <div class="dash-section" style="margin-bottom:12px">
-        <div class="dash-section-head"><span class="dash-section-title">📋 今日の食事</span>
-          <span style="font-size:12px;color:var(--txt3)">${tots.kcal}/${goal.kcal}kcal</span>
-        </div>
-        ${['breakfast','lunch','dinner','snack'].map(type=>{
-          const items=DB.meals.today.filter(m=>m.type===type);
-          if(!items.length) return '';
-          const subtotal=items.reduce((s,m)=>s+m.kcal,0);
-          return`<div style="margin-bottom:12px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <span style="font-size:12px;font-weight:700;color:var(--txt3)">${typeLabel[type]}</span>
-              <span style="font-size:11px;color:var(--org);font-weight:600">${subtotal}kcal</span>
-            </div>
-            ${items.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surf2);border-radius:10px;margin-bottom:4px">
-              <div style="flex:1;min-width:0">
-                <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sanitize(m.name,28)}</div>
-                <div style="font-size:10px;color:var(--txt3)"><span style="color:var(--teal)">P${fmtN(m.protein)}g</span> <span style="color:var(--blue)">C${fmtN(m.carb)}g</span> <span style="color:var(--yel)">F${fmtN(m.fat)}g</span></div>
-              </div>
-              <span style="font-size:12px;font-weight:700;flex-shrink:0">${m.kcal}kcal</span>
-              <button onclick="removeMeal('${m.id}');goTo('nutrition')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;padding:4px;opacity:.6">✕</button>
-            </div>`).join('')}
-          </div>`;
-        }).join('') || '<div style="text-align:center;padding:20px;color:var(--txt3);font-size:13px">まだ記録がありません<br><span style="font-size:11px">上の検索から食品を追加してください</span></div>'}
-      </div>
-
-      <!-- おすすめ食材 -->
-      ${analysis.recommended.length?`<div class="dash-section">
-        <div class="dash-section-head"><span class="dash-section-title">🥗 おすすめ食材</span></div>
-        <div style="font-size:11px;color:var(--txt3);margin-bottom:8px">不足栄養素を補える食品</div>
-        ${analysis.recommended.slice(0,4).map(f=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surf2);border-radius:10px;margin-bottom:4px;cursor:pointer" onclick="quickAddFood('${FOOD_DB.indexOf(f)}')">
-          <span style="font-size:14px">${f.cat==='肉'?'🍖':f.cat==='魚'?'🐟':f.cat==='野菜'?'🥦':f.cat==='果物'?'🍎':f.cat==='乳製品'?'🥛':'🍽️'}</span>
-          <div style="flex:1"><div style="font-size:12px;font-weight:600">${sanitize(f.name,24)}</div><div style="font-size:10px;color:var(--txt3)"><span style="color:var(--teal)">P${fmtN(f.protein)}g</span> <span style="color:var(--blue)">C${fmtN(f.carb)}g</span> ${f.kcal}kcal</div></div>
-          <span style="font-size:11px;color:var(--org);font-weight:600">+ 追加</span>
-        </div>`).join('')}
-      </div>`:''
+    // おすすめ食材（不足栄養素ベース）
+    if (analysis.recommended && analysis.recommended.length > 0) {
+      h += '<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;color:var(--teal);margin-bottom:4px">🥗 不足を補う食材</div>';
+      for (var i = 0; i < Math.min(analysis.recommended.length, 4); i++) {
+        var f = analysis.recommended[i], idx = FOOD_DB.indexOf(f);
+        var ic = f.cat==='肉'?'🍖':f.cat==='魚'?'🐟':f.cat==='野菜'?'🥦':f.cat==='果物'?'🍎':f.cat==='乳製品'?'🥛':f.cat==='卵・大豆'?'🥚':'🍽️';
+        h += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surf);border-radius:8px;margin-bottom:3px;cursor:pointer" onclick="quickAddFood(\''+idx+'\')">';
+        h += '<span>'+ic+'</span><div style="flex:1"><span style="font-size:12px;font-weight:600">'+sanitize(f.name,18)+'</span>';
+        h += ' <span style="font-size:10px;color:var(--txt3)">P'+fmtN(f.protein)+'g '+f.kcal+'kcal</span></div>';
+        h += '<span style="color:var(--org);font-weight:700;font-size:12px">＋</span></div>';
       }
-    </div>
-  </div>`;
+      h += '</div>';
+    }
+
+    // よく食べるもの
+    if (freq.length > 0) {
+      h += '<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;margin-bottom:4px">⭐ よく食べるもの</div><div style="display:flex;flex-wrap:wrap;gap:4px">';
+      for (var i = 0; i < freq.length; i++) {
+        var f = freq[i], dbIdx = FOOD_DB.findIndex(function(d){return d.name===f.name;});
+        var oc = dbIdx >= 0 ? 'quickAddFood('+dbIdx+')' : "quickAddMyFood('"+f.name.replace(/'/g,"\\'")+"')";
+        h += '<button onclick="'+oc+'" style="padding:4px 10px;border-radius:16px;border:1px solid var(--b1);background:var(--surf);font-size:11px;cursor:pointer;color:var(--txt2)">'+(f.count||1)+'回 '+f.name.split('（')[0]+'</button>';
+      }
+      h += '</div></div>';
+    }
+
+    // 組み合わせ
+    if (combos && combos.length > 0) {
+      h += '<div><div style="font-size:11px;font-weight:700;margin-bottom:4px">🔗 よく食べる組み合わせ</div>';
+      for (var i = 0; i < Math.min(combos.length, 3); i++) {
+        var c = combos[i];
+        h += '<button onclick="addMealCombo(\''+c.items.map(function(x){return x.replace(/'/g,"\\'");}).join('|')+'\')" style="display:block;width:100%;padding:6px 10px;border-radius:8px;border:1px solid var(--b1);background:var(--surf);font-size:11px;cursor:pointer;color:var(--txt2);margin-bottom:3px;text-align:left">';
+        h += c.items.join(' + ') + ' <span style="color:var(--org)">' + c.totalKcal + 'kcal</span></button>';
+      }
+      h += '</div>';
+    }
+    h += '</div></details>';
+  }
+  h += '</div>';
+  return h;
+}
+
+
+function nutritionPage(){
+  var tots = calcTotals();
+  var player = DB.players.find(function(x){return x.id===DB.currentUser?.id;});
+  var weight = player?.weight || 65;
+  var goal = {kcal:Math.round(weight*40),protein:Math.round(weight*2),carb:Math.round(weight*5),fat:Math.round(weight*1),fiber:25,vitB1:1.4,vitC:100,calcium:800,iron:10};
+  var pfcTarget = {p:20, f:25, c:55};
+  var totalMacroKcal = (tots.protein*4)+(tots.carb*4)+(tots.fat*9);
+  var pfcActual = {
+    p: totalMacroKcal ? Math.round(tots.protein*4/totalMacroKcal*100) : 0,
+    f: totalMacroKcal ? Math.round(tots.fat*9/totalMacroKcal*100) : 0,
+    c: totalMacroKcal ? Math.round(tots.carb*4/totalMacroKcal*100) : 0
+  };
+  var score = calcNutritionScore(tots, goal);
+  var scoreEmoji = score>=80?'😄':score>=60?'😊':score>=40?'😐':'😶';
+  var analysis = analyzeNutrients(tots, goal);
+
+  var html = '';
+  // Header
+  html += '<div class="pg-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">';
+  html += '<div><div class="pg-title">🍽️ 食事管理</div></div>';
+  html += '<div style="display:flex;gap:6px">';
+  html += '<button class="btn btn-ghost btn-sm" onclick="openNutritionAI()">🤖 AI分析</button>';
+  html += '<button class="btn btn-ghost btn-sm" onclick="saveNutritionHistory();goTo(\'nutrition\');toast(\'保存しました\',\'s\')">💾</button></div></div>';
+  // 1. Summary bar
+  html += _nutSummaryBar(tots, goal, score, scoreEmoji);
+  // 2. PFC bars
+  html += _nutPFCBars(tots, goal, pfcActual, pfcTarget);
+  // 3. Meal entry (MOST IMPORTANT ACTION)
+  html += _nutMealEntry();
+  // 4. Today's meals
+  html += _nutTodayMeals(tots, goal);
+  // 5. Nutrients + Water
+  html += _nutNutrientsWater(tots, goal);
+  // 6. AI section (collapsed)
+  html += _nutAISection(analysis);
+
+  return html;
 }
 
 function calcNutritionScore(tots,goal){
@@ -7933,38 +7847,76 @@ function getTimeBasedRecommendations(mealType, n) {
 
 // 栄養パターン分析（過去7日の傾向）
 function analyzeNutritionPattern() {
-  if (!DB.mealHistory) return { deficientDays: [], patterns: [] };
-  var days = Object.keys(DB.mealHistory).sort().slice(-7);
-  var patterns = [];
-  var deficientNutrients = {};
-  var player = DB.players.find(function(x) { return x.id === (DB.currentUser || {}).id; });
+  if (!DB.mealHistory) return {patterns:[],insights:[],totalDays:0,weeklyAvg:null};
+  var player = DB.players.find(function(x){return x.id===(DB.currentUser||{}).id;});
   var weight = (player && player.weight) || 65;
-  var goalP = weight * 2, goalC = weight * 5;
+  var goal = {kcal:weight*40, protein:weight*2, carb:weight*5, fat:weight*1};
+  var days = Object.keys(DB.mealHistory).sort().slice(-14);
+  var patterns = [], defNut = {};
+  var totalP=0, totalK=0, totalF=0, totalC=0, recDays=0;
+  var skipBf=0, lateDinner=0, lowMealDays=0;
 
   for (var d = 0; d < days.length; d++) {
     var meals = DB.mealHistory[days[d]] || [];
-    var dayTotals = { kcal: 0, protein: 0, carb: 0, fat: 0 };
+    if (!meals.length) continue;
+    recDays++;
+    var dt = {kcal:0,protein:0,carb:0,fat:0,mealCount:meals.length,hasBf:false,lateDin:false};
     for (var m = 0; m < meals.length; m++) {
-      dayTotals.kcal += meals[m].kcal || 0;
-      dayTotals.protein += meals[m].protein || 0;
-      dayTotals.carb += meals[m].carb || 0;
-      dayTotals.fat += meals[m].fat || 0;
+      dt.kcal += meals[m].kcal||0; dt.protein += meals[m].protein||0;
+      dt.carb += meals[m].carb||0; dt.fat += meals[m].fat||0;
+      if (meals[m].type==='breakfast') dt.hasBf = true;
+      var mTime = parseInt(meals[m].time)||12;
+      if (meals[m].type==='dinner' && mTime >= 21) dt.lateDin = true;
     }
-    if (dayTotals.protein < goalP * 0.7) deficientNutrients['タンパク質'] = (deficientNutrients['タンパク質'] || 0) + 1;
-    if (dayTotals.carb < goalC * 0.7) deficientNutrients['炭水化物'] = (deficientNutrients['炭水化物'] || 0) + 1;
-    if (dayTotals.kcal < weight * 30) deficientNutrients['カロリー'] = (deficientNutrients['カロリー'] || 0) + 1;
-    patterns.push({ date: days[d], totals: dayTotals, meals: meals.length });
+    totalP += dt.protein; totalK += dt.kcal; totalF += dt.fat; totalC += dt.carb;
+    if (dt.protein < goal.protein*0.7) defNut['タンパク質'] = (defNut['タンパク質']||0)+1;
+    if (dt.carb < goal.carb*0.7) defNut['炭水化物'] = (defNut['炭水化物']||0)+1;
+    if (dt.kcal < goal.kcal*0.7) defNut['カロリー'] = (defNut['カロリー']||0)+1;
+    if (dt.fat > goal.fat*1.3) defNut['脂質過多'] = (defNut['脂質過多']||0)+1;
+    if (!dt.hasBf) skipBf++;
+    if (dt.lateDin) lateDinner++;
+    if (dt.mealCount < 3) lowMealDays++;
+    patterns.push({date:days[d], totals:dt, meals:dt.mealCount});
   }
 
   var insights = [];
-  for (var nut in deficientNutrients) {
-    if (deficientNutrients[nut] >= 3) {
-      insights.push('⚠️ ' + nut + 'が' + deficientNutrients[nut] + '日間不足傾向です');
+  // 栄養素の傾向
+  for (var nut in defNut) {
+    if (defNut[nut] >= Math.ceil(recDays * 0.4)) {
+      if (nut === '脂質過多') insights.push({icon:'⚖️', msg:'脂質が過剰な日が'+defNut[nut]+'日。揚げ物を週2回以下に抑えると改善', type:'warn'});
+      else insights.push({icon:'📉', msg:nut+'が'+defNut[nut]+'日間不足。慢性的な不足は疲労回復の遅れにつながります', type:'warn'});
+    }
+  }
+  // 食事パターン
+  if (skipBf >= Math.ceil(recDays * 0.4)) {
+    insights.push({icon:'🌅', msg:'朝食スキップが'+skipBf+'日。アスリートは朝食で1日の代謝スイッチをONに', type:'warn'});
+  }
+  if (lateDinner >= 3) {
+    insights.push({icon:'🌙', msg:'遅い夕食（21時以降）が'+lateDinner+'日。睡眠の質と翌日のコンディションに影響', type:'info'});
+  }
+  if (lowMealDays >= Math.ceil(recDays * 0.3)) {
+    insights.push({icon:'🍽️', msg:'1日2食以下の日が'+lowMealDays+'日。3食+補食で栄養を分散摂取が理想', type:'info'});
+  }
+  // 週間平均
+  var weeklyAvg = recDays > 0 ? {
+    kcal: Math.round(totalK/recDays),
+    protein: Math.round(totalP/recDays),
+    fat: Math.round(totalF/recDays),
+    carb: Math.round(totalC/recDays),
+    days: recDays
+  } : null;
+
+  if (weeklyAvg) {
+    var kcalPct = Math.round(weeklyAvg.kcal / goal.kcal * 100);
+    var pPct = Math.round(weeklyAvg.protein / goal.protein * 100);
+    if (kcalPct >= 85 && pPct >= 85) {
+      insights.unshift({icon:'🏆', msg:'直近'+recDays+'日の平均摂取は良好（カロリー'+kcalPct+'% / P'+pPct+'%）！', type:'good'});
     }
   }
 
-  return { patterns: patterns, insights: insights, totalDays: days.length };
+  return {patterns:patterns, insights:insights, totalDays:days.length, weeklyAvg:weeklyAvg};
 }
+
 
 // myFoodsの学習データをエクスポート（デバッグ用）
 function getLearningSummary() {
@@ -8650,45 +8602,151 @@ function getNutritionStreak() {
 
 // 10. AIコーチング — 今日の残り栄養素からリアルタイムアドバイス
 function getRealtimeCoaching() {
-  var tots = getTodayTotals();
-  var player = DB.players.find(function(x) { return x.id === (DB.currentUser||{}).id; });
+  var tots = calcTotals();
+  var player = DB.players.find(function(x){return x.id===(DB.currentUser||{}).id;});
   var w = (player && player.weight) || 65;
-  var goal = { kcal: w*40, protein: w*2, carb: w*5, fat: w*1 };
+  var goal = {kcal:w*40, protein:w*2, carb:w*5, fat:w*1};
   var hour = new Date().getHours();
+  var dayOfWeek = new Date().getDay();
+  var meals = DB.meals.today || [];
+  var mealCount = meals.length;
+  var water = (DB.meals && DB.meals.water) || 0;
   var remaining = {
     kcal: Math.max(0, goal.kcal - tots.kcal),
     protein: Math.max(0, goal.protein - tots.protein),
     carb: Math.max(0, goal.carb - tots.carb),
     fat: Math.max(0, goal.fat - tots.fat)
   };
-  var mealsLeft = hour < 10 ? 3 : hour < 14 ? 2 : hour < 18 ? 1 : 0;
-
+  var mealsLeft = hour<10?3:hour<14?2:hour<18?1:0;
   var tips = [];
-  if (mealsLeft === 0 && tots.kcal > 0) {
-    if (tots.protein >= goal.protein * 0.8) tips.push({ icon: '🎉', msg: '今日のタンパク質は十分摂れました！', type: 'good' });
-    else tips.push({ icon: '🥛', msg: '就寝前にプロテインやヨーグルトでP補強を', type: 'warn' });
-    return tips;
+
+  // ── A. 食事タイミング分析 ──
+  var hasBf = meals.some(function(m){return m.type==='breakfast';});
+  var hasLunch = meals.some(function(m){return m.type==='lunch';});
+  var hasDinner = meals.some(function(m){return m.type==='dinner';});
+  if (hour>=10 && !hasBf && mealCount>0) {
+    tips.push({icon:'⏰',msg:'朝食が未記録。練習前は糖質中心の軽食（おにぎり・バナナ）で体を動かすエネルギーを確保',type:'warn',pri:9});
+  } else if (hour>=10 && !hasBf && mealCount===0) {
+    tips.push({icon:'🌅',msg:'今日の食事をまだ記録していません。朝食から記録を始めましょう',type:'info',pri:10});
+  }
+  if (hour>=15 && !hasLunch && hasBf) {
+    tips.push({icon:'⏰',msg:'昼食が未記録。空腹が4時間以上続くと筋分解（カタボリック）が進行します',type:'warn',pri:8});
   }
 
-  if (mealsLeft > 0) {
-    var perMealKcal = Math.round(remaining.kcal / mealsLeft);
-    var perMealP = Math.round(remaining.protein / mealsLeft);
-    tips.push({ icon: '🎯', msg: '残り' + mealsLeft + '食 · 1食あたり約' + perMealKcal + 'kcal / P' + perMealP + 'g', type: 'info' });
-
-    if (remaining.protein > goal.protein * 0.5) {
-      tips.push({ icon: '💪', msg: 'タンパク質がまだ' + fmtN(remaining.protein) + 'g不足。肉・魚・卵を中心に', type: 'warn' });
+  // ── B. スポーツ栄養タイミング ──
+  if (hour>=5 && hour<9 && !hasBf) {
+    tips.push({icon:'🏃',msg:'練習前1〜2時間: 消化の良い糖質（バナナ、おにぎり、カステラ）を摂取して筋グリコーゲンを補充',type:'info',pri:7});
+  }
+  if (hour>=11 && hour<13 && hasLunch) {
+    var lunchP = meals.filter(function(m){return m.type==='lunch';}).reduce(function(s,m){return s+(m.protein||0);},0);
+    if (lunchP < 20) {
+      tips.push({icon:'🍗',msg:'昼食のタンパク質が'+fmtN(lunchP)+'gと少なめ。午後の練習に備えて+20g（鶏むね肉100g相当）を目標に',type:'warn',pri:7});
     }
-    if (remaining.fat <= 0 && remaining.kcal > 500) {
-      tips.push({ icon: '🥗', msg: '脂質は十分。残りは炭水化物とタンパク質で', type: 'info' });
+  }
+  if (hour>=16 && hour<20 && tots.protein<goal.protein*0.6) {
+    tips.push({icon:'💪',msg:'練習後30分以内のタンパク質摂取が筋回復のゴールデンタイム。P残り'+fmtN(remaining.protein)+'g（プロテイン1杯で約20g）',type:'warn',pri:9});
+  }
+  if (hour>=21 && !hasDinner && mealCount>0) {
+    tips.push({icon:'🌙',msg:'夕食がまだです。就寝2時間前までに消化の良い食事を。遅すぎると睡眠の質が低下',type:'warn',pri:8});
+  }
+
+  // ── C. PFCバランスリアルタイム分析 ──
+  if (mealCount >= 2) {
+    var totalMacKcal = tots.protein*4 + tots.carb*4 + tots.fat*9;
+    if (totalMacKcal > 0) {
+      var pR = Math.round(tots.protein*4/totalMacKcal*100);
+      var fR = Math.round(tots.fat*9/totalMacKcal*100);
+      var cR = Math.round(tots.carb*4/totalMacKcal*100);
+      if (fR > 35) {
+        tips.push({icon:'⚖️',msg:'脂質比率'+fR+'%（目標25%以下）。揚げ物→焼き・蒸しに変更で大幅カット可能',type:'warn',pri:6});
+      }
+      if (pR < 15 && tots.kcal > goal.kcal*0.3) {
+        tips.push({icon:'🥩',msg:'タンパク質比率'+pR+'%（目標20%）。主菜をもう1品追加するか、プロテインで補強を',type:'warn',pri:7});
+      }
+      if (cR > 65) {
+        tips.push({icon:'🍚',msg:'炭水化物比率'+cR+'%と高め。副菜（サラダ・肉・魚）を増やしてバランス改善を',type:'info',pri:5});
+      }
     }
   }
 
-  // 水分チェック
-  var water = (DB.meals && DB.meals.water) || 0;
-  if (water < 4 && hour >= 12) tips.push({ icon: '💧', msg: '水分が不足気味です（' + water + '/8杯）', type: 'warn' });
+  // ── D. 残り食事の戦略的アドバイス ──
+  if (mealsLeft > 0 && mealCount > 0 && remaining.kcal > 200) {
+    var perP = Math.round(remaining.protein / mealsLeft);
+    var perKcal = Math.round(remaining.kcal / mealsLeft);
+    var suggestMenu = '';
+    if (perP > 30) suggestMenu = '（例: 鶏むね肉定食、鮭定食、牛丼＋卵）';
+    else if (perP > 15) suggestMenu = '（例: 親子丼、ツナサンド、納豆ご飯＋味噌汁）';
+    tips.push({icon:'🎯',msg:'残り'+mealsLeft+'食の目安: 各'+perKcal+'kcal / P'+perP+'g' + suggestMenu,type:'info',pri:6});
+  }
+  if (mealsLeft===0 && mealCount>0) {
+    if (tots.protein>=goal.protein*0.9 && tots.kcal>=goal.kcal*0.8) {
+      tips.push({icon:'🎉',msg:'今日の栄養バランスは優秀です！この食事パターンを継続しましょう',type:'good',pri:10});
+    } else if (tots.protein<goal.protein*0.7) {
+      tips.push({icon:'🥛',msg:'寝る前にプロテイン+牛乳（P約25g）またはギリシャヨーグルト（P約10g）で補強を',type:'warn',pri:8});
+    }
+    if (tots.kcal < goal.kcal * 0.7) {
+      tips.push({icon:'⚡',msg:'総カロリーが目標の'+Math.round(tots.kcal/goal.kcal*100)+'%。慢性的なエネルギー不足は怪我・免疫低下のリスク',type:'warn',pri:8});
+    }
+  }
 
-  return tips;
+  // ── E. 水分（運動量考慮） ──
+  var waterPace = Math.floor(8 * Math.min(hour, 20) / 20);
+  if (water < waterPace && hour >= 10) {
+    var gap = waterPace - water;
+    tips.push({icon:'💧',msg:'水分ペース遅れ（'+water+'/8杯）。この時間帯なら'+waterPace+'杯が目安。あと'+gap+'杯を意識',type:'warn',pri:5});
+  }
+
+  // ── F. 過去データから傾向分析 ──
+  var hist = DB.mealHistory || {};
+  var histKeys = Object.keys(hist).sort().slice(-7);
+  if (histKeys.length >= 3) {
+    var lowPDays = 0, lowKcalDays = 0, skipBfDays = 0;
+    for (var i = 0; i < histKeys.length; i++) {
+      var dMeals = hist[histKeys[i]] || [];
+      var dP = 0, dK = 0, dHasBf = false;
+      for (var j = 0; j < dMeals.length; j++) {
+        dP += dMeals[j].protein || 0;
+        dK += dMeals[j].kcal || 0;
+        if (dMeals[j].type === 'breakfast') dHasBf = true;
+      }
+      if (dP < goal.protein * 0.7 && dMeals.length > 0) lowPDays++;
+      if (dK < goal.kcal * 0.7 && dMeals.length > 0) lowKcalDays++;
+      if (!dHasBf && dMeals.length > 0) skipBfDays++;
+    }
+    if (lowPDays >= 3) {
+      tips.push({icon:'📊',msg:'直近'+histKeys.length+'日中'+lowPDays+'日でタンパク質不足。毎食P20g以上（手のひらサイズの肉/魚）を意識',type:'warn',pri:7});
+    }
+    if (lowKcalDays >= 3) {
+      tips.push({icon:'📊',msg:'直近'+histKeys.length+'日中'+lowKcalDays+'日でカロリー不足。エネルギー不足は疲労蓄積・パフォーマンス低下の原因に',type:'warn',pri:7});
+    }
+    if (skipBfDays >= 3) {
+      tips.push({icon:'📊',msg:'朝食を'+skipBfDays+'日スキップ。アスリートの朝食は午前中の集中力と練習の質に直結します',type:'warn',pri:6});
+    }
+  }
+
+  // ── G. 曜日パターンアドバイス ──
+  var dayNames = ['日','月','火','水','木','金','土'];
+  var sameDayHistory = [];
+  for (var i = 0; i < histKeys.length; i++) {
+    var dd = new Date(histKeys[i] + 'T12:00');
+    if (dd.getDay() === dayOfWeek) sameDayHistory.push(hist[histKeys[i]]);
+  }
+  if (sameDayHistory.length >= 2) {
+    var avgDayKcal = 0;
+    for (var i = 0; i < sameDayHistory.length; i++) {
+      for (var j = 0; j < sameDayHistory[i].length; j++) avgDayKcal += sameDayHistory[i][j].kcal || 0;
+    }
+    avgDayKcal = Math.round(avgDayKcal / sameDayHistory.length);
+    if (avgDayKcal < goal.kcal * 0.7) {
+      tips.push({icon:'📅',msg:dayNames[dayOfWeek]+'曜日は平均'+avgDayKcal+'kcalと摂取量が少ない傾向。意識的に食事量を増やしましょう',type:'info',pri:4});
+    }
+  }
+
+  // 優先度順にソートして最大5件
+  tips.sort(function(a,b){return (b.pri||0)-(a.pri||0);});
+  return tips.slice(0, 5);
 }
+
 
 // 11. 学習進捗のゲーミフィケーション
 function getLearningAchievements() {
@@ -12381,10 +12439,14 @@ function requestCoachForm(id){
     <div class="form-group"><label class="label">依頼内容 *</label>
       <input id="ot-title" class="input" placeholder="例：3/15 練習試合の審判、GKコーチ1日依頼" maxlength="60">
     </div>
-    <div class="form-group"><label class="label">報酬額（円）*</label>
-      <input id="ot-price" class="input" type="number" placeholder="例：10000" min="1000" max="999999" value="${Math.round(price/2)}">
+    ${c.onetimeNegotiable?`<div style="padding:14px;background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.2);border-radius:12px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:700;color:var(--teal);margin-bottom:4px">💬 都度払い料金はご相談</div>
+      <div style="font-size:12px;color:var(--txt2);line-height:1.6">このコーチの都度払い料金は内容に応じて決定されます。依頼内容を記入して送信すると、チャットで金額をご相談いただけます。</div>
+      <input type="hidden" id="ot-price" value="0">
+    </div>`:`<div class="form-group"><label class="label">報酬額（円）*</label>
+      <input id="ot-price" class="input" type="number" placeholder="例：10000" min="1000" max="999999" value="${c.priceOnetime||Math.round(price/2)}">
       <div style="font-size:10px;color:var(--txt3);margin-top:3px">手数料10%を差し引いた金額がコーチに届きます</div>
-    </div>
+    </div>`}
     <div class="form-group"><label class="label">希望日</label>
       <input id="ot-date" class="input" type="date" value="${new Date(Date.now()+7*86400000).toISOString().slice(0,10)}">
     </div>
@@ -12395,11 +12457,15 @@ function requestCoachForm(id){
     </div>
   </div>
   <div id="monthly-fee-info" style="background:var(--surf2);border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
-    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px">
+    ${c.monthlyNegotiable?`<div style="display:flex;align-items:center;gap:10px">
+      <div style="font-size:24px">💬</div>
+      <div><div style="font-size:13px;font-weight:700;color:var(--org)">月額料金はご相談</div>
+      <div style="font-size:11px;color:var(--txt3);line-height:1.5">依頼を送信後、チャットで料金・内容を確認し合意後に指導を開始します。指導完了後にコーチが請求書を発行します。</div></div>
+    </div>`:`<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px">
       <span style="color:var(--txt3)">月額料金</span>
       <span style="font-weight:800;color:var(--org);font-size:16px">¥${price.toLocaleString()}<span style="font-size:11px;color:var(--txt3);font-weight:400">/月</span></span>
     </div>
-    <div style="font-size:10px;color:var(--txt3);margin-top:6px">※ 別途プラットフォーム手数料がかかります</div>
+    <div style="font-size:10px;color:var(--txt3);margin-top:6px">※ 別途プラットフォーム手数料がかかります</div>`}
   </div>
   </div>
   <div class="form-group"><label class="label">コーチへのメッセージ（任意）</label><textarea id="match-msg" class="input" placeholder="チームの状況・目標・ご要望など..."></textarea></div>
@@ -12635,21 +12701,26 @@ function openCoachDetail(id){
     </div>
 
     <!-- 料金・指導歴 3カラム -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--b1);border-radius:14px;overflow:hidden;margin:20px 0">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--b1);border-radius:14px;overflow:hidden;margin:20px 0">
       <div style="background:var(--surf);padding:16px;text-align:center">
-        <div style="font-size:20px;font-weight:800;color:var(--org)">¥${price?(price/10000).toFixed(1)+'万':'--'}</div>
-        <div style="font-size:11px;color:var(--txt3);margin-top:3px">月額料金</div>
+        <div style="font-size:${c.monthlyNegotiable?'13':'20'}px;font-weight:800;color:var(--org)">${c.monthlyNegotiable?'ご相談ください':('¥'+(price?fmtNum(price):'--'))}</div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:3px">月額契約</div>
       </div>
       <div style="background:var(--surf);padding:16px;text-align:center">
-        <div style="font-size:20px;font-weight:800">${c.exp||'--'}<span style="font-size:13px;color:var(--txt3)">年</span></div>
+        <div style="font-size:${c.onetimeNegotiable?'13':'20'}px;font-weight:800;color:var(--teal)">${c.onetimeNegotiable?'ご相談ください':('¥'+(c.priceOnetime?fmtNum(c.priceOnetime):'--'))}</div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:3px">都度払い（1回）</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--b1);border-radius:14px;overflow:hidden;margin:0 0 20px">
+      <div style="background:var(--surf);padding:14px;text-align:center">
+        <div style="font-size:18px;font-weight:800">${c.exp||'--'}<span style="font-size:12px;color:var(--txt3)">年</span></div>
         <div style="font-size:11px;color:var(--txt3);margin-top:3px">指導歴</div>
       </div>
-      <div style="background:var(--surf);padding:16px;text-align:center">
-        <div style="font-size:20px;font-weight:800;color:${c.avail?'var(--grn)':'var(--red)'}">${c.avail?'募集中':'契約中'}</div>
+      <div style="background:var(--surf);padding:14px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:${c.avail?'var(--grn)':'var(--red)'}">${c.avail?'募集中':'契約中'}</div>
         <div style="font-size:11px;color:var(--txt3);margin-top:3px">ステータス</div>
       </div>
     </div>
-
     <!-- 自己紹介 -->
     ${c.bio?`<div style="margin-bottom:20px">
       <div style="font-size:12px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📝 自己紹介</div>
@@ -12732,20 +12803,29 @@ function doMatch(tid,cid){
   if(!team||!coach) return;
   team.coach=cid;
   coach.avail=false; coach.team=tid;
-  const price=coach.price;
+  const price=coach.monthlyNegotiable?0:(coach.price||0);
+  const isNeg=coach.monthlyNegotiable;
   const teamFee=Math.round(price*.1);
   const teamTax=Math.round(teamFee*.1);
   const threadId='pt'+Date.now();
+  // chatKeyをreqから逆引き
+  const _req=DB.requests.find(r=>r.coachId===cid&&r.teamId===tid&&r.status==='matched');
+  const _ck=_req?Object.keys(DB.chats).find(k=>DB.chats[k].reqId===_req.id):'';
   DB.payThreads.push({
     id:threadId, teamId:tid, coachId:cid,
-    status:'pending_contract',
+    chatKey:_ck||'',
+    status:isNeg?'pending_negotiation':'pending_contract',
+    negotiable:isNeg,
     contractAmount:price,
     teamPays:price+teamFee+teamTax,
     coachReceives:price-Math.round(price*.1),
     month:new Date().toISOString().slice(0,7),
     createdAt:new Date().toISOString().slice(0,10),
     invoices:[],
-    messages:[{from:'system',text:'マッチングが成立しました！コーチ代の請求・支払いはこのスレッドで行います。',time:new Date().toLocaleString('ja-JP')}]
+    messages:[{from:'system',text:isNeg
+      ?'マッチングが成立しました！\n💬 月額料金は未確定です。チャットで料金・指導内容を確認してください。\n合意後、コーチが「料金確定」ボタンで金額を設定し、指導完了後に請求書を発行してください。'
+      :'マッチングが成立しました！コーチ代の請求・支払いはこのスレッドで行います。',
+      time:new Date().toLocaleString('ja-JP')}]
   });
   saveDB();
 }
@@ -12796,7 +12876,7 @@ function payThreadPage(){
   else if(role==='coach'){const me=getMyCoach();if(me)threads=DB.payThreads.filter(pt=>pt.coachId===me.id);}
   else threads=[...DB.payThreads];
   const pendingTotal=threads.reduce((s,pt)=>s+(pt.invoices||[]).filter(i=>i.status==='pending').length,0);
-  const stMap={pending_contract:{l:'📋 契約確認中',c:'var(--yel)'},active:{l:'✅ 稼働中',c:'var(--teal)'},payment_requested:{l:'💰 請求あり',c:'var(--org)'},paid:{l:'✓ 支払済',c:'var(--grn)'},completed:{l:'完了',c:'var(--txt3)'}};
+  const stMap={pending_negotiation:{l:'💬 料金相談中',c:'var(--blue)'},pending_contract:{l:'📋 契約確認中',c:'var(--yel)'},active:{l:'✅ 稼働中',c:'var(--teal)'},payment_requested:{l:'💰 請求あり',c:'var(--org)'},paid:{l:'✓ 支払済',c:'var(--grn)'},completed:{l:'完了',c:'var(--txt3)'}};
   const threadCards=threads.map(pt=>{
     const team=DB.teams.find(t=>t.id===pt.teamId);
     const coach=DB.coaches.find(c=>c.id===pt.coachId);
@@ -12915,7 +12995,7 @@ function openThreadDetail(ptId){
   const coach=DB.coaches.find(c=>c.id===pt.coachId);
   const role=DB.currentUser.role;
   const isCoach=role==='coach', isTeam=role==='team';
-  const stMap={pending_contract:{l:'📋 契約確認中',c:'var(--yel)',i:'⏳'},active:{l:'✅ 稼働中',c:'var(--teal)',i:'✅'},payment_requested:{l:'💰 請求あり（未払い）',c:'var(--org)',i:'📄'},paid:{l:'✓ 支払済',c:'var(--grn)',i:'💰'},completed:{l:'🏁 完了',c:'var(--txt3)',i:'🏁'}};
+  const stMap={pending_negotiation:{l:'💬 料金相談中',c:'var(--blue)',i:'💬'},pending_contract:{l:'📋 契約確認中',c:'var(--yel)',i:'⏳'},active:{l:'✅ 稼働中',c:'var(--teal)',i:'✅'},payment_requested:{l:'💰 請求あり（未払い）',c:'var(--org)',i:'📄'},paid:{l:'✓ 支払済',c:'var(--grn)',i:'💰'},completed:{l:'🏁 完了',c:'var(--txt3)',i:'🏁'}};
   const st=stMap[pt.status]||stMap.active;
   const feeRate=getFeeRate(pt.teamId,'coachFee');
   // 請求書リスト
@@ -12950,12 +13030,22 @@ function openThreadDetail(ptId){
   const pendingCount=(pt.invoices||[]).filter(i=>i.status==='pending').length;
   const totalPaid=(pt.invoices||[]).filter(i=>i.status==='paid').reduce((s,i)=>s+(isCoach?i.coachReceives:i.teamPays),0);
   // チャット
-  const msgsHTML=(pt.messages||[]).map(m=>{
+  // チャットルームのメッセージも統合表示
+  const _ck2=pt.chatKey||Object.keys(DB.chats).find(k=>{const c=DB.chats[k];return c.type==='match'&&c.coachId===pt.coachId&&c.teamId===pt.teamId;});
+  const chatMsgs=(_ck2&&DB.chats[_ck2])?(DB.chats[_ck2].msgs||[]).filter(m=>!m.fromThread).map(m=>({
+    from:m.from===pt.coachId?'coach':m.from===pt.teamId?'team':m.from==='system'?'system':'other',
+    text:(m.name&&m.from!=='system'?'':'')+(m.text||''),
+    time:m.time||'',
+    chatName:m.name||'',
+    isChat:true
+  })):[];
+  const allMsgs=[...(pt.messages||[]).map(m=>({...m,isChat:false})),...chatMsgs].sort((a,b)=>(a.time||'')>(b.time||'')?1:-1);
+  const msgsHTML=allMsgs.map(m=>{
     if(m.from==='system') return`<div class="tmsg-sys">🤖 ${sanitize(m.text||'',300)}</div>`;
-    const isMine=m.from===role;
-    const senderName=m.from==='coach'?'コーチ':m.from==='team'?'チーム':'事務局';
+    const isMine=m.from===role||(isCoach&&m.from==='coach')||(isTeam&&m.from==='team');
+    const senderName=m.chatName||(m.from==='coach'?'コーチ':m.from==='team'?'チーム':'');
     return`<div class="tmsg-wrap ${isMine?'tmsg-mine':'tmsg-theirs'}">
-      ${!isMine?`<div style="font-size:10px;color:var(--txt3);margin-bottom:2px">${senderName}</div>`:''}
+      ${!isMine?`<div style="font-size:10px;color:var(--txt3);margin-bottom:2px">${senderName}${m.isChat?' <span style="opacity:.5">💬チャット</span>':''}</div>`:''}
       <div class="tmsg-bubble">${sanitize(m.text||'',300).replace(/\\n/g,'<br>')}</div>
       <div class="tmsg-time">${(m.time||'').slice(0,16)}</div>
     </div>`;
@@ -12970,7 +13060,9 @@ function openThreadDetail(ptId){
           <span style="font-size:11px;color:var(--txt3)">${pt.month}〜</span>
         </div>
       </div>
-      ${isCoach?`<button class="btn btn-primary btn-sm" onclick="openNewInvoiceModal('${ptId}',event)">📄 請求書を発行</button>`:''}
+      ${isCoach&&pt.negotiable&&pt.status==='pending_negotiation'?`<button class="btn btn-primary btn-sm" onclick="openSetPriceModal('${ptId}')">💰 料金を確定する</button>`:''}
+      ${isCoach&&pt.status!=='pending_negotiation'?`<button class="btn btn-primary btn-sm" onclick="openNewInvoiceModal('${ptId}',event)">📄 請求書を発行</button>`:''}
+      ${_ck2?`<button class="btn btn-ghost btn-sm" onclick="activeRoom='${_ck2}';goTo('chat')">💬 チャットを開く</button>`:''}
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
       <div style="background:var(--surf);border:1px solid var(--b1);border-radius:12px;padding:14px;text-align:center">
@@ -12986,6 +13078,16 @@ function openThreadDetail(ptId){
         <div style="font-size:20px;font-weight:800;color:${pendingCount>0?'var(--red)':'var(--teal)'};font-family:Montserrat,sans-serif">${pendingCount>0?pendingCount+'件':'¥'+fmtNum(totalPaid)}</div>
       </div>
     </div>
+    ${pt.status==='pending_negotiation'?`<div style="background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.25);border-radius:12px;padding:16px 18px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="font-size:28px">💬</div>
+        <div style="flex:1;min-width:180px">
+          <div style="font-weight:700;font-size:14px;color:var(--txt1)">料金は未確定 — チャットで相談中</div>
+          <div style="font-size:12px;color:var(--txt3);margin-top:2px;line-height:1.6">${isCoach?'チームとチャットで料金・指導内容を確認してください。合意後「💰 料金を確定する」ボタンから金額を設定し、指導完了後に請求書を発行してください。':'コーチとチャットで料金・指導内容を相談中です。コーチが金額を確定すると請求書が届きます。'}</div>
+        </div>
+      </div>
+      ${isCoach?`<button class="btn btn-primary w-full" style="margin-top:12px" onclick="openSetPriceModal('${ptId}')">💰 料金を確定する</button>`:``}
+    </div>`:``}
     ${isTeam&&pendingCount>0?`<div style="background:rgba(255,107,43,.08);border:1px solid rgba(255,107,43,.25);border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <div style="font-size:28px">💳</div>
       <div style="flex:1;min-width:180px">
@@ -12993,7 +13095,7 @@ function openThreadDetail(ptId){
         <div style="font-size:12px;color:var(--txt3);margin-top:2px">下の請求書一覧から「支払う」ボタンで決済してください</div>
       </div>
     </div>`:''}
-    ${isCoach&&(pt.invoices||[]).length===0?`<div style="background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.25);border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    ${isCoach&&(pt.invoices||[]).length===0&&pt.status!=='pending_negotiation'?`<div style="background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.25);border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <div style="font-size:28px">📄</div>
       <div style="flex:1;min-width:180px">
         <div style="font-weight:700;font-size:14px;color:var(--txt1)">まだ請求書がありません</div>
@@ -13047,6 +13149,17 @@ function sendThreadMsg(ptId){
   const time=new Date().toLocaleString('ja-JP');
   if(!pt.messages)pt.messages=[];
   pt.messages.push({from:role,text,time});
+  // チャットルームにも同期
+  const ck=pt.chatKey||Object.keys(DB.chats).find(k=>{
+    const c=DB.chats[k];
+    return c.type==='match'&&c.coachId===pt.coachId&&c.teamId===pt.teamId;
+  });
+  if(ck&&DB.chats[ck]){
+    const senderName=role==='coach'?(DB.coaches.find(c=>c.id===pt.coachId)?.name||'コーチ'):(DB.teams.find(t=>t.id===pt.teamId)?.name||'チーム');
+    DB.chats[ck].msgs.push({from:DB.currentUser.id,name:senderName,text:'💬 '+text,time:now_time(),read:false,fromThread:true});
+    DB.chats[ck].unread=(DB.chats[ck].unread||0)+1;
+    if(!pt.chatKey)pt.chatKey=ck;
+  }
   inp.value='';
   saveDB();
   const area=document.getElementById('tmsgs-'+ptId);
@@ -13057,6 +13170,62 @@ function sendThreadMsg(ptId){
     area.appendChild(div);
     area.scrollTop=area.scrollHeight;
   }
+}
+
+// 料金確定モーダル（ご相談後にコーチが金額を設定）
+function openSetPriceModal(ptId){
+  const pt=DB.payThreads.find(p=>p.id===ptId);
+  if(!pt){toast('スレッドが見つかりません','e');return;}
+  const team=DB.teams.find(t=>t.id===pt.teamId);
+  const isOnetime=pt.contractType==='onetime';
+  openM('💰 料金を確定する',`<div>
+    <div style="font-size:13px;color:var(--txt2);line-height:1.7;margin-bottom:16px">
+      ${team?team.name:'チーム'}との${isOnetime?'都度':'月額'}料金を確定します。<br>
+      チャットで合意した金額を入力してください。
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label class="label">${isOnetime?'都度払い報酬額（円）':'月額料金（円）'}</label>
+      <input id="sp-amount" class="input" type="number" min="1000" max="9999999" placeholder="例: ${isOnetime?'15000':'50000'}" style="font-size:16px;font-weight:700">
+    </div>
+    <div style="background:var(--surf2);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-size:11px;color:var(--txt3)">手数料10%を差し引いた金額があなたの受取額になります</div>
+      <div style="font-size:11px;color:var(--txt3);margin-top:4px">例: ¥50,000 → 受取: ¥45,000</div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="label">備考（任意）</label>
+      <input id="sp-note" class="input" placeholder="例: 週2回のGK指導" maxlength="100">
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="confirmSetPrice('${ptId}')">✓ 料金を確定する</button>
+      <button class="btn btn-ghost" onclick="closeM()">キャンセル</button>
+    </div>
+  </div>`);
+}
+function confirmSetPrice(ptId){
+  const pt=DB.payThreads.find(p=>p.id===ptId);
+  if(!pt){toast('スレッドが見つかりません','e');return;}
+  const amount=parseInt(document.getElementById('sp-amount')?.value)||0;
+  if(amount<1000){toast('1,000円以上で入力してください','e');return;}
+  const note=(document.getElementById('sp-note')?.value||'').trim();
+  const feeRate=getFeeRate(pt.teamId,'coachFee');
+  const fee=getFeeAmount(amount,pt.teamId,'coachFee');
+  pt.contractAmount=amount;
+  pt.teamPays=amount+Math.round(amount*feeRate/100)+Math.round(amount*feeRate/100*0.1);
+  pt.coachReceives=amount-fee;
+  pt.status='active';
+  pt.negotiable=false;
+  if(!pt.messages)pt.messages=[];
+  pt.messages.push({from:'system',text:`💰 料金が確定されました！\n${pt.contractType==='onetime'?'都度払い':'月額'}料金: ¥${amount.toLocaleString()}\nコーチ受取: ¥${(amount-fee).toLocaleString()}${note?'\n📝 '+note:''}\n\n指導完了後、「📄 請求書を発行」ボタンから請求してください。`,time:new Date().toLocaleString('ja-JP')});
+  // チャットにも通知
+  const ck=pt.chatKey||Object.keys(DB.chats).find(k=>{const c=DB.chats[k];return c.type==='match'&&c.coachId===pt.coachId&&c.teamId===pt.teamId;});
+  if(ck&&DB.chats[ck]){
+    const coach=DB.coaches.find(c=>c.id===pt.coachId);
+    DB.chats[ck].msgs.push({from:'system',name:'システム',text:`💰 ${coach?.name||'コーチ'}が料金を確定しました。\n${pt.contractType==='onetime'?'都度払い':'月額'}料金: ¥${amount.toLocaleString()}${note?' ('+note+')':''}`,time:now_time(),read:false});
+  }
+  saveDB();
+  closeM();
+  toast('料金を確定しました！','s');
+  openThreadDetail(ptId);
 }
 
 function payInvoice(ptId,invId,e){
@@ -13235,7 +13404,25 @@ function profileSettingsPage(){
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
             <div class="form-group"><label class="label">指導歴（年）</label><input class="input" type="number" min="0" max="60" value="${coach.exp||0}" id="cp-exp"></div>
-            <div class="form-group"><label class="label">月額料金（円）</label><input class="input" type="number" min="0" max="9999999" value="${coach.price||0}" id="cp-price" oninput="updateFeePreview(this.value)"></div>
+          </div>
+          <!-- 料金設定カード -->
+          <div style="background:var(--surf2);border:1px solid var(--b1);border-radius:12px;padding:16px;margin-bottom:16px">
+            <div class="fw7 mb-12" style="font-size:14px">💰 料金設定</div>
+            <div style="font-size:12px;color:var(--txt3);margin-bottom:14px;line-height:1.6">チームに表示される料金を設定します。「ご相談ください」をONにすると金額の代わりに相談ボタンが表示され、チャットで事前にすり合わせた後、指導完了後に請求書を発行できます。</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <!-- 月額契約 -->
+              <div style="background:var(--surf);border:1px solid var(--b1);border-radius:10px;padding:14px">
+                <div style="font-size:12px;font-weight:700;color:var(--org);margin-bottom:10px">📅 月額契約</div>
+                <div class="form-group" style="margin-bottom:10px"><label class="label" style="font-size:11px">料金（円）</label><input class="input" type="number" min="0" max="9999999" value="${coach.price||0}" id="cp-price" oninput="updateFeePreview(this.value)" ${coach.monthlyNegotiable?'disabled style="opacity:.5"':''}></div>
+                <div style="display:flex;align-items:center;gap:6px"><label class="toggle-switch"><input type="checkbox" id="cp-monthlyNeg" ${coach.monthlyNegotiable?'checked':''} onchange="const el=document.getElementById('cp-price');el.disabled=this.checked;el.style.opacity=this.checked?'.5':'1'"><span class="toggle-slider"></span></label><span style="font-size:11px;color:var(--txt3)">ご相談ください</span></div>
+              </div>
+              <!-- 都度払い -->
+              <div style="background:var(--surf);border:1px solid var(--b1);border-radius:10px;padding:14px">
+                <div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px">⚡ 都度払い</div>
+                <div class="form-group" style="margin-bottom:10px"><label class="label" style="font-size:11px">料金（1回・円）</label><input class="input" type="number" min="0" max="9999999" value="${coach.priceOnetime||0}" id="cp-priceOnetime" placeholder="例: 15000" ${coach.onetimeNegotiable?'disabled style="opacity:.5"':''}></div>
+                <div style="display:flex;align-items:center;gap:6px"><label class="toggle-switch"><input type="checkbox" id="cp-onetimeNeg" ${coach.onetimeNegotiable?'checked':''} onchange="const el=document.getElementById('cp-priceOnetime');el.disabled=this.checked;el.style.opacity=this.checked?'.5':'1'"><span class="toggle-slider"></span></label><span style="font-size:11px;color:var(--txt3)">ご相談ください</span></div>
+              </div>
+            </div>
           </div>
           <div class="form-group mb-12"><label class="label">自己紹介・指導方針</label><textarea class="input" rows="4" id="cp-bio">${sanitize(coach.bio||'')}</textarea></div>
           <div style="background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.2);border-radius:10px;padding:12px 14px;font-size:12px">
@@ -13346,6 +13533,9 @@ function saveCoachProfileUnified(){
   ['sport','spec','area'].forEach(k=>{const el=document.getElementById('cp-'+k);if(el)coach[k]=sanitize(el.value,50);});
   const expEl=document.getElementById('cp-exp');if(expEl)coach.exp=Math.max(0,parseInt(expEl.value)||0);
   const priceEl=document.getElementById('cp-price');if(priceEl)coach.price=Math.max(0,parseInt(priceEl.value)||0);
+  const priceOtEl=document.getElementById('cp-priceOnetime');if(priceOtEl)coach.priceOnetime=Math.max(0,parseInt(priceOtEl.value)||0);
+  const negEl=document.getElementById('cp-onetimeNeg');if(negEl)coach.onetimeNegotiable=negEl.checked;
+  const mNegEl=document.getElementById('cp-monthlyNeg');if(mNegEl)coach.monthlyNegotiable=mNegEl.checked;
   const bioEl=document.getElementById('cp-bio');if(bioEl)coach.bio=sanitize(bioEl.value,500);
   const colorEl=document.getElementById('cp-color');if(colorEl)coach.color=colorEl.value||coach.color||'#ff6b2b';
   const igEl=document.getElementById('cp-ig');if(igEl)coach.instagram=sanitize(igEl.value,50);
@@ -13357,6 +13547,9 @@ function saveCoachProfileUnified(){
     if(DB.currentUser&&DB.currentUser.id===coach.id)DB.currentUser.photo=coach.photo;
   }
   if(DB.currentUser)DB.currentUser.name=coach.name;
+  // ユーザーアカウント名も同期
+  const _usrs=_getUsers();const _mu2=_usrs.find(u=>u.id===DB.currentUser?.id);
+  if(_mu2){_mu2.name=coach.name;_saveUsers(_usrs);}
   saveDB();_updateAvi();toast('プロフィールを保存しました！','s');goTo('profile-settings');
 }
 
@@ -13370,8 +13563,11 @@ function saveCoachProfile(){
   const expEl=document.getElementById('cp-exp');if(expEl)coach.exp=Math.max(0,parseInt(expEl.value)||0);
   const priceEl=document.getElementById('cp-price');if(priceEl)coach.price=Math.max(0,parseInt(priceEl.value)||0);
   const bioEl=document.getElementById('cp-bio');if(bioEl)coach.bio=sanitize(bioEl.value,500);
+  const priceOtEl2=document.getElementById('cp-priceOnetime');if(priceOtEl2)coach.priceOnetime=Math.max(0,parseInt(priceOtEl2.value)||0);
   // DB.currentUserの名前も同期
+  const negEl2=document.getElementById('cp-onetimeNeg');if(negEl2)coach.onetimeNegotiable=negEl2.checked;
   if(DB.currentUser)DB.currentUser.name=coach.name;
+  const mNegEl2=document.getElementById('cp-monthlyNeg');if(mNegEl2)coach.monthlyNegotiable=mNegEl2.checked;
   // 写真保存
   if(window._profilePhotos?.cp){
     coach.photo=window._profilePhotos.cp;
@@ -13413,6 +13609,9 @@ function saveTeamProfile(){
     if(DB.currentUser&&DB.currentUser.id===team.id)DB.currentUser.photo=team.photo;
   }
   if(DB.currentUser)DB.currentUser.name=team.name;
+  // ユーザーアカウント名も同期
+  const _users=_getUsers();const _mu=_users.find(u=>u.id===DB.currentUser?.id);
+  if(_mu){_mu.name=team.name;_saveUsers(_users);}
   saveDB();
   _updateAvi();
   toast('チームプロフィールを保存しました！','s');
@@ -13990,7 +14189,8 @@ function sendMatchRequest(coachId){
     otDate=document.getElementById('ot-date')?.value||'';
     otOnline=document.getElementById('ot-online')?.checked||false;
     if(!otTitle){toast('依頼内容を入力してください','e');return;}
-    if(otPrice<1000){toast('報酬額は1000円以上で入力してください','e');return;}
+    const _isNeg=coach.onetimeNegotiable;
+    if(!_isNeg&&otPrice<1000){toast('報酬額は1000円以上で入力してください','e');return;}
   }
   
   const dup=DB.requests.find(r=>r.coachId===coachId&&r.teamId===team.id&&r.status==='pending');
@@ -14014,8 +14214,8 @@ function sendMatchRequest(coachId){
   DB.requests.push(reqObj);
   
   const sysMsg=contractType==='onetime'
-    ?`${team.name}から臨時コーチ依頼が届きました。\n📋 ${otTitle}\n💰 報酬: ¥${otPrice.toLocaleString()}\n📅 ${otDate||'日程調整中'}${otOnline?'\n💻 オンライン（Google Meet）':''}`
-    :`${team.name}からコーチ依頼が届きました。`;
+    ?`${team.name}から臨時コーチ依頼が届きました。\n📋 ${otTitle}${otPrice>0?'\n💰 報酬: ¥'+otPrice.toLocaleString():'\n💬 報酬: 要相談'}\n📅 ${otDate||'日程調整中'}${otOnline?'\n💻 オンライン（Google Meet）':''}`
+    :`${team.name}からコーチ依頼が届きました。${coach.monthlyNegotiable?'\n💬 月額料金は要相談。チャットで条件を確認してください。':'\n💰 月額: ¥'+price.toLocaleString()}`;
   
   // 同じコーチ×チームの既存チャットを探す（統合表示）
   let chatKey=Object.keys(DB.chats).find(k=>{
@@ -14157,12 +14357,304 @@ function _tmOther(m){const my=getMyTeam();return m.teamAId===my?.id?m.teamBId:m.
 function _tmOtherT(m){return DB.teams.find(t=>t.id===_tmOther(m));}
 function _tmCnt(tid){return(DB.teamMatches||[]).filter(m=>(m.teamAId===tid||m.teamBId===tid)&&m.status==='matched').length;}
 
+// ==================== 📦 物品管理 ====================
+function inventoryPage(){
+  const team=getMyTeam();
+  if(!team) return `<div class="pg-head"><div class="pg-title">物品管理</div></div><div class="card text-center" style="padding:48px"><div style="font-size:48px">📦</div><div class="fw7 mt-16">チーム情報が未設定です</div></div>`;
+  if(!DB.inventory)DB.inventory=[];
+  const items=DB.inventory.filter(x=>x.teamId===team.id&&!x.deleted);
+
+  // カテゴリ集計
+  const catF=window._invCat||'all';
+  const q=(window._invQ||'').toLowerCase().trim();
+  const catMap={};
+  items.forEach(x=>{const c=x.category||'未分類';if(!catMap[c])catMap[c]={count:0,qty:0,val:0};catMap[c].count++;catMap[c].qty+=(x.qty||0);catMap[c].val+=(x.qty||0)*(x.price||0);});
+  const catEntries=Object.entries(catMap);
+
+  // フィルタ
+  let filtered=[...items];
+  if(catF!=='all') filtered=filtered.filter(x=>(x.category||'未分類')===catF);
+  if(q) filtered=filtered.filter(x=>(x.name||'').toLowerCase().includes(q)||(x.note||'').toLowerCase().includes(q));
+  filtered.sort((a,b)=>(a.category||'').localeCompare(b.category||'')||(a.name||'').localeCompare(b.name||''));
+
+  // 集計
+  const totalItems=items.length;
+  const totalValue=items.reduce((s,x)=>s+(x.qty||0)*(x.price||0),0);
+  const lowStock=items.filter(x=>x.minQty&&x.qty<=x.minQty);
+
+  // カテゴリチップカラー
+  const catColors={'ボール':'#3b82f6','ウェア':'#a855f7','シューズ':'#f59e0b','用具':'#10b981','設備':'#6366f1','医療品':'#ef4444','飲食':'#0891b2','その他':'var(--txt3)','未分類':'var(--txt3)'};
+  const getCatCol=(c)=>catColors[c]||'var(--org)';
+
+  // サマリー（3カラム・コンパクト）
+  const summaryHTML=`<div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:90px;background:var(--surf);border:1px solid var(--b1);border-radius:12px;padding:12px 14px;text-align:center">
+      <div style="font-size:20px;font-weight:800;font-family:Montserrat,sans-serif;color:var(--org)">${totalItems}</div>
+      <div style="font-size:10px;color:var(--txt3)">品目</div>
+    </div>
+    <div style="flex:1;min-width:90px;background:var(--surf);border:1px solid var(--b1);border-radius:12px;padding:12px 14px;text-align:center">
+      <div style="font-size:20px;font-weight:800;font-family:Montserrat,sans-serif;color:var(--teal)">¥${fmtNum(totalValue)}</div>
+      <div style="font-size:10px;color:var(--txt3)">総額</div>
+    </div>
+    <div style="flex:1;min-width:90px;background:${lowStock.length?'rgba(239,68,68,.05)':'var(--surf)'};border:1px solid ${lowStock.length?'rgba(239,68,68,.2)':'var(--b1)'};border-radius:12px;padding:12px 14px;text-align:center">
+      <div style="font-size:20px;font-weight:800;font-family:Montserrat,sans-serif;color:${lowStock.length?'#ef4444':'var(--grn)'}">${lowStock.length||'✓'}</div>
+      <div style="font-size:10px;color:var(--txt3)">${lowStock.length?'在庫少':'在庫OK'}</div>
+    </div>
+  </div>`;
+
+  // 在庫少アラート
+  const alertHTML=lowStock.length?`<div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:12px;font-weight:700;color:#ef4444">⚠️ 在庫少:</span>
+    ${lowStock.map(x=>`<span style="font-size:11px;padding:2px 8px;border-radius:6px;background:rgba(239,68,68,.08);color:#ef4444;cursor:pointer" onclick="openInvDetail('${x.id}')">${x.name}(残${x.qty})</span>`).join('')}
+  </div>`:'';
+
+  // カテゴリフィルタチップ
+  const catChipsHTML=catEntries.length?`<div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px">
+    <button onclick="window._invCat='all';refreshPage()" style="padding:5px 14px;border-radius:20px;border:1.5px solid ${catF==='all'?'var(--org)':'var(--bdr)'};background:${catF==='all'?'var(--org)':'var(--surf2)'};color:${catF==='all'?'#fff':'var(--txt2)'};font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">すべて <span style="opacity:.7">${totalItems}</span></button>
+    ${catEntries.map(([c,st])=>{
+      const col=getCatCol(c);
+      const active=catF===c;
+      return `<button onclick="window._invCat='${c}';refreshPage()" style="padding:5px 14px;border-radius:20px;border:1.5px solid ${active?col:'var(--bdr)'};background:${active?col:'var(--surf2)'};color:${active?'#fff':'var(--txt2)'};font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">${c} <span style="opacity:.7">${st.count}</span></button>`;
+    }).join('')}
+  </div>`:'';
+
+  // 検索＋追加ボタン（1行）
+  const searchHTML=`<div style="display:flex;gap:8px;margin-bottom:14px">
+    <div style="flex:1;position:relative">
+      <i class="fa fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt3);font-size:11px"></i>
+      <input class="input" placeholder="検索…" value="${(window._invQ||'').replace(/"/g,'&quot;')}" oninput="window._invQ=this.value;refreshPage()" style="padding-left:32px;height:36px;font-size:12px">
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openInvAdd()" style="height:36px;white-space:nowrap;padding:0 16px">＋ 追加</button>
+  </div>`;
+
+  // アイテムリスト（カテゴリ見出し付き）
+  function listView(){
+    if(!filtered.length) return `<div style="text-align:center;padding:40px">
+      <div style="font-size:44px;margin-bottom:10px;opacity:.5">📦</div>
+      <div class="fw7 mb-8" style="font-size:14px">${q||catF!=='all'?'該当する物品がありません':'物品をまだ登録していません'}</div>
+      <div class="text-sm text-muted mb-16">「＋ 追加」ボタンから登録しましょう</div>
+      ${!items.length?`<button class="btn btn-primary" onclick="invLoadDemo()">📦 サンプルを追加</button>`:''}
+    </div>`;
+
+    // カテゴリ別グループ化
+    const groups={};
+    filtered.forEach(x=>{const c=x.category||'未分類';if(!groups[c])groups[c]=[];groups[c].push(x);});
+
+    return Object.entries(groups).map(([cat,list])=>{
+      const col=getCatCol(cat);
+      return `<div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 2px">
+          <div style="width:6px;height:6px;border-radius:50%;background:${col}"></div>
+          <span style="font-size:12px;font-weight:700;color:var(--txt3)">${cat}</span>
+          <span style="font-size:11px;color:var(--txt3);opacity:.6">${list.length}件</span>
+          <div style="flex:1;border-bottom:1px solid var(--b1)"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">${list.map(x=>{
+          const val=(x.qty||0)*(x.price||0);
+          const isLow=x.minQty&&x.qty<=x.minQty;
+          return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surf);border:1px solid ${isLow?'rgba(239,68,68,.2)':'var(--b1)'};border-radius:10px;cursor:pointer" onclick="openInvDetail('${x.id}')">
+            <div style="font-size:20px;flex-shrink:0">${x.icon||'📦'}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sanitize(x.name,30)}${isLow?' <span style="color:#ef4444;font-size:10px">⚠</span>':''}</div>
+              ${x.note?`<div style="font-size:11px;color:var(--txt3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sanitize(x.note,35)}</div>`:''}
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:15px;font-weight:800;font-family:Montserrat,sans-serif;color:${isLow?'#ef4444':'var(--txt1)'}">${x.qty||0}<span style="font-size:10px;color:var(--txt3);font-weight:400">${x.unit||'個'}</span></div>
+              ${x.price?`<div style="font-size:10px;color:var(--org)">¥${fmtNum(val)}</div>`:''}
+            </div>
+          </div>`;
+        }).join('')}</div>
+      </div>`;
+    }).join('');
+  }
+
+  return `<div class="pg-head"><div class="pg-title">📦 物品管理</div><div class="pg-sub">${team.name}の備品・グッズ</div></div>
+  ${summaryHTML}${alertHTML}${catChipsHTML}${searchHTML}${listView()}`;
+}
+// 物品追加モーダル
+function openInvAdd(editId){
+  const team=getMyTeam();if(!team)return;
+  const existing=editId?DB.inventory.find(x=>x.id===editId):null;
+  const title=existing?'物品を編集':'新規物品登録';
+  // プリセットカテゴリ（アイコン自動割当）
+  const presetCats=[
+    {l:'ボール',ic:'⚽'},{l:'ウェア',ic:'🎽'},{l:'シューズ',ic:'👟'},{l:'用具',ic:'🔧'},
+    {l:'設備',ic:'🥅'},{l:'医療品',ic:'🩹'},{l:'飲食',ic:'🧊'},{l:'その他',ic:'📦'}
+  ];
+  const curCat=existing?.category||'';
+  openM(title,`<div>
+    <div class="form-group"><label class="label">品名 *</label><input id="inv-name" class="input" value="${sanitize(existing?.name||'')}" placeholder="例: 練習用ボール" maxlength="50"></div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--txt3);margin-bottom:8px">カテゴリ</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px" id="inv-cat-chips">
+        ${presetCats.map(c=>`<button type="button" onclick="document.querySelectorAll('#inv-cat-chips>button').forEach(b=>{b.style.background='var(--surf2)';b.style.color='var(--txt2)';b.style.borderColor='var(--bdr)'});this.style.background='var(--org)';this.style.color='#fff';this.style.borderColor='var(--org)';document.getElementById('inv-cat').value='${c.l}';document.getElementById('inv-icon').value='${c.ic}'" style="padding:6px 14px;border-radius:20px;border:1.5px solid ${curCat===c.l?'var(--org)':'var(--bdr)'};background:${curCat===c.l?'var(--org)':'var(--surf2)'};color:${curCat===c.l?'#fff':'var(--txt2)'};font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s">${c.ic} ${c.l}</button>`).join('')}
+      </div>
+      <input type="hidden" id="inv-cat" value="${sanitize(curCat)}">
+      <input type="hidden" id="inv-icon" value="${existing?.icon||'📦'}">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label class="label">数量 *</label><input id="inv-qty" class="input" type="number" min="0" max="99999" value="${existing?.qty||0}"></div>
+      <div class="form-group"><label class="label">単位</label><input id="inv-unit" class="input" value="${sanitize(existing?.unit||'個')}" placeholder="個/本/セット" maxlength="6"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label class="label">単価（円）</label><input id="inv-price" class="input" type="number" min="0" max="9999999" value="${existing?.price||0}" placeholder="0"></div>
+      <div class="form-group"><label class="label">最小在庫アラート</label><input id="inv-min" class="input" type="number" min="0" max="99999" value="${existing?.minQty||0}" placeholder="0=なし"></div>
+    </div>
+    <div class="form-group"><label class="label">メモ</label><input id="inv-note" class="input" value="${sanitize(existing?.note||'')}" placeholder="保管場所・購入先など" maxlength="200"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveInvItem('${editId||''}')">${existing?'✓ 更新':'＋ 登録'}</button>
+      <button class="btn btn-ghost" onclick="closeM()">キャンセル</button>
+    </div>
+  </div>`);
+}
+
+function saveInvItem(editId){
+  const team=getMyTeam();if(!team)return;
+  const name=(document.getElementById('inv-name')?.value||'').trim();
+  if(!name){toast('品名を入力してください','e');return;}
+  const icon=document.getElementById('inv-icon')?.value||'📦';
+  const cat=(document.getElementById('inv-cat')?.value||'').trim();
+  const unit=(document.getElementById('inv-unit')?.value||'個').trim();
+  const qty=Math.max(0,parseInt(document.getElementById('inv-qty')?.value)||0);
+  const price=Math.max(0,parseInt(document.getElementById('inv-price')?.value)||0);
+  const minQty=Math.max(0,parseInt(document.getElementById('inv-min')?.value)||0);
+  const note=(document.getElementById('inv-note')?.value||'').trim();
+  const now=new Date().toISOString();
+
+  if(editId){
+    const item=DB.inventory.find(x=>x.id===editId);
+    if(!item){toast('物品が見つかりません','e');return;}
+    const oldQty=item.qty;
+    Object.assign(item,{name:sanitize(name,50),icon,category:sanitize(cat,20),unit:sanitize(unit,6),qty,price,minQty,note:sanitize(note,200),updatedAt:now});
+    if(oldQty!==qty){
+      if(!item.history)item.history=[];
+      item.history.push({date:now.slice(0,10),from:oldQty,to:qty,by:DB.currentUser?.name||'管理者'});
+    }
+    toast(name+'を更新しました','s');
+  } else {
+    DB.inventory.push({
+      id:'inv'+Date.now(),teamId:team.id,name:sanitize(name,50),icon,category:sanitize(cat,20),unit:sanitize(unit,6),qty,price,minQty,note:sanitize(note,200),
+      createdAt:now,updatedAt:now,deleted:false,history:[{date:now.slice(0,10),from:0,to:qty,by:DB.currentUser?.name||'管理者'}]
+    });
+    toast(name+'を登録しました','s');
+  }
+  saveDB();closeM();refreshPage();
+}
+
+// 物品詳細モーダル
+function openInvDetail(id){
+  const x=DB.inventory.find(i=>i.id===id);
+  if(!x){toast('物品が見つかりません','e');return;}
+  const val=(x.qty||0)*(x.price||0);
+  const isLow=x.minQty&&x.qty<=x.minQty;
+  const hist=(x.history||[]).slice(-8).reverse();
+  openM(x.icon+' '+x.name,`<div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--b1);border-radius:12px;overflow:hidden;margin-bottom:16px">
+      <div style="background:var(--surf);padding:14px;text-align:center">
+        <div style="font-size:24px;font-weight:800;color:${isLow?'#ef4444':'var(--txt1)'};font-family:Montserrat,sans-serif">${x.qty||0}<span style="font-size:12px;color:var(--txt3);font-weight:400">${x.unit||'個'}</span></div>
+        <div style="font-size:10px;color:var(--txt3);margin-top:2px">${isLow?'⚠️ 在庫少':'在庫数'}</div>
+      </div>
+      <div style="background:var(--surf);padding:14px;text-align:center">
+        <div style="font-size:24px;font-weight:800;color:var(--org);font-family:Montserrat,sans-serif">${x.price?'¥'+fmtNum(x.price):'--'}</div>
+        <div style="font-size:10px;color:var(--txt3);margin-top:2px">単価</div>
+      </div>
+      <div style="background:var(--surf);padding:14px;text-align:center">
+        <div style="font-size:24px;font-weight:800;color:var(--teal);font-family:Montserrat,sans-serif">${val?'¥'+fmtNum(val):'--'}</div>
+        <div style="font-size:10px;color:var(--txt3);margin-top:2px">資産額</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+      ${x.category?`<span style="font-size:11px;padding:3px 10px;border-radius:8px;background:var(--org)10;color:var(--org)">📂 ${x.category}</span>`:''}
+      ${x.minQty?`<span style="font-size:11px;padding:3px 10px;border-radius:8px;background:var(--surf2);color:var(--txt3)">最小在庫: ${x.minQty}${x.unit||'個'}</span>`:''}
+    </div>
+    ${x.note?`<div style="font-size:13px;color:var(--txt2);line-height:1.7;padding:12px 14px;background:var(--surf2);border-radius:10px;margin-bottom:14px">${sanitize(x.note,200)}</div>`:''}
+
+    <!-- 数量クイック変更 -->
+    <div style="background:var(--surf2);border-radius:12px;padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--txt3);margin-bottom:10px">📊 数量を変更</div>
+      <div style="display:flex;align-items:center;gap:8px;justify-content:center">
+        <button class="btn btn-ghost btn-sm" onclick="invAdjustQty('${x.id}',-10)" style="min-width:40px">-10</button>
+        <button class="btn btn-ghost btn-sm" onclick="invAdjustQty('${x.id}',-1)" style="min-width:40px;font-size:18px">−</button>
+        <div style="font-size:28px;font-weight:900;min-width:60px;text-align:center;font-family:Montserrat,sans-serif" id="inv-qty-display-${x.id}">${x.qty||0}</div>
+        <button class="btn btn-ghost btn-sm" onclick="invAdjustQty('${x.id}',1)" style="min-width:40px;font-size:18px">＋</button>
+        <button class="btn btn-ghost btn-sm" onclick="invAdjustQty('${x.id}',10)" style="min-width:40px">+10</button>
+      </div>
+    </div>
+
+    <!-- 変更履歴 -->
+    ${hist.length?`<div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--txt3);margin-bottom:8px">📋 変更履歴</div>
+      <div style="max-height:140px;overflow-y:auto">${hist.map(h=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--b1);font-size:12px">
+        <span style="color:var(--txt3);min-width:70px">${h.date?.slice(5)||''}</span>
+        <span style="color:var(--txt3)">${h.from}</span>
+        <span style="color:var(--org)">→</span>
+        <span class="fw7">${h.to}</span>
+        <span style="color:var(--txt3);margin-left:auto;font-size:11px">${h.by||''}</span>
+      </div>`).join('')}</div>
+    </div>`:''}
+
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeM();openInvAdd('${x.id}')"><i class="fa fa-edit"></i> 編集</button>
+      <button class="btn btn-ghost" style="color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="invDelete('${x.id}')"><i class="fa fa-trash"></i> 削除</button>
+      <button class="btn btn-ghost" onclick="closeM()">閉じる</button>
+    </div>
+  </div>`);
+}
+
+function invAdjustQty(id,delta){
+  const item=DB.inventory.find(x=>x.id===id);
+  if(!item)return;
+  const oldQty=item.qty||0;
+  item.qty=Math.max(0,oldQty+delta);
+  item.updatedAt=new Date().toISOString();
+  if(!item.history)item.history=[];
+  item.history.push({date:new Date().toISOString().slice(0,10),from:oldQty,to:item.qty,by:DB.currentUser?.name||'管理者'});
+  saveDB();
+  const el=document.getElementById('inv-qty-display-'+id);
+  if(el){
+    el.textContent=item.qty;
+    el.style.color=item.minQty&&item.qty<=item.minQty?'#ef4444':'var(--txt1)';
+    el.style.transition='transform .15s';el.style.transform='scale(1.2)';
+    setTimeout(()=>{el.style.transform='scale(1)';},150);
+  }
+}
+
+function invDelete(id){
+  const item=DB.inventory.find(x=>x.id===id);
+  if(!item)return;
+  item.deleted=true;item.updatedAt=new Date().toISOString();
+  saveDB();closeM();toast(item.name+'を削除しました','s');refreshPage();
+}
+
+// デモデータ
+function invLoadDemo(){
+  const team=getMyTeam();if(!team)return;
+  const now=new Date().toISOString();
+  const demos=[
+    {name:'練習用サッカーボール',icon:'⚽',category:'ボール',unit:'個',qty:15,price:4500,minQty:5,note:'モルテン 4号球・グラウンド用'},
+    {name:'試合用サッカーボール',icon:'⚽',category:'ボール',unit:'個',qty:5,price:12000,minQty:3,note:'アディダス公式試合球'},
+    {name:'ビブス（赤）',icon:'🎽',category:'ウェア',unit:'枚',qty:20,price:800,minQty:10,note:'フリーサイズ・洗濯替え用'},
+    {name:'ビブス（青）',icon:'🎽',category:'ウェア',unit:'枚',qty:18,price:800,minQty:10,note:'フリーサイズ'},
+    {name:'マーカーコーン',icon:'🔧',category:'トレーニング用具',unit:'個',qty:40,price:200,minQty:20,note:'蛍光イエロー'},
+    {name:'ミニゴール',icon:'🥅',category:'設備',unit:'台',qty:2,price:25000,minQty:0,note:'折りたたみ式・倉庫保管'},
+    {name:'救急セット',icon:'🩹',category:'医療品',unit:'セット',qty:3,price:3500,minQty:2,note:'応急処置用・試合帯同用含む'},
+    {name:'アイスバッグ',icon:'🧊',category:'医療品',unit:'個',qty:8,price:500,minQty:4,note:'アイシング用'},
+    {name:'ドリンクタンク（20L）',icon:'🪣',category:'設備',unit:'台',qty:2,price:8000,minQty:1,note:'夏場練習用'},
+    {name:'チームフラッグ',icon:'🏴',category:'その他',unit:'枚',qty:1,price:15000,minQty:0,note:'大会用・チーム名入り'},
+  ];
+  demos.forEach(d=>{
+    DB.inventory.push({id:'inv'+Date.now()+Math.random().toString(36).slice(2,6),teamId:team.id,...d,createdAt:now,updatedAt:now,deleted:false,
+      history:[{date:now.slice(0,10),from:0,to:d.qty,by:'初期登録'}]});
+  });
+  saveDB();toast('サンプルデータを追加しました','s');refreshPage();
+}
+
 function teamMatchPage(){
   const my=getMyTeam();
   if(!my) return `<div class="pg-head"><div class="pg-title">チームマッチング</div></div><div class="card text-center" style="padding:40px">チーム情報が未設定です<br><button class="btn btn-primary mt-16" onclick="goTo('profile')">設定する</button></div>`;
   if(!DB.teamMatches)DB.teamMatches=[];
   if(!DB.teamEvents)DB.teamEvents=[];
-  const others=DB.teams.filter(t=>t.id!==my.id);
+  const others=DB.teams.filter(t=>t.id!==my.id&&t.matchAvailable!==false);
   const allM=DB.teamMatches.filter(m=>m.teamAId===my.id||m.teamBId===my.id);
   const inbox=allM.filter(m=>m.status==='pending'&&m.teamBId===my.id);
   const sent=allM.filter(m=>m.status==='pending'&&m.teamAId===my.id);
@@ -14875,20 +15367,27 @@ function approveRequest(reqId){
   if(req.contractType==='onetime'){
     // 臨時コーチ: チーム・コーチの永続紐付けはしない。単発スレッドを作成
     const price=req.onetimePrice||0;
-    const coachFee=getFeeAmount(price,req.teamId||'','coachFee');
+    const isOtNeg=price===0;
+    const coachFee=isOtNeg?0:getFeeAmount(price,req.teamId||'','coachFee');
     const threadId='pt'+Date.now();
+    const _otCk=Object.keys(DB.chats).find(k=>DB.chats[k].reqId===reqId)||'';
     DB.payThreads.push({
       id:threadId, teamId:req.teamId, coachId:req.coachId,
-      status:'payment_requested',
+      chatKey:_otCk,
+      status:isOtNeg?'pending_negotiation':'payment_requested',
+      negotiable:isOtNeg,
       contractAmount:price,
       teamPays:price, coachReceives:price-coachFee,
       month:req.onetimeDate||new Date().toISOString().slice(0,7),
       contractType:'onetime', onetimeTitle:req.onetimeTitle||'臨時コーチ',
       online:req.online||false,
       createdAt:new Date().toISOString().slice(0,10),
-      invoices:[{id:'inv'+Date.now(),month:req.onetimeDate||curMonth(),status:'pending',
+      invoices:isOtNeg?[]:[{id:'inv'+Date.now(),month:req.onetimeDate||curMonth(),status:'pending',
         teamPays:price,coachReceives:price-coachFee,paidAt:null,note:req.onetimeTitle||'臨時コーチ報酬'}],
-      messages:[{from:'system',text:`臨時コーチが承認されました！\n📋 ${req.onetimeTitle||''}\n💰 報酬: ¥${price.toLocaleString()}${req.online?'\n💻 オンライン対応':''}`,time:new Date().toLocaleString('ja-JP')}]
+      messages:[{from:'system',text:isOtNeg
+        ?`臨時コーチが承認されました！\n📋 ${req.onetimeTitle||''}\n💬 報酬は要相談。チャットで金額を確認してください。${req.online?'\n💻 オンライン対応':''}`
+        :`臨時コーチが承認されました！\n📋 ${req.onetimeTitle||''}\n💰 報酬: ¥${price.toLocaleString()}${req.online?'\n💻 オンライン対応':''}`,
+        time:new Date().toLocaleString('ja-JP')}]
     });
   } else {
     // 通常月額: 従来通り
@@ -14896,6 +15395,9 @@ function approveRequest(reqId){
   }
 
   const chatKey=Object.keys(DB.chats).find(k=>DB.chats[k].reqId===reqId);
+  // payThreadにchatKeyを紐づけ
+  const _latestPt=DB.payThreads.filter(pt=>pt.teamId===req.teamId&&pt.coachId===req.coachId).slice(-1)[0];
+  if(_latestPt&&chatKey&&!_latestPt.chatKey)_latestPt.chatKey=chatKey;
   if(chatKey){
     const ch=DB.chats[chatKey];
     ch.sub=req.contractType==='onetime'?'臨時コーチ承認 ✓':'マッチング成立 ✓';
@@ -15769,8 +16271,8 @@ window.addEventListener('DOMContentLoaded', function() {
     if (!DB.bodyLog) DB.bodyLog = {};
     if (!DB.conditionLog) DB.conditionLog = {};
     archiveMealsIfNewDay();
-
-    // デモコーチがDB内にない場合は補填（既存ユーザー向けマイグレーション）
+    // アーカイブでDB変更があった場合に備えて保存
+    saveDB();
     if(restored){
       const hasDemoCoach = DEMO_COACHES.some(dc => DB.coaches.find(c => c.id === dc.id));
       if(!hasDemoCoach){
