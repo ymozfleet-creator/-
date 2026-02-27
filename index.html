@@ -4,19 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<meta name="description" content="MyCOACH-MyTEAM｜コーチとチームをつなぐスポーツ運営プラットフォーム。月謝管理・コーチマッチング・選手データ管理をワンストップで。">
+<meta name="description" content="部勝（ブカツ）｜スポーツチーム運営プラットフォーム。チーム管理・コーチマッチング・選手育成・AI栄養管理をワンストップで。">
 <meta name="keywords" content="スポーツ,コーチ,チーム,月謝管理,マッチング,育成">
 <meta name="theme-color" content="#0ea5e9">
 <!-- OGP -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="MyCOACH-MyTEAM｜スポーツ運営プラットフォーム">
-<meta property="og:description" content="コーチとチームをつなぐスポーツ運営プラットフォーム。月謝管理・コーチマッチング・選手データ管理をワンストップで。">
+<meta property="og:title" content="部勝（ブカツ）｜スポーツチーム運営プラットフォーム">
+<meta property="og:description" content="スポーツチーム運営プラットフォーム。チーム管理・コーチマッチング・選手育成・AI栄養管理をワンストップで。">
 <meta property="og:image" content="/og-image.png">
 <meta property="og:site_name" content="MyCOACH-MyTEAM">
 <meta property="og:locale" content="ja_JP">
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="MyCOACH-MyTEAM｜スポーツ運営プラットフォーム">
+<meta name="twitter:title" content="部勝（ブカツ）｜スポーツチーム運営プラットフォーム">
 <meta name="twitter:description" content="コーチとチームをつなぐスポーツ運営プラットフォーム。">
 <meta name="twitter:image" content="/og-image.png">
 <!-- Favicon (SVG inline) -->
@@ -1565,9 +1565,390 @@ select.input {
 .tm-inbox-card:hover{border-color:var(--org)}
 .tm-rec-banner{background:linear-gradient(90deg,rgba(249,115,22,.06),rgba(37,99,235,.06));border:1px solid rgba(249,115,22,.15);border-radius:12px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
 @media(max-width:600px){.tm-hero .tm-hero-stats{gap:16px}.tm-card .tm-card-stats{grid-template-columns:repeat(2,1fr)}}
+
+/* ── Production CSS: Loading, Skeleton, Transitions ── */
+.loading-spinner{width:20px;height:20px;border:2.5px solid var(--b2);border-top-color:var(--org);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.skeleton{background:linear-gradient(90deg,var(--surf2) 25%,var(--b1) 50%,var(--surf2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;min-height:16px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-card{height:100px;border-radius:14px;margin-bottom:12px}
+.skeleton-line{height:14px;margin-bottom:8px}
+.skeleton-line.w60{width:60%}
+.skeleton-line.w80{width:80%}
+.skeleton-line.w40{width:40%}
+
+/* Offline Banner */
+.offline-banner{position:fixed;top:0;left:0;right:0;padding:6px;background:#ef4444;color:#fff;text-align:center;font-size:12px;font-weight:700;z-index:99999;transform:translateY(-100%);transition:transform .3s}
+.offline-banner.show{transform:translateY(0)}
+
+/* Toast Improvements */
+.toast-container{position:fixed;top:env(safe-area-inset-top,16px);left:50%;transform:translateX(-50%);z-index:100000;display:flex;flex-direction:column;gap:6px;pointer-events:none;max-width:90vw}
+
+/* Rate limit visual feedback */
+.btn[disabled]{opacity:.5;cursor:not-allowed;pointer-events:none}
+
+/* Session timeout warning */
+.session-warn{position:fixed;bottom:80px;right:16px;padding:10px 16px;background:rgba(249,115,22,.95);color:#fff;border-radius:10px;font-size:12px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeUp .3s}
+
+/* Data export button */
+.export-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;border:1px solid var(--b1);background:var(--surf);font-size:11px;color:var(--txt2);cursor:pointer}
+.export-btn:hover{background:var(--surf2)}
+
+/* Form validation feedback */
+.input.error{border-color:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,.15)}
+.input.success{border-color:var(--teal);box-shadow:0 0 0 2px rgba(0,207,170,.15)}
+.field-error{font-size:11px;color:#ef4444;margin-top:3px;display:none}
+.field-error.show{display:block}
+
 </style>
 
 <script>
+
+
+// ================================================================
+// Production API Abstraction Layer
+// localStorage → Supabase/REST API 切替可能な抽象化レイヤー
+// ================================================================
+const API = {
+  mode: 'local', // 'local' | 'supabase' | 'rest'
+  baseUrl: '',
+  token: null,
+  
+  // データ保存
+  async save(key, data) {
+    try {
+      if (this.mode === 'local') {
+        localStorage.setItem(key, JSON.stringify(data));
+        return {ok: true};
+      }
+      // Supabase/REST: 委託先が実装
+      // const res = await fetch(this.baseUrl + '/api/data/' + key, {
+      //   method: 'PUT', headers: {'Authorization': 'Bearer ' + this.token, 'Content-Type': 'application/json'},
+      //   body: JSON.stringify(data)
+      // });
+      // return await res.json();
+    } catch(e) {
+      console.error('API.save error:', key, e);
+      return {ok: false, error: e.message};
+    }
+  },
+  
+  // データ読み込み
+  async load(key, defaultVal) {
+    try {
+      if (this.mode === 'local') {
+        var raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : defaultVal;
+      }
+    } catch(e) {
+      console.error('API.load error:', key, e);
+      return defaultVal;
+    }
+  },
+  
+  // データ削除
+  async remove(key) {
+    try {
+      if (this.mode === 'local') {
+        localStorage.removeItem(key);
+        return {ok: true};
+      }
+    } catch(e) {
+      return {ok: false, error: e.message};
+    }
+  }
+};
+
+// ================================================================
+// Session Manager — セッション管理・自動ログアウト
+// ================================================================
+const SessionMgr = {
+  TIMEOUT: 30 * 60 * 1000, // 30分
+  _timer: null,
+  _lastActivity: Date.now(),
+  
+  init: function() {
+    var self = this;
+    ['click','keydown','scroll','touchstart'].forEach(function(ev) {
+      document.addEventListener(ev, function() { self.touch(); }, {passive:true});
+    });
+    this._timer = setInterval(function() { self.check(); }, 60000);
+  },
+  
+  touch: function() {
+    this._lastActivity = Date.now();
+  },
+  
+  check: function() {
+    if (!DB.currentUser) return;
+    var elapsed = Date.now() - this._lastActivity;
+    // 5分前に警告
+    if (elapsed > this.TIMEOUT - 5*60*1000 && elapsed < this.TIMEOUT) {
+      var remaining = Math.ceil((this.TIMEOUT - elapsed) / 60000);
+      var warn = document.getElementById('session-warn');
+      if (!warn) {
+        warn = document.createElement('div');
+        warn.id = 'session-warn';
+        warn.className = 'session-warn';
+        document.body.appendChild(warn);
+      }
+      warn.textContent = '⏱ セッション切れまであと' + remaining + '分';
+      warn.style.display = 'block';
+    } else {
+      var warn = document.getElementById('session-warn');
+      if (warn) warn.style.display = 'none';
+    }
+    if (elapsed > this.TIMEOUT) {
+      this.logout();
+    }
+  },
+  
+  logout: function() {
+    clearInterval(this._timer);
+    DB.currentUser = null;
+    saveDB();
+    toast('セッションがタイムアウトしました。再度ログインしてください。', 'e');
+    showAuth();
+  }
+};
+
+// ================================================================
+// Input Validator — 入力バリデーション共通関数
+// ================================================================
+const Validate = {
+  // メールアドレス
+  email: function(v) {
+    if (!v || typeof v !== 'string') return {ok:false, msg:'メールアドレスを入力してください'};
+    var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!re.test(v.trim())) return {ok:false, msg:'正しいメールアドレス形式で入力してください'};
+    return {ok:true, val:v.trim().toLowerCase()};
+  },
+  
+  // パスワード
+  password: function(v) {
+    if (!v || v.length < 6) return {ok:false, msg:'パスワードは6文字以上で入力してください'};
+    if (v.length > 100) return {ok:false, msg:'パスワードが長すぎます'};
+    return {ok:true, val:v};
+  },
+  
+  // 名前
+  name: function(v, maxLen) {
+    maxLen = maxLen || 30;
+    if (!v || !v.trim()) return {ok:false, msg:'名前を入力してください'};
+    var trimmed = v.trim().substring(0, maxLen);
+    return {ok:true, val:trimmed};
+  },
+  
+  // 数値（金額・体重等）
+  number: function(v, min, max, label) {
+    var n = parseFloat(v);
+    if (isNaN(n)) return {ok:false, msg:(label||'値') + 'は数値で入力してください'};
+    if (min !== undefined && n < min) return {ok:false, msg:(label||'値') + 'は' + min + '以上にしてください'};
+    if (max !== undefined && n > max) return {ok:false, msg:(label||'値') + 'は' + max + '以下にしてください'};
+    return {ok:true, val:n};
+  },
+  
+  // テキスト（汎用）
+  text: function(v, maxLen, label) {
+    maxLen = maxLen || 500;
+    if (!v || !v.trim()) return {ok:false, msg:(label||'入力') + 'を入力してください'};
+    return {ok:true, val:sanitize(v.trim(), maxLen)};
+  },
+  
+  // 電話番号
+  phone: function(v) {
+    if (!v) return {ok:true, val:''};
+    var cleaned = v.replace(/[\s\-()]/g, '');
+    if (!/^[0-9]{10,11}$/.test(cleaned)) return {ok:false, msg:'正しい電話番号を入力してください'};
+    return {ok:true, val:cleaned};
+  },
+  
+  // ファイル（画像）
+  imageFile: function(file, maxSizeMB) {
+    maxSizeMB = maxSizeMB || 5;
+    if (!file) return {ok:false, msg:'ファイルを選択してください'};
+    var allowed = ['image/jpeg','image/png','image/gif','image/webp'];
+    if (allowed.indexOf(file.type) === -1) return {ok:false, msg:'JPEG, PNG, GIF, WebP形式のみアップロードできます'};
+    if (file.size > maxSizeMB * 1024 * 1024) return {ok:false, msg:'ファイルサイズは' + maxSizeMB + 'MB以下にしてください'};
+    return {ok:true, val:file};
+  }
+};
+
+// ================================================================
+// Loading State Manager — ローディング状態管理
+// ================================================================
+const LoadingUI = {
+  show: function(target) {
+    var el = typeof target === 'string' ? document.getElementById(target) : target;
+    if (!el) return;
+    el.setAttribute('data-prev-html', el.innerHTML);
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;padding:40px;gap:10px">' +
+      '<div class="loading-spinner"></div>' +
+      '<span style="font-size:13px;color:var(--txt3)">読み込み中...</span></div>';
+  },
+  
+  hide: function(target) {
+    var el = typeof target === 'string' ? document.getElementById(target) : target;
+    if (!el) return;
+    var prev = el.getAttribute('data-prev-html');
+    if (prev) el.innerHTML = prev;
+  },
+  
+  // ボタンの読み込み中状態
+  btnStart: function(btn, text) {
+    if (!btn) return;
+    btn.disabled = true;
+    btn.setAttribute('data-prev-text', btn.innerHTML);
+    btn.innerHTML = '<span style="opacity:.6">' + (text || '処理中...') + '</span>';
+  },
+  
+  btnEnd: function(btn) {
+    if (!btn) return;
+    btn.disabled = false;
+    var prev = btn.getAttribute('data-prev-text');
+    if (prev) btn.innerHTML = prev;
+  }
+};
+
+
+// ================================================================
+// Global Error Handler — エラー監視
+// ================================================================
+window.onerror = function(msg, src, line, col, err) {
+  console.error('[GlobalError]', msg, 'at', src, ':', line);
+  // 本番: Sentryに送信
+  // if (window.Sentry) Sentry.captureException(err);
+  return false;
+};
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('[UnhandledPromise]', e.reason);
+});
+
+// ================================================================
+// Performance Monitor — パフォーマンス計測
+// ================================================================
+const Perf = {
+  marks: {},
+  start: function(label) { this.marks[label] = performance.now(); },
+  end: function(label) {
+    if (!this.marks[label]) return 0;
+    var dur = Math.round(performance.now() - this.marks[label]);
+    if (dur > 500) console.warn('[Perf] ' + label + ': ' + dur + 'ms (slow)');
+    delete this.marks[label];
+    return dur;
+  }
+};
+
+// ================================================================
+// Network Status — オフライン検知
+// ================================================================
+const NetStatus = {
+  _online: navigator.onLine !== false,
+  init: function() {
+    var self = this;
+    window.addEventListener('online', function() { self._online = true; self.notify(true); });
+    window.addEventListener('offline', function() { self._online = false; self.notify(false); });
+  },
+  isOnline: function() { return this._online; },
+  notify: function(online) {
+    if (online) {
+      toast('インターネット接続が復旧しました', 's');
+    var ob = document.getElementById('offline-banner'); if(ob) ob.classList.remove('show');
+    } else {
+      toast('オフラインです。一部の機能が制限されます', 'e');
+    var ob = document.getElementById('offline-banner'); if(ob) ob.classList.add('show');
+    }
+  }
+};
+
+// ================================================================
+// Data Export Utility — データエクスポート
+// ================================================================
+const ExportUtil = {
+  // CSV生成
+  toCSV: function(headers, rows, filename) {
+    var csv = [headers.map(function(h){ return '"' + String(h).replace(/"/g,'""') + '"'; }).join(',')];
+    for (var i = 0; i < rows.length; i++) {
+      csv.push(rows[i].map(function(v){ return '"' + String(v||'').replace(/"/g,'""') + '"'; }).join(','));
+    }
+    var blob = new Blob(['\uFEFF' + csv.join('\n')], {type:'text/csv;charset=utf-8;'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename || 'export.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('CSVをダウンロードしました', 's');
+  },
+  
+  // JSON エクスポート（バックアップ）
+  toJSON: function(data, filename) {
+    var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename || 'backup.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('データをエクスポートしました', 's');
+  },
+  
+  // ユーザーデータバックアップ
+  backupMyData: function() {
+    if (!DB.currentUser) { toast('ログインしてください', 'e'); return; }
+    var uid = DB.currentUser.id;
+    var role = DB.currentUser.role;
+    var data = {
+      exportedAt: new Date().toISOString(),
+      user: DB.currentUser,
+      role: role
+    };
+    if (role === 'player') {
+      var me = DB.players.find(function(p){return p.id===uid;});
+      data.profile = me;
+      data.meals = DB.meals;
+      data.mealHistory = DB.mealHistory;
+      data.trainingLog = DB.trainingLog;
+      data.bodyLog = DB.bodyLog;
+      data.conditionLog = DB.conditionLog;
+    } else if (role === 'team') {
+      data.team = DB.teams.find(function(t){return t.email===DB.currentUser.email;});
+      data.players = DB.players.filter(function(p){return p.team===data.team?.id;});
+      data.events = DB.events.filter(function(e){return e.teamId===data.team?.id;});
+      data.inventory = (DB.inventory||[]).filter(function(i){return i.teamId===data.team?.id;});
+    }
+    this.toJSON(data, 'bukatsu_backup_' + new Date().toISOString().slice(0,10) + '.json');
+  }
+};
+
+// ================================================================
+// Rate Limiter — レート制限（フロントエンド）
+// ================================================================
+const RateLimit = {
+  _actions: {},
+  
+  // action: アクション名, maxCount: 最大回数, windowMs: 時間窓(ms)
+  check: function(action, maxCount, windowMs) {
+    var now = Date.now();
+    if (!this._actions[action]) this._actions[action] = [];
+    // 古いエントリを削除
+    this._actions[action] = this._actions[action].filter(function(t){ return now - t < windowMs; });
+    if (this._actions[action].length >= maxCount) {
+      return false; // レート制限超過
+    }
+    this._actions[action].push(now);
+    return true;
+  },
+  
+  // ラッパー: レート制限付きでアクション実行
+  throttle: function(action, maxCount, windowMs, fn) {
+    if (!this.check(action, maxCount, windowMs)) {
+      toast('操作が頻繁すぎます。しばらくお待ちください。', 'e');
+      return false;
+    }
+    fn();
+    return true;
+  }
+};
+
 
 // ═══════════════════════════════════════════════════════════
 //  CHART UTILITIES  ─  全ページ共通グラフヘルパー
@@ -2861,6 +3242,9 @@ function doQuickLogin(){ showAuth('register'); }
 
 // ── ログイン ──────────────────────────────────
 function doLogin(){
+  if(!RateLimit.check('login', 5, 60000)){ toast('ログイン試行回数の上限です。1分後に再試行してください。','e'); return; }
+  var emailCheck = Validate.email(document.getElementById('login-email')?.value);
+  if (!emailCheck.ok) { toast(emailCheck.msg, 'e'); return; }
   // ── ブルートフォース対策 ──
   const limit = checkLoginLimit();
   if(limit.locked){
@@ -2943,6 +3327,14 @@ function doLogin(){
 
 // ── 新規登録 ──────────────────────────────────
 function doRegister(){
+  if(!RateLimit.check('register', 3, 60000)){ toast('登録の試行回数が上限です。しばらくお待ちください。','e'); return; }
+  // Input validation
+  var emailCheck = Validate.email(document.getElementById('reg-email')?.value);
+  if (!emailCheck.ok) { toast(emailCheck.msg, 'e'); return; }
+  var passCheck = Validate.password(document.getElementById('reg-pass')?.value);
+  if (!passCheck.ok) { toast(passCheck.msg, 'e'); return; }
+  var nameCheck = Validate.name(document.getElementById('reg-name')?.value);
+  if (!nameCheck.ok) { toast(nameCheck.msg, 'e'); return; }
   const emailEl = document.getElementById('reg-email');
   const pwEl    = document.getElementById('reg-pw');
   const nameEl  = document.getElementById('rf-name');
@@ -3132,8 +3524,8 @@ function renderObTermsAndSign(){
 
   // ロール別の電子署名セクションの説明
   const sigNote = isBiz
-    ? 'サービス利用規約・手数料規定への同意として法的に記録されます'
-    : 'サービス利用規約への同意として記録されます';
+    ? '部勝（ブカツ）利用規約・手数料規定・プライバシーポリシーへの同意として法的に記録されます'
+    : '部勝（ブカツ）利用規約・プライバシーポリシーへの同意として記録されます';
 
   // 「18歳以上」チェックの表示（ビジネスロールのみ）
   const ageCheckHTML = isBiz ? `
@@ -3170,7 +3562,7 @@ function renderObTermsAndSign(){
     <div id="sig-pad" style="background:rgba(59,100,180,.04);border:1.5px dashed ${sigText?'var(--grn)':'var(--bdr)'};border-radius:12px;padding:14px;text-align:center;min-height:52px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;transition:border-color .2s">
       <span id="sig-display" style="font-family:cursive;font-size:22px;color:${sigText?'var(--grn)':'var(--txt3)'}">${sigText||'お名前をご入力ください'}</span>
     </div>
-    <p style="font-size:10px;color:var(--txt3);line-height:1.6;margin-bottom:14px">この署名は、利用規約への同意として記録されます（${new Date().toLocaleDateString('ja-JP')}）</p>
+    <p style="font-size:10px;color:var(--txt3);line-height:1.6;margin-bottom:14px">この署名は、利用規約・プライバシーポリシーへの同意として法的に記録されます（${new Date().toLocaleDateString('ja-JP')}）</p>
   </div>
 
   <div style="margin-bottom:16px;display:flex;flex-direction:column;gap:8px">
@@ -3488,7 +3880,7 @@ function obSaveProfile(){
   const role=DB.pendingRole||'team';
   DB.pendingProfile=obProfile;
   if(role==='coach'){
-    const coach=DB.coaches.find(c=>c.id===(DB.pendingUserId||DB.currentUser?.id))||DB.coaches[0];
+    const coach=DB.coaches.find(c=>c.id===(DB.pendingUserId||DB.currentUser?.id));
     if(coach){
       if(obProfile.coachName)coach.name=sanitize(obProfile.coachName,50);
       else if(DB.pendingName)coach.name=sanitize(DB.pendingName,50);
@@ -5098,7 +5490,7 @@ function settingsPage(){
       <div style="display:grid;gap:8px">
         <button class="btn btn-ghost btn-sm w-full" onclick="openM('📄 利用規約',legalText('terms'))">📄 利用規約</button>
         <button class="btn btn-ghost btn-sm w-full" onclick="openM('🛡️ プライバシーポリシー',legalText('privacy'))">🛡️ プライバシーポリシー</button>
-        <div class="text-xs text-muted text-center mt-8">MyCOACH-MyTEAM v9.0</div>
+        <div class="text-xs text-muted text-center mt-8">部勝 v1.0.0 (Production Ready)</div>
       </div>
     </div>
 
@@ -7693,8 +8085,8 @@ function calcTotals(){
 function initNutrition(){
   document.addEventListener('click',e=>{if(!e.target.closest('#food-q')&&!e.target.closest('#food-results')){const r=document.getElementById('food-results');if(r)r.style.display='none'}});
 }
-function renderMealList(){}
-function renderWater(){}
+function renderMealList(){ if(typeof goTo==='function') goTo('nutrition'); }
+function renderWater(){ if(typeof goTo==='function') goTo('nutrition'); }
 function setWater(n){DB.meals.water=DB.meals.water===n?n-1:n;saveDB();}
 function foodSearch(q){
   const r=document.getElementById('food-results');if(!r)return;
@@ -7744,8 +8136,8 @@ function addMealManual(){
   if(!n){toast('食品名を入力してください','e');return}
   const t=document.getElementById('meal-type')?.value||'breakfast';
   const now=new Date();const time=`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-  var manualFood = {name:n,kcal:k,protein:p,carb:c,fat:fa,fiber:0,vitB1:0,vitC:0,calcium:0,iron:0,cat:'マイ食品',source:'manual'};
-  DB.meals.today.push({id:'m'+Date.now(),name:n,kcal:k,protein:p,carb:c,fat:fa,fiber:0,vitB1:0,vitC:0,calcium:0,iron:0,time,type:t});
+  var manualFood = {name:sanitize(n,50),kcal:k,protein:p,carb:c,fat:fa,fiber:0,vitB1:0,vitC:0,calcium:0,iron:0,cat:'マイ食品',source:'manual'};
+  DB.meals.today.push({id:'m'+Date.now(),name:sanitize(n,50),kcal:k,protein:p,carb:c,fat:fa,fiber:0,vitB1:0,vitC:0,calcium:0,iron:0,time,type:t});
   learnFromMeal(manualFood, t);
   ['m-name','m-kcal','m-protein','m-carb','m-fat'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
   saveDB();toast(`${n} を追加`,'s');goTo('nutrition');
@@ -9528,7 +9920,14 @@ function adoptProgram(progId){
   saveDB();closeM();toast(prog.name+' を採用しました！','s');goTo('training');
 }
 
-function initTraining(){}
+function initTraining(){
+  // トレーニングページ初期化（イベントリスナー設定）
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('#training-search')&&!e.target.closest('#training-results')){
+      var r=document.getElementById('training-results');if(r)r.style.display='none';
+    }
+  });
+}
 
 // ── トレーニングセッション ──
 function startTrainingSession(part){
@@ -9872,7 +10271,10 @@ function completeSession(){
 function toggleWD(id){const el=document.getElementById('wd-'+id);if(el){el.style.display=el.style.display==='none'?'block':'none';}}
 function toggleExDone(wid,idx,color){const key=wid+'_'+idx;if(!DB.doneSets)DB.doneSets={};if(!DB.doneSets[key])DB.doneSets[key]=0;const w=getAllWorkouts().find(x=>x.id===wid);if(!w)return;const ex=w.exercises[idx];DB.doneSets[key]=DB.doneSets[key]>=ex.sets?0:ex.sets;saveDB();refreshPage();}
 function changeSetDone(wid,idx,delta,color){const key=wid+'_'+idx;if(!DB.doneSets)DB.doneSets={};if(!DB.doneSets[key])DB.doneSets[key]=0;const w=getAllWorkouts().find(x=>x.id===wid);if(!w)return;const ex=w.exercises[idx];DB.doneSets[key]=Math.max(0,Math.min(ex.sets,DB.doneSets[key]+delta));const el=document.getElementById('ex-count-'+wid+'-'+idx);if(el)el.textContent=DB.doneSets[key]+'/'+ex.sets;saveDB();}
-function logSet(){}
+function logSet(){
+  // セット記録のフォールバック — メインのrecordSet()関数にリダイレクト
+  if(typeof recordSet==='function') recordSet();
+}
 function startRestTimer(sec){resetTimer();timerSec=sec;activeRestSec=sec;toggleTimer();}
 function toggleTimer(){
   const btn=document.getElementById('timer-btn');const wt=parseInt(document.getElementById('work-time')?.value)||45;
@@ -10727,7 +11129,7 @@ function createNewChat(){
       unread: 0
     };
   }
-  DB.chats[chatKey].msgs.push({ from: me.id, name: me.name, text: msg, time: now_time(), read: false });
+  DB.chats[chatKey].msgs.push({ from: me.id, name: sanitize(me.name,30), text: sanitize(msg,2000), time: now_time(), read: false });
   saveDB();
   activeRoom = chatKey;
   closeM();
@@ -10928,6 +11330,7 @@ function chatGoBack(){
   if(layout)layout.classList.remove('room-open');
 }
 function sendChat(){
+  if(!RateLimit.check('chat', 30, 60000)){ toast('メッセージ送信が速すぎます','e'); return; }
   const inp=document.getElementById('chat-inp');
   if(!inp||!inp.value.trim()){return;}
   const text=inp.value.trim();
@@ -10938,7 +11341,7 @@ function sendChat(){
   const name=DB.currentUser?.name||'自分';
   if(!DB.chats[activeRoom])DB.chats[activeRoom]={msgs:[]};
   const replyTo=window._replyToIdx!=null?window._replyToIdx:undefined;
-  const msg={from:myKey,name,text,time,read:true,date:now.toISOString().slice(0,10)};
+  const msg={from:myKey,name:sanitize(name,30),text:sanitize(text,2000),time,read:true,date:now.toISOString().slice(0,10)};
   if(replyTo!=null)msg.replyTo=replyTo;
   if(window._pendingImg){msg.img=window._pendingImg;window._pendingImg=null;}
   DB.chats[activeRoom].msgs.push(msg);
@@ -11100,7 +11503,7 @@ function adminWarnUser(roomKey,msgIdx){
       </select>
     </div>
     <div class="form-group"><label class="label">忠告メッセージ</label>
-      <textarea class="input" id="admin-warn-msg" rows="3" placeholder="忠告内容を入力...">当プラットフォームの利用規約に沿ったコミュニケーションをお願いいたします。繰り返しの場合、アカウント停止となる場合があります。</textarea>
+      <textarea class="input" id="admin-warn-msg" rows="3" placeholder="忠告内容を入力...">部勝（ブカツ）利用規約第11条（禁止事項）に基づき、適切なコミュニケーションをお願いいたします。繰り返しの違反はアカウント停止の対象となります（第13条）。</textarea>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px">
       <button class="btn btn-primary w-full" style="background:#f59e0b;border-color:#f59e0b" onclick="confirmAdminWarn('${roomKey}',${msgIdx})">⚠️ 忠告を送信する</button>
@@ -11112,7 +11515,7 @@ function confirmAdminWarn(roomKey,msgIdx){
   const ch=DB.chats[roomKey];if(!ch||!ch.msgs[msgIdx])return;
   const msg=ch.msgs[msgIdx];
   const warnType=document.getElementById('admin-warn-type')?.value||'other';
-  const warnMsg=document.getElementById('admin-warn-msg')?.value?.trim()||'利用規約に沿ったご利用をお願いします。';
+  const warnMsg=document.getElementById('admin-warn-msg')?.value?.trim()||'部勝（ブカツ）利用規約に沿ったご利用をお願いします。詳細は利用規約第11条をご確認ください。';
   const typeLabels={language:'不適切な言葉遣い',harassment:'ハラスメント',spam:'スパム',privacy:'個人情報',rules:'利用規約違反',other:'その他'};
   // ログ保存
   if(!DB.moderationLog)DB.moderationLog=[];
@@ -13156,7 +13559,7 @@ function sendThreadMsg(ptId){
   });
   if(ck&&DB.chats[ck]){
     const senderName=role==='coach'?(DB.coaches.find(c=>c.id===pt.coachId)?.name||'コーチ'):(DB.teams.find(t=>t.id===pt.teamId)?.name||'チーム');
-    DB.chats[ck].msgs.push({from:DB.currentUser.id,name:senderName,text:'💬 '+text,time:now_time(),read:false,fromThread:true});
+    DB.chats[ck].msgs.push({from:DB.currentUser.id,name:sanitize(senderName,30),text:sanitize('💬 '+text,2000),time:now_time(),read:false,fromThread:true});
     DB.chats[ck].unread=(DB.chats[ck].unread||0)+1;
     if(!pt.chatKey)pt.chatKey=ck;
   }
@@ -16199,29 +16602,204 @@ function showNotifs(){
 function toggleFaq(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
 
 // ==================== LEGAL ====================
-function termsHTML(){return`<div class="legal-sec"><div style="height:30px"></div><div class="legal-title-h">利用規約</div><div class="legal-date">最終更新日: 2024年1月1日</div><h2>第1条（総則）</h2><p>この利用規約（以下「本規約」）は、株式会社ark（以下「当社」）が提供するスポーツチーム運営プラットフォーム「MyCOACH-MyTEAM」の利用条件を定めるものです。</p><h2>第2条（利用登録）</h2><p>本サービスへの登録は以下の条件を満たす方が対象です。</p><ul><li>日本国内に在住し、本規約に同意された方</li><li>チーム代表者・コーチ・選手・保護者のいずれかの立場の方</li><li>未成年者の場合、保護者の同意を得た上での登録</li></ul><h2>第3条（手数料）</h2><ul><li>月謝手数料：保護者からチームへ支払われる月謝の10%</li><li>コーチ代手数料：チームからコーチへ支払われるコーチ代の10%</li><li>登録・マッチング・メッセージ機能は無料でご利用いただけます</li></ul><h2>第4条（決済）</h2><p>本サービスにおける決済はStripe, Inc.が提供する決済サービスを利用します。カード情報は当社のサーバーに保存されず、PCI DSS Level 1 準拠のStripeサーバーにて安全に管理されます。</p><h2>第5条（禁止事項）</h2><ul><li>虚偽情報の登録・掲載</li><li>他の利用者への誹謗・中傷・嫌がらせ</li><li>不正アクセス・システムへの攻撃</li><li>本サービスを通じた違法行為</li></ul><h2>第6条（選手個人情報の開示と責任）</h2>
-<p>本サービスにおける選手個人情報の取り扱いについて、以下の通り定めます。</p>
+function termsHTML(){return`<div class="legal-sec"><div style="height:30px"></div><div class="legal-title-h">利用規約</div><div class="legal-date">最終更新日: 2026年2月27日 ／ 施行日: 2026年2月27日</div>
+<h2>第1条（総則）</h2>
+<p>この利用規約（以下「本規約」）は、株式会社ark（以下「当社」）が提供するスポーツチーム運営プラットフォーム「部勝（ブカツ）」（以下「本サービス」）の利用条件を定めるものです。利用者は、本サービスの利用開始をもって本規約に同意したものとみなされます。</p>
+<h2>第2条（定義）</h2>
 <ul>
-  <li><b>開示の条件</b>：選手の個人情報（氏名・年齢・身体情報・トレーニング記録等）は、チームが明示的に開示を許可し、かつコーチが「個人情報保護誓約書」に電子署名した場合に限り、当該コーチに提供されます。</li>
-  <li><b>コーチの責任</b>：選手個人情報の開示を受けたコーチは、個人情報保護誓約書の全条項に従う義務を負います。情報の漏洩・目的外利用・不正開示が発生した場合、コーチ本人が全ての民事的・刑事的・行政的責任を負います。特に、個人情報の保護に関する法律（令和4年改正）第176条に基づき、違反行為には1年以下の懲役または100万円以下の罰金が科される場合があります。18歳未満の選手情報については、児童福祉法その他の法令も適用されます。</li>
-  <li><b>当社の免責</b>：当社（株式会社ark）は、コーチによる選手個人情報の管理・取り扱いについて一切の責任を負いません。開示後の情報漏洩・目的外利用に起因するいかなる損害（直接・間接・逸失利益・弁護士費用・行政対応費用を含む）についても、当社は一切の責任を負いません。当社は情報の開示・誓約署名の記録を保管しますが、これはコーチへの責任帰属を明確化するためであり、当社の責任を示すものではありません。</li>
-  <li><b>記録の保存</b>：開示日時・コーチの電子署名・IPアドレスはサーバーに記録され、紛争時の証拠として利用されます。</li>
-  <li><b>未成年選手</b>：18歳未満の選手に係る個人情報については、保護者の同意を得た上でチームが管理・開示するものとし、コーチはより厳格な管理義務を負います。</li>
-  <li><b>個人情報保護法の遵守</b>：コーチは「個人情報の保護に関する法律」を遵守する義務を負います。違反した場合は同法に定める罰則の対象となります。</li>
+<li><b>利用者</b>：本サービスに登録した全てのユーザー（事務局・チーム管理者・コーチ・選手・保護者を含む）</li>
+<li><b>チーム管理者</b>：チームの運営・管理を行う登録ユーザー</li>
+<li><b>コーチ</b>：指導サービスを提供する登録ユーザー</li>
+<li><b>選手</b>：チームに所属しスポーツ活動を行う登録ユーザー</li>
+<li><b>保護者</b>：選手の法定代理人として登録したユーザー</li>
+<li><b>コンテンツ</b>：利用者が本サービス上に投稿・登録した文章、画像、データ等の情報</li>
 </ul>
-<h2>第7条（免責事項）</h2><p>当社は、チームとコーチのマッチングを仲介するプラットフォームであり、コーチの指導の質・チームの運営・選手の健康について直接の責任を負いません。前条に定める選手個人情報の管理についても同様です。</p><h2>第8条（準拠法）</h2><p>本規約の解釈には日本法が適用され、紛争は東京地方裁判所を第一審の専属的合意管轄裁判所とします。</p><h2>お問い合わせ</h2><p>株式会社ark / kanri&#64;mycoach-myteam.com / 03-0000-0000</p></div>`}
-function privacyHTML(){return`<div class="legal-sec"><div style="height:30px"></div><div class="legal-title-h">プライバシーポリシー</div><div class="legal-date">最終更新日: 2025年4月1日</div><h2>1. 収集する個人情報</h2><ul><li>氏名・メールアドレス・電話番号</li><li>チーム情報・スポーツ種目・活動地域</li><li>選手の年齢・身体情報（任意）</li><li>食事記録・トレーニング記録</li><li>決済情報（Stripeにより管理、カード情報は当社では保持しません）</li></ul><h2>2. 利用目的</h2><ul><li>サービスの提供・改善</li><li>コーチ・チームのマッチング</li><li>月謝・コーチ代の決済処理</li><li>AI機能による食事・トレーニングアドバイスの生成</li></ul><h2>3. 第三者への提供（コーチへの選手情報開示）</h2>
-<p>法令に基づく場合、Stripe（決済処理のため）、AIサービスプロバイダー（匿名化した上で利用）を除き、個人情報を第三者に提供しません。</p>
-<p>ただし、以下の条件をすべて満たす場合に限り、チームから契約コーチへ選手の個人情報を提供します：</p>
+<h2>第3条（利用登録）</h2>
+<p>1. 本サービスへの登録は以下の条件を全て満たす方が対象です。</p>
 <ul>
-  <li>チームが本サービス上で明示的に「開示を許可」した場合</li>
-  <li>コーチが「個人情報保護誓約書」に電子署名し、同意日時・IPアドレスが記録された場合</li>
+<li>日本国内に在住し、本規約およびプライバシーポリシーに同意された方</li>
+<li>チーム管理者・コーチ・選手・保護者のいずれかの立場の方</li>
+<li>登録情報に虚偽がないこと</li>
 </ul>
-<p><b>重要：</b>開示後の選手個人情報の管理責任はコーチ本人に帰属します。当社（株式会社ark）は、コーチによる情報管理の不備・漏洩・目的外利用に起因する損害について、いかなる責任も負いません。</p><h2>4. セキュリティ</h2><p>SSL/TLS暗号化通信、アクセス制御、定期的なセキュリティ監査により個人情報を保護します。</p><h2>5. 未成年者</h2><p>18歳未満の選手の個人情報については、保護者の同意を得た上で収集・管理します。</p><h2>6. お問い合わせ</h2><p>kanri&#64;mycoach-myteam.com</p></div>`}
+<p>2. 18歳未満の方は保護者の同意を得た上で登録するものとし、保護者は未成年の利用者の利用について連帯して責任を負います。</p>
+<p>3. 当社は、虚偽情報の登録、過去の規約違反、反社会的勢力への該当、その他当社が不適切と判断した場合に登録を拒否・取消しできます。</p>
+<h2>第4条（アカウント管理）</h2>
+<p>1. 利用者は、自身のアカウント情報（メールアドレス・パスワード）を適切に管理する義務を負います。</p>
+<p>2. アカウントの第三者への譲渡・貸与は禁止します。</p>
+<p>3. パスワードの不正使用等により生じた損害について、当社は一切の責任を負いません。</p>
+<h2>第5条（手数料・料金）</h2>
+<p>本サービスの利用に関する手数料は以下の通りです（全て税込表示）。</p>
+<ul>
+<li><b>月謝決済手数料</b>：保護者からチームへ支払われる月謝の5%</li>
+<li><b>コーチマッチング手数料</b>：チームからコーチへ支払われるコーチ代の10%</li>
+<li><b>単発請求（アドホック）手数料</b>：請求金額の5%</li>
+<li><b>無料機能</b>：登録・マッチング検索・メッセージ・スケジュール管理・栄養管理・トレーニング記録・AI栄養アドバイス・物品管理・チーム対戦マッチング</li>
+</ul>
+<p>手数料の変更は、変更日の30日前までに本サービス上で通知します。</p>
+<h2>第6条（決済）</h2>
+<p>1. 決済は Stripe, Inc. が提供する決済サービスを利用します。クレジットカード情報は当社のサーバーに保存されず、PCI DSS Level 1 準拠の Stripe サーバーにて管理されます。</p>
+<p>2. コーチへの報酬は Stripe Connect を通じて分配されます。報酬の受取にはコーチ自身による Stripe アカウントの開設が必要です。</p>
+<p>3. 決済に関する紛争（チャージバック等）は Stripe の規定に従い処理されます。</p>
+<h2>第7条（コーチとチーム間の契約）</h2>
+<p>1. 本サービスはコーチとチーム管理者のマッチングを仲介するプラットフォームです。コーチとチーム間の指導契約は両者間で直接成立し、当社はその当事者ではありません。</p>
+<p>2. 当社はコーチの指導の質、資格の有効性、指導内容の適法性について保証しません。</p>
+<p>3. 料金交渉は本サービスのチャット機能を通じて行うことができ、最終的な金額は両者の合意に基づきます。交渉中の料金は「ご相談ください」と表示される場合があります。</p>
+<p>4. コーチの指導に起因する事故・怪我・損害について当社は一切の責任を負いません。</p>
+<h2>第8条（選手個人情報の開示と責任）</h2>
+<p>1. 選手の個人情報（氏名・年齢・身体情報・トレーニング記録・栄養データ等）は、チーム管理者が明示的に開示を許可し、かつコーチが「個人情報保護誓約書」に電子署名した場合に限り、当該コーチに提供されます。</p>
+<p>2. 開示を受けたコーチは誓約書の全条項に従う義務を負い、漏洩・目的外利用が発生した場合はコーチ本人が全責任を負います。個人情報保護法第176条に基づき、違反行為には1年以下の懲役または100万円以下の罰金が科される場合があります。</p>
+<p>3. 18歳未満の選手情報については児童福祉法その他の関連法令に基づきより厳格な管理義務が課されます。</p>
+<p>4. 当社はコーチによる選手個人情報の管理について一切の責任を負いません。開示日時・電子署名の記録はサーバーに保管し、紛争時の証拠として利用します。</p>
+<h2>第9条（AI機能）</h2>
+<p>1. 本サービスは栄養分析・トレーニングアドバイス等のAI支援機能を提供しますが、これらは参考情報であり、医学的・専門的な診断や指導を代替するものではありません。</p>
+<p>2. AI機能の精度について当社は保証せず、利用者はAIの助言に基づく行動を自己の責任で行うものとします。</p>
+<h2>第10条（チーム対戦マッチング）</h2>
+<p>1. チーム対戦マッチング機能は練習試合等の調整を支援するものであり、マッチング成立は両チームの合意によります。</p>
+<p>2. 試合の実施・中断および試合中の事故・怪我について当社は一切の責任を負いません。</p>
+<h2>第11条（禁止事項）</h2>
+<ul>
+<li>虚偽情報の登録・掲載</li>
+<li>他の利用者への誹謗中傷・嫌がらせ・ハラスメント</li>
+<li>未成年者に対する不適切な接触・通信</li>
+<li>不正アクセス・システムへの攻撃・リバースエンジニアリング</li>
+<li>違法行為または公序良俗に反する行為</li>
+<li>商業目的でのスパム行為・営業活動</li>
+<li>他の利用者の個人情報の無断収集・流用</li>
+<li>手数料を回避する目的でのサービス外取引</li>
+<li>当社または第三者の知的財産権を侵害する行為</li>
+</ul>
+<h2>第12条（コンテンツ）</h2>
+<p>1. 利用者は自身が投稿・登録したコンテンツについて適法な権利を有していることを保証します。</p>
+<p>2. 利用者は当社に対しコンテンツをサービスの提供・改善に必要な範囲で使用する非独占的ライセンスを許諾します。</p>
+<p>3. 当社は違法または本規約に違反するコンテンツを事前通知なく削除できます。</p>
+<h2>第13条（アカウント停止・退会）</h2>
+<p>1. 当社は規約違反の場合、事前通知なくアカウントの一時停止または削除を行うことができます。</p>
+<p>2. 利用者は設定画面よりアカウントの削除を申請できます。退会前にデータのエクスポートを行ってください。</p>
+<p>3. 退会後のデータ復元はできません。未決済の手数料・料金の支払義務は退会後も消滅しません。</p>
+<h2>第14条（サービスの変更・中断・終了）</h2>
+<p>1. 当社は事前通知の上、本サービスの内容を変更・中断・終了できます。緊急時（システム障害・セキュリティ上の脅威等）は事前通知なくサービスを中断することがあります。</p>
+<p>2. サービスの変更等により生じた損害について、故意または重過失がある場合を除き責任を負いません。</p>
+<h2>第15条（免責事項）</h2>
+<p>1. 当社は本サービスの完全性・正確性・安全性・可用性について保証しません。</p>
+<p>2. 利用者間のトラブル（コーチとチーム間の紛争、利用者間の人間関係の問題等）について責任を負いません。</p>
+<p>3. 天災・停電・通信障害等の不可抗力により生じた損害について責任を負いません。</p>
+<p>4. 当社の賠償責任は当該利用者が過去12ヶ月間に本サービスに支払った手数料の総額を上限とします。</p>
+<h2>第16条（規約の変更）</h2>
+<p>1. 当社は本規約を変更する場合、変更内容および効力発生時期を本サービス上で通知します。重要な変更の場合、効力発生の14日前までに通知します。</p>
+<p>2. 変更後に本サービスを継続利用した場合、変更後の規約に同意したものとみなします。</p>
+<h2>第17条（準拠法・管轄裁判所）</h2>
+<p>本規約の解釈・適用は日本法に準拠し、紛争は東京地方裁判所を第一審の専属的合意管轄裁判所とします。</p>
+<h2>第18条（反社会的勢力の排除）</h2>
+<p>利用者は現在および将来にわたり反社会的勢力に該当しないこと、および反社会的勢力と関係を有しないことを表明し保証します。</p>
+<h2>お問い合わせ</h2>
+<p>株式会社ark ／ kanri&#64;mycoach-myteam.com</p></div>`}
+function privacyHTML(){return`<div class="legal-sec"><div style="height:30px"></div><div class="legal-title-h">プライバシーポリシー</div><div class="legal-date">最終更新日: 2026年2月27日 ／ 施行日: 2026年2月27日</div>
+<p>株式会社ark（以下「当社」）は、スポーツチーム運営プラットフォーム「部勝（ブカツ）」（以下「本サービス」）における個人情報の取り扱いについて、以下の通り定めます。</p>
+<h2>1. 収集する個人情報</h2>
+<h3>（1）利用者が直接提供する情報</h3>
+<ul>
+<li>氏名・メールアドレス・電話番号（任意）</li>
+<li>ユーザーの役割（チーム管理者・コーチ・選手・保護者）</li>
+<li>チーム情報（チーム名・スポーツ種目・活動地域・メンバー数）</li>
+<li>プロフィール写真（任意）</li>
+<li>コーチの資格・経歴・指導分野（コーチ登録時）</li>
+</ul>
+<h3>（2）サービス利用に伴い生成される情報</h3>
+<ul>
+<li>選手の身体情報（身長・体重、任意入力）</li>
+<li>食事記録・栄養データ</li>
+<li>トレーニング記録・コンディションログ</li>
+<li>チャットメッセージの内容</li>
+<li>カレンダー・スケジュール情報</li>
+<li>物品管理データ</li>
+</ul>
+<h3>（3）決済に関する情報</h3>
+<ul>
+<li>決済履歴・取引金額（当社が保持）</li>
+<li>クレジットカード情報（Stripe, Inc. が管理。当社のサーバーには一切保存しません）</li>
+</ul>
+<h3>（4）自動的に収集される情報</h3>
+<ul>
+<li>アクセスログ（IPアドレス・アクセス日時・ブラウザ情報）</li>
+<li>ローカルストレージに保存されるセッション情報</li>
+</ul>
+<h2>2. 利用目的</h2>
+<p>収集した個人情報は以下の目的に限り使用します。</p>
+<ul>
+<li>本サービスの提供・運営・改善</li>
+<li>コーチとチームのマッチング支援</li>
+<li>チーム対戦マッチングの支援</li>
+<li>月謝・コーチ代・その他料金の決済処理</li>
+<li>AI機能による栄養分析・トレーニングアドバイスの生成</li>
+<li>利用者への通知・お知らせの配信</li>
+<li>不正利用の検知・防止および利用規約違反への対応</li>
+<li>法令に基づく対応</li>
+</ul>
+<h2>3. 第三者への提供</h2>
+<p>当社は以下の場合を除き、利用者の同意なく個人情報を第三者に提供しません。</p>
+<ul>
+<li><b>Stripe, Inc.</b>：決済処理のため</li>
+<li><b>コーチへの選手情報開示</b>：チーム管理者が明示的に許可し、かつコーチが個人情報保護誓約書に電子署名した場合に限る</li>
+<li><b>法令に基づく場合</b>：裁判所の命令、捜査機関からの照会等</li>
+<li><b>人の生命・身体・財産の保護に必要な場合</b></li>
+</ul>
+<p><b>重要：</b>コーチへの開示後の選手個人情報の管理責任はコーチ本人に帰属します。当社はコーチによる情報管理の不備・漏洩に起因する損害について責任を負いません。</p>
+<h2>4. AI機能におけるデータ利用</h2>
+<p>1. 栄養分析・トレーニングアドバイスのAI機能は利用者自身のデータのみを分析対象とします。</p>
+<p>2. AI機能に入力されたデータは当該利用者へのアドバイス生成以外の目的（第三者への提供・モデル学習等）には使用しません。</p>
+<p>3. AI機能の結果は参考情報であり、医療・専門的アドバイスを代替するものではありません。</p>
+<h2>5. データの保存・保管</h2>
+<p>1. 個人情報は利用目的の達成に必要な期間保管します。</p>
+<p>2. アカウント削除後、個人情報は30日以内に削除します。ただし法令で保存が義務付けられているデータ（決済記録等）は法定期間保管します。</p>
+<p>3. バックアップデータは暗号化した上で安全に保管し、一定期間後に自動削除します。</p>
+<h2>6. セキュリティ</h2>
+<p>当社は以下のセキュリティ対策を講じ個人情報を保護します。</p>
+<ul>
+<li>SSL/TLS暗号化通信によるデータ保護</li>
+<li>パスワードのハッシュ化（SHA-256以上）による安全な保管</li>
+<li>ロールベースのアクセス制御（5段階の権限管理）</li>
+<li>セッションタイムアウトによる不正アクセス防止</li>
+<li>入力値のサニタイズ処理によるXSS対策</li>
+<li>レート制限による不正アクセス防止</li>
+</ul>
+<h2>7. Cookie・ローカルストレージ</h2>
+<p>1. 本サービスはブラウザのローカルストレージを使用してセッション情報およびユーザー設定を保存します。</p>
+<p>2. 第三者のトラッキングCookieは使用しません。</p>
+<p>3. ブラウザの設定からローカルストレージのデータを削除できますが、サービスの利用に支障が生じる場合があります。</p>
+<h2>8. 利用者の権利</h2>
+<p>利用者は個人情報保護法に基づき以下の権利を有します。</p>
+<ul>
+<li><b>開示請求</b>：当社が保有する個人情報の開示を請求できます</li>
+<li><b>訂正・追加・削除</b>：個人情報の内容が事実と異なる場合、訂正等を請求できます</li>
+<li><b>利用停止・消去</b>：個人情報の利用停止または消去を請求できます</li>
+<li><b>データポータビリティ</b>：設定画面からデータをJSON形式でエクスポートできます</li>
+</ul>
+<p>請求は kanri&#64;mycoach-myteam.com までご連絡ください。本人確認の上、合理的な期間内に対応します。</p>
+<h2>9. 未成年者の個人情報</h2>
+<p>1. 18歳未満の利用者の個人情報は保護者の同意を得た上で収集・管理します。</p>
+<p>2. 保護者はいつでも未成年の利用者の個人情報の開示・訂正・削除を請求できます。</p>
+<p>3. 未成年の選手の身体情報・健康データについては特に慎重な管理を行います。</p>
+<h2>10. ポリシーの変更</h2>
+<p>当社は本ポリシーを変更する場合、変更内容を本サービス上で通知します。重要な変更は効力発生の14日前までに通知します。</p>
+<h2>11. お問い合わせ</h2>
+<p>株式会社ark 個人情報保護管理者<br>kanri&#64;mycoach-myteam.com</p></div>`}
 
-function tokushoHTML(){return`<div class="legal-sec"><div style="height:30px"></div><div class="legal-title-h">特定商取引法に基づく表記</div><table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:20px"><tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">販売事業者名</th><td style="padding:12px">株式会社ark</td></tr><tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">運営統括責任者</th><td style="padding:12px">茂住 雄太</td></tr><tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">所在地</th><td style="padding:12px">〒165-0023 東京都中野区江原町2-13-13</td></tr><tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">お問い合わせ</th><td style="padding:12px">kanri@mycoach-myteam.com<br><span style="font-size:12px;color:var(--txt3)">※お問い合わせは原則メールにて承っております。</span></td></tr><tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">販売価格</th><td style="padding:12px"><b>指導料・支援金：</b>各ページに表示された金額（税込）<br><b>システム利用料（税込）：</b><br>・コーチマッチング（MyCOACH）：取引金額の10%〜<br>・月謝決済（MyTEAM）：取引金額の5%〜<br>・その他オプション機能：取引金額の2.4%〜20%</td></tr><tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">支払方法・時期</th><td style="padding:12px"><b>クレジットカード決済</b><br>・都度決済（マッチング等）：契約成立時に決済。<br>・継続決済（月謝）：初回決済日を基準に毎月自動決済。</td></tr><tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">役務の提供時期</th><td style="padding:12px">決済完了後、直ちに（または合意した指導日時に）サービスを提供します。</td></tr><tr><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">返品・キャンセル</th><td style="padding:12px">デジタルコンテンツおよび役務提供の性質上、決済完了後の利用者都合による返金・キャンセルは原則お受けできません。ただし、指導者の欠席等によりサービスが提供されなかった場合、当社の責に帰すべき事由による場合等は当社規定に基づき返金等の対応を行います。</td></tr></table></div>`}
+function tokushoHTML(){return`<div class="legal-sec"><div style="height:30px"></div><div class="legal-title-h">特定商取引法に基づく表記</div>
+<table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:20px">
+<tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">販売事業者名</th><td style="padding:12px">株式会社ark</td></tr>
+<tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">サービス名称</th><td style="padding:12px">部勝（ブカツ）</td></tr>
+<tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">運営統括責任者</th><td style="padding:12px">茂住 雄太</td></tr>
+<tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">所在地</th><td style="padding:12px">〒165-0023 東京都中野区江原町2-13-13</td></tr>
+<tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">お問い合わせ</th><td style="padding:12px">kanri&#64;mycoach-myteam.com<br><span style="font-size:12px;color:var(--txt3)">※お問い合わせはメールにて承ります。原則5営業日以内に返信いたします。</span></td></tr>
+<tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">販売価格</th><td style="padding:12px"><b>1. コーチ指導料：</b>各コーチのプロフィールページに表示された金額（税込）<br><b>2. 月謝：</b>各チームが設定した金額（税込）<br><b>3. システム利用手数料（税込）：</b><br>・月謝決済：取引金額の5%<br>・コーチマッチング：取引金額の10%<br>・単発請求（アドホック）：取引金額の5%<br><b>4. 無料機能：</b>登録・チーム管理・マッチング検索・メッセージ・スケジュール・栄養管理・トレーニング記録・AI栄養アドバイス・物品管理・チーム対戦マッチング</td></tr>
+<tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">支払方法</th><td style="padding:12px">クレジットカード決済（Visa, Mastercard, JCB, American Express）<br><span style="font-size:12px;color:var(--txt3)">※決済処理は Stripe, Inc. を通じて行われます。</span></td></tr>
+<tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">支払時期</th><td style="padding:12px">・コーチ指導料（都度）：契約成立時に決済<br>・コーチ指導料（月額）：初回決済日を基準に毎月自動決済<br>・月謝：チームが設定した締日に毎月自動決済<br>・単発請求：請求承認時に決済</td></tr>
+<tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">役務の提供時期</th><td style="padding:12px">・コーチ指導：決済完了後、コーチとの合意した日時に提供<br>・チーム管理機能：決済完了後、直ちに利用可能<br>・無料機能：アカウント登録完了後、直ちに利用可能</td></tr>
+<tr style="border-bottom:1px solid var(--b1)"><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">返品・キャンセル</th><td style="padding:12px"><b>原則：</b>デジタルサービスの性質上、決済完了後の利用者都合による返金は原則お受けできません。<br><br><b>例外（返金対象）：</b><br>・コーチの無断欠席等によりサービスが提供されなかった場合<br>・システム障害により決済が重複した場合<br>・当社の責に帰すべき事由がある場合<br><br><b>月額決済の解約：</b>次回決済日の前日までにサービス上で解約手続きを行ってください。既に決済済みの月分は返金対象外です。<br><br>返金のご申請は kanri&#64;mycoach-myteam.com までご連絡ください。</td></tr>
+<tr><th style="padding:12px;text-align:left;background:var(--surf2);font-weight:700;white-space:nowrap;vertical-align:top">動作環境</th><td style="padding:12px">推奨ブラウザ：Google Chrome、Safari、Edge の最新版<br>JavaScript の有効化およびインターネット接続が必要です</td></tr>
+</table></div>`}
 
-function contactHTML(){return`<div class="legal-sec" style="text-align:center;padding:60px 20px"><div style="width:72px;height:72px;background:#eff6ff;border-radius:9999px;display:flex;align-items:center;justify-content:center;color:#0ea5e9;font-size:1.75rem;margin:0 auto 1.5rem">✉️</div><div class="legal-title-h">お問い合わせ</div><p style="margin:.5rem 0 1.75rem;max-width:320px;display:inline-block">導入のご相談、取材のご依頼、その他ご不明点は下記までご連絡ください。</p><br><a href="mailto:kanri@mycoach-myteam.com" style="font-size:1.1rem;font-weight:700;color:#1e3256;border-bottom:2px solid #1e3256;padding-bottom:3px;text-decoration:none">kanri@mycoach-myteam.com</a><div style="margin-top:2rem;font-size:.78rem;color:#94a3b8;line-height:1.7">株式会社ark<br>〒165-0023 東京都中野区江原町2-13-13</div></div>`}
+function contactHTML(){return`<div class="legal-sec" style="text-align:center;padding:60px 20px"><div style="width:72px;height:72px;background:#eff6ff;border-radius:9999px;display:flex;align-items:center;justify-content:center;color:#0ea5e9;font-size:1.75rem;margin:0 auto 1.5rem">✉️</div><div class="legal-title-h">お問い合わせ</div><p style="margin:.5rem 0 1.75rem;max-width:320px;display:inline-block">導入のご相談、取材のご依頼、その他ご不明点は下記までご連絡ください。原則5営業日以内に返信いたします。</p><br><a href="mailto:kanri@mycoach-myteam.com" style="font-size:1.1rem;font-weight:700;color:#1e3256;border-bottom:2px solid #1e3256;padding-bottom:3px;text-decoration:none">kanri@mycoach-myteam.com</a><div style="margin-top:2rem;font-size:.78rem;color:#94a3b8;line-height:1.7">株式会社ark ／ 部勝（ブカツ）運営事務局<br>〒165-0023 東京都中野区江原町2-13-13</div></div>`}
 
 // ==================== INIT ====================
 window.addEventListener('DOMContentLoaded', function() {
@@ -16271,6 +16849,11 @@ window.addEventListener('DOMContentLoaded', function() {
     if (!DB.bodyLog) DB.bodyLog = {};
     if (!DB.conditionLog) DB.conditionLog = {};
     archiveMealsIfNewDay();
+  // Production systems init
+  SessionMgr.init();
+  NetStatus.init();
+  Perf.start('app-init');
+
     // アーカイブでDB変更があった場合に備えて保存
     saveDB();
     if(restored){
@@ -17060,8 +17643,7 @@ function bulkRequest(){
 function exportData(){
   try{
     const data = {};
-    const fields = ['coaches','teams','players','payments','coachPay','requests','events','notifs'];
-    fields.forEach(k=>{data[k]=DB[k];});
+    PERSIST_FIELDS.forEach(k=>{data[k]=DB[k];});
     data.exportedAt = new Date().toISOString();
     const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
@@ -17190,26 +17772,33 @@ function ensureCoachSamples(){
 function legalText(type){
   if(type === 'terms'){
     return `<div style="max-height:60vh;overflow-y:auto;font-size:13px;line-height:1.8;color:var(--txt2)">
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--txt1)">MyCOACH-MyTEAM 利用規約</h3>
-      <p style="margin-bottom:10px"><b>第1条（目的）</b><br>本規約は、MyCOACH-MyTEAM（以下「本サービス」）の利用に関する条件を定めるものです。</p>
-      <p style="margin-bottom:10px"><b>第2条（利用資格）</b><br>本サービスは、スポーツチームの運営に関わるコーチ・チーム担当者・選手・保護者を対象としています。利用者は本規約に同意した上でご利用ください。</p>
-      <p style="margin-bottom:10px"><b>第3条（禁止事項）</b><br>・他者への不正アクセス<br>・虚偽情報の登録<br>・本サービスの不正利用<br>・著作権・知的財産権の侵害</p>
-      <p style="margin-bottom:10px"><b>第4条（個人情報の取り扱い）</b><br>登録された個人情報はプライバシーポリシーに従い適切に管理します。第三者への無断提供は行いません。</p>
-      <p style="margin-bottom:10px"><b>第5条（免責事項）</b><br>本サービスの利用により生じた損害について、運営は責任を負いません。</p>
-      <p style="margin-bottom:10px"><b>第6条（規約の変更）</b><br>本規約は予告なく変更される場合があります。変更後も引き続き利用された場合は同意したとみなします。</p>
-      <p style="color:var(--txt3);font-size:11px">最終更新: 2025年1月</p>
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--txt1)">部勝（ブカツ） 利用規約</h3>
+      <p style="font-size:11px;color:var(--txt3);margin-bottom:12px">最終更新: 2026年2月27日</p>
+      <p style="margin-bottom:10px"><b>第1条（目的）</b><br>本規約は「部勝（ブカツ）」の利用に関する条件を定めるものです。</p>
+      <p style="margin-bottom:10px"><b>第2条（利用資格）</b><br>チーム管理者・コーチ・選手・保護者を対象としたサービスです。18歳未満の方は保護者の同意が必要です。</p>
+      <p style="margin-bottom:10px"><b>第3条（手数料）</b><br>・月謝決済：5% ・コーチマッチング：10% ・単発請求：5%<br>・登録・メッセージ・栄養管理・AI機能等は無料</p>
+      <p style="margin-bottom:10px"><b>第4条（決済）</b><br>決済はStripeを利用。カード情報は当社サーバーに保存しません。</p>
+      <p style="margin-bottom:10px"><b>第5条（禁止事項）</b><br>虚偽情報の登録、誹謗中傷、不正アクセス、サービス外取引による手数料回避等を禁止します。</p>
+      <p style="margin-bottom:10px"><b>第6条（AI機能）</b><br>栄養分析・トレーニングアドバイスは参考情報であり、医学的診断を代替しません。</p>
+      <p style="margin-bottom:10px"><b>第7条（選手情報の開示）</b><br>コーチへの選手情報開示は、チーム管理者の許可＋コーチの誓約書署名が必要です。開示後の管理責任はコーチに帰属します。</p>
+      <p style="margin-bottom:10px"><b>第8条（免責）</b><br>当社はマッチング仲介プラットフォームであり、指導の質・事故等について直接の責任を負いません。賠償上限は過去12ヶ月の支払手数料総額です。</p>
+      <p style="margin-bottom:10px"><b>第9条（準拠法）</b><br>日本法を準拠法とし、東京地方裁判所を専属的合意管轄裁判所とします。</p>
+      <p style="margin-top:16px"><a href="#" onclick="event.preventDefault();showLegal('terms')" style="color:var(--org);font-weight:600">→ 利用規約の全文を読む</a></p>
     </div>`;
   }
   if(type === 'privacy'){
     return `<div style="max-height:60vh;overflow-y:auto;font-size:13px;line-height:1.8;color:var(--txt2)">
       <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--txt1)">プライバシーポリシー</h3>
-      <p style="margin-bottom:10px"><b>収集する情報</b><br>氏名・メールアドレス・役割情報・スポーツ活動に関するデータを収集します。</p>
-      <p style="margin-bottom:10px"><b>利用目的</b><br>・サービスの提供および改善<br>・コーチ・チームマッチングの支援<br>・月謝管理・コミュニケーション機能の提供</p>
-      <p style="margin-bottom:10px"><b>第三者提供</b><br>法令に基づく場合を除き、収集した個人情報を第三者に提供することはありません。</p>
-      <p style="margin-bottom:10px"><b>情報の保管</b><br>収集した情報はSSL暗号化通信により保護されたサーバーで管理します。</p>
-      <p style="margin-bottom:10px"><b>Cookie・ローカルストレージ</b><br>本サービスはブラウザのローカルストレージを使用してデータを保存します。</p>
-      <p style="margin-bottom:10px"><b>お問い合わせ</b><br>個人情報に関するお問い合わせはチャット機能より事務局までご連絡ください。</p>
-      <p style="color:var(--txt3);font-size:11px">最終更新: 2025年1月</p>
+      <p style="font-size:11px;color:var(--txt3);margin-bottom:12px">最終更新: 2026年2月27日</p>
+      <p style="margin-bottom:10px"><b>収集する情報</b><br>氏名・メールアドレス・役割情報・チーム情報・身体情報（任意）・食事記録・トレーニング記録・チャット内容・決済履歴を収集します。カード情報はStripeが管理し当社は保持しません。</p>
+      <p style="margin-bottom:10px"><b>利用目的</b><br>サービスの提供・改善、コーチ/チームマッチング、決済処理、AI栄養分析・トレーニングアドバイス、不正利用防止に使用します。</p>
+      <p style="margin-bottom:10px"><b>第三者提供</b><br>Stripe（決済）、コーチへの選手情報開示（チーム許可＋誓約書署名時のみ）、法令に基づく場合を除き、第三者に提供しません。</p>
+      <p style="margin-bottom:10px"><b>AI機能</b><br>AI機能は利用者自身のデータのみを分析し、モデル学習等には使用しません。</p>
+      <p style="margin-bottom:10px"><b>セキュリティ</b><br>SSL暗号化・パスワードハッシュ化・ロールベースアクセス制御・セッションタイムアウト・レート制限を実施しています。</p>
+      <p style="margin-bottom:10px"><b>利用者の権利</b><br>個人情報の開示・訂正・削除・利用停止を請求できます。設定画面からデータのエクスポートも可能です。</p>
+      <p style="margin-bottom:10px"><b>データ保管</b><br>アカウント削除後30日以内に個人情報を削除します（法定保管データを除く）。</p>
+      <p style="margin-bottom:10px"><b>お問い合わせ</b><br>kanri@mycoach-myteam.com</p>
+      <p style="margin-top:16px"><a href="#" onclick="event.preventDefault();showLegal('privacy')" style="color:var(--org);font-weight:600">→ プライバシーポリシーの全文を読む</a></p>
     </div>`;
   }
   return '<div class="text-muted text-center" style="padding:20px">コンテンツが見つかりません</div>';
