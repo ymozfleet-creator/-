@@ -101,7 +101,7 @@ textarea.input{resize:vertical;min-height:90px}
 .checkbox.checked i{display:block}
 
 /* CARDS */
-.card{background:var(--surf);border:1px solid var(--b1);border-radius:var(--r2);padding:22px;transition:border-color .2s}
+.card{background:var(--surf);border:1px solid var(--b1);border-radius:var(--r2);padding:22px;transition:border-color .2s;max-width:100%}
 .card:hover{border-color:var(--b2)}
 .card-sm{padding:14px}
 
@@ -311,13 +311,13 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .nav-item i{width:16px;text-align:center;font-size:14px}
 .nav-badge{margin-left:auto;background:var(--blue);color:#fff;font-size:9px;padding:2px 6px;border-radius:99px;font-weight:700}
 .sb-foot{padding:14px 8px;border-top:1px solid var(--b1)}
-.main{margin-left:252px;min-height:100vh;display:flex;flex-direction:column}
+.main{margin-left:252px;min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .topbar{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(59,100,180,.12);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .topbar-title{font-size:17px;font-weight:700;color:var(--txt1)}
 .topbar-actions{display:flex;align-items:center;gap:10px}
 .notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid var(--surf)}
-.page-body{padding:28px;flex:1}
-.page{animation:fadeUp .25s cubic-bezier(.4,0,.2,1)}
+.page-body{padding:28px;flex:1;overflow-x:hidden;overflow-y:auto}
+.page{animation:fadeUp .25s cubic-bezier(.4,0,.2,1);max-width:100%;overflow-x:hidden}
 .pg-head{margin-bottom:28px}
 .pg-title{font-size:24px;font-weight:800;margin-bottom:4px;line-height:1.25;color:var(--txt1);letter-spacing:-.02em}
 .pg-sub{color:var(--txt2);font-size:13px;line-height:1.5}
@@ -5792,16 +5792,16 @@ function teamMgmt(){
     <div style="padding:14px 16px;border-bottom:1px solid var(--bdr);font-weight:700;font-size:14px">チーム一覧</div>
     ${teams.length===0?'<div class="text-muted text-sm text-center" style="padding:40px">チーム未登録</div>':''}
     <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse">
+      <table style="width:100%;border-collapse:collapse;min-width:780px">
         <thead><tr style="background:var(--surf2);font-size:12px;color:var(--txt3)">
-          <th style="padding:10px 16px;text-align:left">チーム名</th>
-          <th style="padding:10px 8px;text-align:left">種目</th>
-          <th style="padding:10px 8px;text-align:left">選手数</th>
-          <th style="padding:10px 8px;text-align:left">担当コーチ</th>
-          <th style="padding:10px 8px;text-align:left">月謝</th>
-          <th style="padding:10px 8px;text-align:center">手数料率</th>
-          <th style="padding:10px 8px;text-align:left">ステータス</th>
-          <th style="padding:10px 8px;text-align:center">操作</th>
+          <th style="padding:10px 14px;text-align:left;min-width:120px">チーム名</th>
+          <th style="padding:10px 8px;text-align:left;min-width:60px">種目</th>
+          <th style="padding:10px 8px;text-align:center;min-width:50px">選手数</th>
+          <th style="padding:10px 8px;text-align:left;min-width:80px">担当コーチ</th>
+          <th style="padding:10px 8px;text-align:right;min-width:70px">月謝</th>
+          <th style="padding:10px 8px;text-align:center;min-width:60px">手数料率</th>
+          <th style="padding:10px 8px;text-align:center;min-width:70px">ステータス</th>
+          <th style="padding:10px 8px;text-align:center;min-width:100px">操作</th>
         </tr></thead>
         <tbody>
           ${teams.map(t=>{
@@ -21108,7 +21108,7 @@ function legalText(type){
       </div>
 
       <!-- Supporter -->
-      <div class="who-card" onclick="showAuth('register')">
+      <div class="who-card" onclick="window.open('https://mysupporter-91816.web.app/','_blank')" style="cursor:pointer">
         <div class="who-icon" style="background:#fff7ed;color:#f97316;">
           <i class="fas fa-gift"></i>
         </div>
