@@ -2881,11 +2881,14 @@ const ROLE_NAV = {
   admin:[
     {cat:'メイン'},
     {k:'dashboard',i:'fa-chart-line',l:'ダッシュボード'},
-    {cat:'運営管理'},
+    {cat:'ユーザー管理'},
     {k:'coaches',i:'fa-whistle',l:'コーチ管理'},
     {k:'teams',i:'fa-shield-alt',l:'チーム管理'},
-    {k:'payments',i:'fa-yen-sign',l:'収益管理'},
+    {k:'admin-players',i:'fa-running',l:'選手・保護者管理'},
+    {cat:'収益管理'},
+    {k:'payments',i:'fa-yen-sign',l:'月謝・手数料'},
     {k:'threads',i:'fa-comments-dollar',l:'支払いスレッド'},
+    {k:'admin-data',i:'fa-database',l:'データ管理'},
     {cat:'コミュニケーション'},
     {k:'chat',i:'fa-comments',l:'メッセージ'},
     {cat:'システム'},
@@ -4694,6 +4697,8 @@ function goTo(page){
     ai:()=>r==='player'&&!isPlayerActivated()?playerLockedPage():aiPage(),
     stats:()=>r==='player'&&!isPlayerActivated()?playerLockedPage():statsPage(),
     'team-profile-edit':teamProfileEditPage,
+    'admin-players':adminPlayersMgmt,
+    'admin-data':adminDataMgmt,
   };
   const fn=pages[page];
   try{ document.getElementById('page-body').innerHTML=fn?'<div class="page">'+fn()+'</div>':'<div class="page"><div class="card" style="text-align:center;padding:48px"><div style="font-size:40px;margin-bottom:12px">🚧</div><div class="fw7 mb-8">このページは準備中です</div></div></div>';
@@ -4709,6 +4714,7 @@ function goTo(page){
     'earnings': 'earnings', 'stats': 'stats',
     'nutrition': 'nutrition', 'training': 'training',
     'payments': 'payments',
+    'admin-players': null, 'admin-data': null,
     'fee': 'feeMgmt', 'parent-report': 'parentReport',
     'coach-report': 'coachReport', 'coach-players': 'coachPlayers', 'ai': null,
   };
@@ -4731,6 +4737,588 @@ function afterPage(page){
 // 現在のページをリフレッシュ（DB更新後に呼ぶ）
 function refreshPage(){
   goTo(curPage);
+}
+
+
+
+// ── Admin Coach Edit/Delete ──
+function adminEditCoach(cid){
+  var c=DB.coaches.find(function(x){return x.id===cid;});if(!c){toast('コーチ不明','e');return;}
+  openM('✏️ コーチ編集: '+sanitize(c.name,15),
+    '<div class="form-group"><label class="label">氏名</label><input id="aec-name" class="input" value="'+sanitize(c.name||'')+'"></div>'
+    +'<div class="form-group"><label class="label">種目</label><input id="aec-sport" class="input" value="'+sanitize(c.sport||'')+'"></div>'
+    +'<div class="form-group"><label class="label">エリア</label><input id="aec-area" class="input" value="'+sanitize(c.area||'')+'"></div>'
+    +'<div class="form-group"><label class="label">月額料金（¥）</label><input id="aec-price" class="input" type="number" value="'+(c.price||0)+'"></div>'
+    +'<div class="form-group"><label class="label">都度料金（¥）</label><input id="aec-price1" class="input" type="number" value="'+(c.priceOnetime||0)+'"></div>'
+    +'<div class="form-group"><label class="label">指導歴（年）</label><input id="aec-exp" class="input" type="number" value="'+(c.exp||0)+'"></div>'
+    +'<div class="form-group"><label class="label">自己紹介</label><textarea id="aec-bio" class="input" rows="3">'+sanitize(c.bio||c.pr||'')+'</textarea></div>'
+    +'<div class="payment-method-row"><div><div class="text-sm fw7">承認済み</div></div><label class="toggle-switch"><input type="checkbox" id="aec-verified" '+(c.verified?'checked':'')+'><span class="toggle-slider"></span></label></div>'
+    +'<div class="payment-method-row"><div><div class="text-sm fw7">募集中</div></div><label class="toggle-switch"><input type="checkbox" id="aec-avail" '+(c.avail?'checked':'')+'><span class="toggle-slider"></span></label></div>'
+    +'<div class="flex gap-8 mt-16"><button class="btn btn-primary flex-1" onclick="adminSaveCoach(\''+c.id+'\')">💾 保存</button><button class="btn btn-ghost flex-1" onclick="closeM()">キャンセル</button></div>'
+  );
+}
+function adminSaveCoach(cid){
+  var c=DB.coaches.find(function(x){return x.id===cid;});if(!c)return;
+  c.name=sanitize(document.getElementById('aec-name')?.value||c.name,50);
+  c.sport=sanitize(document.getElementById('aec-sport')?.value||c.sport,30);
+  c.area=sanitize(document.getElementById('aec-area')?.value||c.area,50);
+  c.price=Math.max(0,parseInt(document.getElementById('aec-price')?.value)||0);
+  c.priceOnetime=Math.max(0,parseInt(document.getElementById('aec-price1')?.value)||0);
+  c.exp=Math.max(0,parseInt(document.getElementById('aec-exp')?.value)||0);
+  c.bio=sanitize(document.getElementById('aec-bio')?.value||'',500);
+  c.verified=document.getElementById('aec-verified')?.checked||false;
+  c.avail=document.getElementById('aec-avail')?.checked||false;
+  saveDB();closeM();toast('コーチ情報を更新しました','s');refreshPage();
+}
+function adminDeleteCoach(cid){
+  var c=DB.coaches.find(function(x){return x.id===cid;});if(!c)return;
+  if(!confirm(sanitize(c.name,15)+'を削除しますか？'))return;
+  DB.coaches=DB.coaches.filter(function(x){return x.id!==cid;});
+  saveDB();toast('コーチを削除しました','s');refreshPage();
+}
+
+// ── Admin Team Edit/Delete ──
+function adminEditTeam(tid){
+  var t=DB.teams.find(function(x){return x.id===tid;});if(!t){toast('チーム不明','e');return;}
+  var feeRate=getFeeRate(t.id,'monthlyFee');
+  openM('✏️ チーム編集: '+sanitize(t.name,15),
+    '<div class="form-group"><label class="label">チーム名</label><input id="aet-name" class="input" value="'+sanitize(t.name||'')+'"></div>'
+    +'<div class="form-group"><label class="label">種目</label><input id="aet-sport" class="input" value="'+sanitize(t.sport||'')+'"></div>'
+    +'<div class="form-group"><label class="label">エリア</label><input id="aet-area" class="input" value="'+sanitize(t.area||'')+'"></div>'
+    +'<div class="form-group"><label class="label">月謝（¥）</label><input id="aet-fee" class="input" type="number" value="'+(t.fee||0)+'" min="0"></div>'
+    +'<div class="form-group"><label class="label">招待コード</label><input id="aet-code" class="input" value="'+sanitize(t.code||'')+'" style="text-transform:uppercase;letter-spacing:2px;font-weight:700"></div>'
+    +'<div class="form-group"><label class="label">手数料率（%）</label><input id="aet-feeRate" class="input" type="number" value="'+feeRate+'" min="0" max="50"></div>'
+    +'<div class="payment-method-row"><div><div class="text-sm fw7">マッチング受付</div></div><label class="toggle-switch"><input type="checkbox" id="aet-matchAvail" '+(t.matchAvailable!==false?'checked':'')+'><span class="toggle-slider"></span></label></div>'
+    +'<div class="flex gap-8 mt-16"><button class="btn btn-primary flex-1" onclick="adminSaveTeam(\''+t.id+'\')">💾 保存</button><button class="btn btn-ghost flex-1" onclick="closeM()">キャンセル</button></div>'
+  );
+}
+function adminSaveTeam(tid){
+  var t=DB.teams.find(function(x){return x.id===tid;});if(!t)return;
+  t.name=sanitize(document.getElementById('aet-name')?.value||t.name,50);
+  t.sport=sanitize(document.getElementById('aet-sport')?.value||t.sport,30);
+  t.area=sanitize(document.getElementById('aet-area')?.value||t.area,50);
+  t.fee=Math.max(0,parseInt(document.getElementById('aet-fee')?.value)||0);
+  t.code=sanitize(document.getElementById('aet-code')?.value||t.code,12).toUpperCase();
+  t.matchAvailable=document.getElementById('aet-matchAvail')?.checked??true;
+  var newRate=parseInt(document.getElementById('aet-feeRate')?.value);
+  if(!isNaN(newRate)&&newRate!==10){if(!DB.teamFeeRates)DB.teamFeeRates={};DB.teamFeeRates[tid]={monthlyFee:newRate,coachFee:newRate};}
+  saveDB();closeM();toast('チーム情報を更新しました','s');refreshPage();
+}
+function adminDeleteTeam(tid){
+  var t=DB.teams.find(function(x){return x.id===tid;});if(!t)return;
+  if(!confirm(sanitize(t.name,15)+'を削除しますか？所属選手はチーム未所属になります。'))return;
+  DB.players.forEach(function(p){if(p.team===tid)p.team='';});
+  DB.teams=DB.teams.filter(function(x){return x.id!==tid;});
+  saveDB();toast('チームを削除しました','s');refreshPage();
+}
+
+// ── Admin Payment Status Toggle ──
+function adminTogglePayStatus(payId){
+  var p=_dbArr('payments').find(function(x){return x.id===payId;});
+  if(!p)return;
+  if(p.status==='paid'){p.status='unpaid';p.paidAt=null;}
+  else{p.status='paid';p.paidAt=new Date().toLocaleDateString('ja-JP');}
+  saveDB();toast('支払い状態を変更しました','s');refreshPage();
+}
+
+
+function adminDeleteEvent(eid){
+  if(!confirm('このイベントを削除しますか？'))return;
+  DB.events=_dbArr('events').filter(function(x){return x.id!==eid;});
+  saveDB();toast('イベントを削除しました','s');refreshPage();
+}
+function adminBroadcastNotif(){
+  var text=sanitize(document.getElementById('adm-notif-text')?.value||'',200);
+  if(!text){toast('テキストを入力してください','e');return;}
+  addNotif(text,'fa-bullhorn','dashboard');
+  document.getElementById('adm-notif-text').value='';
+  toast('通知を送信しました','s');refreshPage();
+}
+function adminViewPlayerDetail(pid){
+  var p=DB.players.find(function(x){return x.id===pid;});
+  if(!p){toast('選手不明','e');return;}
+  var team=DB.teams.find(function(t){return t.id===p.team;});
+  var guardian=p.guardianId?_getUsers().find(function(u){return u.id===p.guardianId;}):null;
+  
+  // Condition log
+  var cLog=DB.conditionLog?.[p.id]||{};
+  var cEntries=Object.keys(cLog).sort().reverse().slice(0,7);
+  
+  // Training log
+  var tLog=DB.trainingLog?.[p.id]||{};
+  var tEntries=Object.keys(tLog).sort().reverse().slice(0,5);
+  
+  // Body log
+  var bLog=DB.bodyLog?.[p.id]||{};
+  var bEntries=Object.keys(bLog).sort().reverse().slice(0,5);
+  
+  // Injury history
+  var injuries=DB.injuryHistory?.[p.id]||[];
+  
+  // Payments
+  var pays=_dbArr('payments').filter(function(x){return x.player===p.id;});
+  
+  var h='<div style="max-height:70vh;overflow-y:auto;padding:4px">';
+  
+  // Basic info
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;font-size:12px">';
+  h+='<div><span class="text-muted">チーム:</span> <span class="fw7">'+(team?sanitize(team.name,15):'未所属')+'</span></div>';
+  h+='<div><span class="text-muted">年齢:</span> <span class="fw7">'+(p.age||'--')+'歳</span></div>';
+  h+='<div><span class="text-muted">ポジション:</span> <span class="fw7">'+(p.pos||'--')+'</span></div>';
+  h+='<div><span class="text-muted">保護者:</span> <span class="fw7">'+(guardian?sanitize(guardian.name,10):'未紐付')+'</span></div>';
+  h+='</div>';
+  
+  // Condition log (直近7日)
+  h+='<div class="fw7 mb-6" style="font-size:13px;border-top:1px solid var(--bdr);padding-top:12px">😊 コンディション (直近7日)</div>';
+  if(cEntries.length){
+    h+='<table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:12px"><thead><tr style="background:var(--surf2)"><th style="padding:4px 8px">日付</th><th style="padding:4px">気分</th><th style="padding:4px">睡眠</th><th style="padding:4px">疲労</th><th style="padding:4px">RPE</th></tr></thead><tbody>';
+    cEntries.forEach(function(dk){
+      var c=cLog[dk];
+      h+='<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:4px 8px">'+dk+'</td><td style="padding:4px;text-align:center">'+['','😫','😟','😐','😊','🤩'][c.mood||3]+'</td><td style="padding:4px;text-align:center">'+(c.sleep||'--')+'h</td><td style="padding:4px;text-align:center">'+(c.fatigue||'--')+'/5</td><td style="padding:4px;text-align:center">'+(c.rpe||'--')+'</td></tr>';
+    });
+    h+='</tbody></table>';
+  } else { h+='<div class="text-muted text-xs mb-12">記録なし</div>'; }
+  
+  // Body log
+  h+='<div class="fw7 mb-6" style="font-size:13px;border-top:1px solid var(--bdr);padding-top:12px">📏 体組成 (直近5件)</div>';
+  if(bEntries.length){
+    h+='<table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:12px"><thead><tr style="background:var(--surf2)"><th style="padding:4px 8px">日付</th><th style="padding:4px">体重</th><th style="padding:4px">身長</th><th style="padding:4px">体脂肪</th></tr></thead><tbody>';
+    bEntries.forEach(function(dk){
+      var b=bLog[dk];
+      h+='<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:4px 8px">'+dk+'</td><td style="padding:4px;text-align:center">'+(b.weight||'--')+'kg</td><td style="padding:4px;text-align:center">'+(b.height||'--')+'cm</td><td style="padding:4px;text-align:center">'+(b.bodyFat||'--')+'%</td></tr>';
+    });
+    h+='</tbody></table>';
+  } else { h+='<div class="text-muted text-xs mb-12">記録なし</div>'; }
+  
+  // Training log
+  h+='<div class="fw7 mb-6" style="font-size:13px;border-top:1px solid var(--bdr);padding-top:12px">🏋️ トレーニング (直近5件)</div>';
+  if(tEntries.length){
+    tEntries.forEach(function(dk){
+      var t=tLog[dk];
+      var exCount=(t.exercises||[]).length;
+      h+='<div style="font-size:11px;padding:4px 0;border-bottom:1px solid var(--bdr)">'+dk+' - '+exCount+'種目 / '+(t.duration||'--')+'分 / '+(t.kcal||'--')+'kcal</div>';
+    });
+    h+='<div style="height:8px"></div>';
+  } else { h+='<div class="text-muted text-xs mb-12">記録なし</div>'; }
+  
+  // Injuries
+  h+='<div class="fw7 mb-6" style="font-size:13px;border-top:1px solid var(--bdr);padding-top:12px">🩹 ケガ履歴</div>';
+  if(injuries.length){
+    injuries.forEach(function(inj){
+      h+='<div style="font-size:11px;padding:4px 0;border-bottom:1px solid var(--bdr)"><span class="badge b-org" style="font-size:9px">'+sanitize(inj.type||'',10)+'</span> '+(inj.bodyPart||'')+' - 重度'+(inj.severity||'?')+'/5 ('+(inj.date||'')+')</div>';
+    });
+    h+='<div style="height:8px"></div>';
+  } else { h+='<div class="text-muted text-xs mb-12">なし</div>'; }
+  
+  // Match history
+  var mHist=DB.matchHistory||[];
+  h+='<div class="fw7 mb-6" style="font-size:13px;border-top:1px solid var(--bdr);padding-top:12px">⚽ 試合結果</div>';
+  if(mHist.length){
+    h+='<table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:12px"><thead><tr style="background:var(--surf2)"><th style="padding:4px 8px">日付</th><th style="padding:4px">対戦相手</th><th style="padding:4px">結果</th><th style="padding:4px">スコア</th></tr></thead><tbody>';
+    mHist.slice().reverse().slice(0,10).forEach(function(m){
+      var resColor=m.result==='win'?'var(--grn)':m.result==='lose'?'var(--red)':'var(--txt3)';
+      var resLabel=m.result==='win'?'勝':m.result==='lose'?'負':'分';
+      h+='<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:4px 8px">'+(m.date||'')+'</td><td style="padding:4px">'+sanitize(m.opponent||'',12)+'</td><td style="padding:4px;text-align:center;color:'+resColor+';font-weight:700">'+resLabel+'</td><td style="padding:4px;text-align:center">'+(m.homeScore||0)+'-'+(m.awayScore||0)+'</td></tr>';
+    });
+    h+='</tbody></table>';
+  } else { h+='<div class="text-muted text-xs mb-12">試合記録なし</div>'; }
+  
+  // Payments
+  h+='<div class="fw7 mb-6" style="font-size:13px;border-top:1px solid var(--bdr);padding-top:12px">💴 支払い履歴</div>';
+  if(pays.length){
+    pays.slice().reverse().slice(0,10).forEach(function(pay){
+      h+='<div style="font-size:11px;padding:4px 0;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between">'
+        +'<span>'+(pay.month||'')+'</span>'
+        +'<span>¥'+fmtNum(pay.amount||0)+'</span>'
+        +'<span class="badge '+(pay.status==='paid'?'b-green':'b-org')+'" style="font-size:9px">'+(pay.status==='paid'?'済':'未')+'</span>'
+        +'</div>';
+    });
+  } else { h+='<div class="text-muted text-xs mb-12">なし</div>'; }
+  
+  h+='</div>';
+  openM('📋 '+sanitize(p.name,15)+' - 選手詳細', h);
+}
+
+// ==================== ADMIN PLAYERS/PARENTS MANAGEMENT ====================
+function adminPlayersMgmt(){
+  if(DB.currentUser?.role!=='admin') return '<div class="card text-center" style="padding:40px">🔒 管理者のみ</div>';
+  const tab=window._apTab||'players';
+  const q=(window._apQ||'').toLowerCase();
+  const players=DB.players.filter(p=>!q||((p.name||'')+(p.team||'')).toLowerCase().includes(q));
+  const users=_getUsers();
+  const parents=users.filter(u=>u.role==='parent');
+  
+  let html=`<div class="pg-head flex justify-between items-center">
+    <div><div class="pg-title">選手・保護者管理</div><div class="pg-sub">全${DB.players.length}選手 / ${parents.length}保護者</div></div>
+    <div class="flex gap-8">
+      <button class="btn btn-secondary btn-sm" onclick="adminExportPlayersCSV()">⬇ CSV</button>
+    </div>
+  </div>
+  <div class="flex gap-8 mb-16">
+    <button class="btn ${tab==='players'?'btn-primary':'btn-ghost'} btn-sm" onclick="window._apTab='players';refreshPage()">👦 選手一覧</button>
+    <button class="btn ${tab==='parents'?'btn-primary':'btn-ghost'} btn-sm" onclick="window._apTab='parents';refreshPage()">👨‍👩‍👧 保護者一覧</button>
+  </div>
+  <div style="margin-bottom:14px;position:relative">
+    <i class="fa fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt3);font-size:12px"></i>
+    <input class="input" placeholder="名前・チームで検索…" value="${sanitize(window._apQ||'')}" oninput="window._apQ=this.value;refreshPage()" style="padding-left:32px;height:36px;font-size:12px">
+  </div>`;
+
+  if(tab==='players'){
+    html+=`<div class="card" style="padding:0;overflow:hidden">
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:var(--surf2);color:var(--txt3)">
+        <th style="padding:10px 12px;text-align:left">選手名</th>
+        <th style="padding:10px 8px;text-align:left">チーム</th>
+        <th style="padding:10px 8px;text-align:center">年齢</th>
+        <th style="padding:10px 8px;text-align:left">保護者</th>
+        <th style="padding:10px 8px;text-align:center">月謝</th>
+        <th style="padding:10px 8px;text-align:center">コンディション</th>
+        <th style="padding:10px 8px;text-align:center">操作</th>
+      </tr></thead><tbody>`;
+    players.forEach(p=>{
+      const team=DB.teams.find(t=>t.id===p.team);
+      const guardian=p.guardianId?users.find(u=>u.id===p.guardianId):null;
+      const thisPay=_dbArr('payments').find(x=>x.player===p.id&&x.month===curMonth());
+      const payStatus=thisPay?(thisPay.status==='paid'?'<span class="badge b-green" style="font-size:10px">済</span>':'<span class="badge b-org" style="font-size:10px">未</span>'):'<span class="badge b-gray" style="font-size:10px">--</span>';
+      const cond=DB.conditionLog?.[p.id];
+      const latestCond=cond?Object.values(cond).sort((a,b)=>(b.date||'')>(a.date||'')?1:-1)[0]:null;
+      const condBadge=latestCond?'<span style="font-size:14px">'+['','😫','😟','😐','😊','🤩'][latestCond.mood||3]+'</span>':'--';
+      html+=`<tr style="border-bottom:1px solid var(--bdr)">
+        <td style="padding:10px 12px"><div class="fw7">${sanitize(p.name||'',20)}</div><div class="text-xs text-muted">${p.pos||''} / ${p.id}</div></td>
+        <td style="padding:10px 8px">${team?sanitize(team.name,15):'<span class="text-muted">未所属</span>'}</td>
+        <td style="padding:10px 8px;text-align:center">${p.age||'--'}</td>
+        <td style="padding:10px 8px">${guardian?'<span class="badge b-green" style="font-size:10px">'+sanitize(guardian.name,8)+'</span>':'<span class="badge b-yel" style="font-size:10px">未紐付</span>'}</td>
+        <td style="padding:10px 8px;text-align:center">${payStatus}</td>
+        <td style="padding:10px 8px;text-align:center">${condBadge}</td>
+        <td style="padding:10px 8px;text-align:center">
+          <button class="btn btn-ghost btn-xs" onclick="adminViewPlayerDetail('${p.id}')" title="詳細">📋</button>
+          <button class="btn btn-ghost btn-xs" onclick="adminEditPlayer('${p.id}')">✏️</button>
+          <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="adminDeletePlayer('${p.id}')">🗑️</button>
+        </td></tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+    // 集計
+    const withGuardian=DB.players.filter(p=>p.guardianId).length;
+    const avgAge=DB.players.length?Math.round(DB.players.reduce((s,p)=>s+(p.age||0),0)/DB.players.length):0;
+    html+=`<div class="stat-row mt-16" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-box"><div class="stat-l">総選手数</div><div class="stat-n">${DB.players.length}</div></div>
+      <div class="stat-box"><div class="stat-l">平均年齢</div><div class="stat-n">${avgAge}歳</div></div>
+      <div class="stat-box"><div class="stat-l">保護者紐付済</div><div class="stat-n" style="color:var(--grn)">${withGuardian}</div></div>
+      <div class="stat-box"><div class="stat-l">未紐付</div><div class="stat-n" style="color:var(--red)">${DB.players.length-withGuardian}</div></div>
+    </div>`;
+  } else {
+    // 保護者一覧
+    html+=`<div class="card" style="padding:0;overflow:hidden">
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:var(--surf2);color:var(--txt3)">
+        <th style="padding:10px 12px;text-align:left">保護者名</th>
+        <th style="padding:10px 8px;text-align:left">メール</th>
+        <th style="padding:10px 8px;text-align:left">紐付け子供</th>
+        <th style="padding:10px 8px;text-align:center">カード登録</th>
+        <th style="padding:10px 8px;text-align:center">未払い</th>
+        <th style="padding:10px 8px;text-align:center">操作</th>
+      </tr></thead><tbody>`;
+    parents.filter(u=>!q||(u.name||'').toLowerCase().includes(q)).forEach(u=>{
+      const children=DB.players.filter(p=>p.guardianId===u.id);
+      const unpaid=_dbArr('payments').filter(p=>p.guardianId===u.id&&p.status!=='paid').length;
+      html+=`<tr style="border-bottom:1px solid var(--bdr)">
+        <td style="padding:10px 12px"><div class="fw7">${sanitize(u.name||'',20)}</div><div class="text-xs text-muted">${u.id}</div></td>
+        <td style="padding:10px 8px;font-size:11px">${sanitize(u.email||'',25)}</td>
+        <td style="padding:10px 8px">${children.length?children.map(c=>'<span class="badge b-blue" style="font-size:10px">'+sanitize(c.name,8)+'</span>').join(' '):'<span class="text-muted">なし</span>'}</td>
+        <td style="padding:10px 8px;text-align:center">${u.paymentSetup?'<span class="badge b-green" style="font-size:10px">✅済</span>':'<span class="badge b-yel" style="font-size:10px">未</span>'}</td>
+        <td style="padding:10px 8px;text-align:center">${unpaid?'<span class="badge b-org" style="font-size:10px">'+unpaid+'件</span>':'--'}</td>
+        <td style="padding:10px 8px;text-align:center">
+          <button class="btn btn-ghost btn-xs" onclick="adminEditUser('${u.id}')">✏️</button>
+        </td></tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  }
+  return html;
+}
+
+function adminEditPlayer(pid){
+  const p=DB.players.find(x=>x.id===pid);
+  if(!p){toast('選手が見つかりません','e');return;}
+  const teams=DB.teams;
+  openM('✏️ 選手編集: '+sanitize(p.name,15),`
+    <div class="form-group"><label class="label">氏名</label><input id="aep-name" class="input" value="${sanitize(p.name||'')}"></div>
+    <div class="form-group"><label class="label">年齢</label><input id="aep-age" class="input" type="number" value="${p.age||''}"></div>
+    <div class="form-group"><label class="label">ポジション</label><input id="aep-pos" class="input" value="${sanitize(p.pos||'')}"></div>
+    <div class="form-group"><label class="label">所属チーム</label>
+      <select id="aep-team" class="input">
+        <option value="">未所属</option>
+        ${teams.map(t=>'<option value="'+t.id+'" '+(p.team===t.id?'selected':'')+'>'+sanitize(t.name,20)+'</option>').join('')}
+      </select>
+    </div>
+    <div class="form-group"><label class="label">保護者ID</label><input id="aep-guardian" class="input" value="${sanitize(p.guardianId||'')}" placeholder="保護者のユーザーID"></div>
+    <div class="flex gap-8 mt-16">
+      <button class="btn btn-primary flex-1" onclick="adminSavePlayer('${p.id}')">💾 保存</button>
+      <button class="btn btn-ghost flex-1" onclick="closeM()">キャンセル</button>
+    </div>
+  `);
+}
+function adminSavePlayer(pid){
+  const p=DB.players.find(x=>x.id===pid);if(!p)return;
+  p.name=sanitize(document.getElementById('aep-name')?.value||p.name,50);
+  p.age=parseInt(document.getElementById('aep-age')?.value)||p.age;
+  p.pos=sanitize(document.getElementById('aep-pos')?.value||'',20);
+  p.team=document.getElementById('aep-team')?.value||'';
+  p.guardianId=document.getElementById('aep-guardian')?.value||'';
+  saveDB();closeM();toast('選手情報を更新しました','s');refreshPage();
+}
+function adminDeletePlayer(pid){
+  const p=DB.players.find(x=>x.id===pid);if(!p)return;
+  if(!confirm(sanitize(p.name,15)+'を削除しますか？この操作は元に戻せません。'))return;
+  DB.players=DB.players.filter(x=>x.id!==pid);
+  saveDB();toast('選手を削除しました','s');refreshPage();
+}
+function adminEditUser(uid){
+  const users=_getUsers();const u=users.find(x=>x.id===uid);if(!u)return;
+  openM('✏️ ユーザー編集: '+sanitize(u.name,15),`
+    <div class="form-group"><label class="label">氏名</label><input id="aeu-name" class="input" value="${sanitize(u.name||'')}"></div>
+    <div class="form-group"><label class="label">メール</label><input id="aeu-email" class="input" value="${sanitize(u.email||'')}"></div>
+    <div class="form-group"><label class="label">ロール</label>
+      <select id="aeu-role" class="input">
+        <option value="parent" ${u.role==='parent'?'selected':''}>保護者</option>
+        <option value="player" ${u.role==='player'?'selected':''}>選手</option>
+        <option value="coach" ${u.role==='coach'?'selected':''}>コーチ</option>
+        <option value="team" ${u.role==='team'?'selected':''}>チーム管理者</option>
+      </select>
+    </div>
+    <div class="flex gap-8 mt-16">
+      <button class="btn btn-primary flex-1" onclick="adminSaveUser('${u.id}')">💾 保存</button>
+      <button class="btn btn-ghost flex-1" onclick="closeM()">キャンセル</button>
+    </div>
+  `);
+}
+function adminSaveUser(uid){
+  const users=_getUsers();const u=users.find(x=>x.id===uid);if(!u)return;
+  u.name=sanitize(document.getElementById('aeu-name')?.value||u.name,50);
+  u.email=(document.getElementById('aeu-email')?.value||u.email).trim().toLowerCase();
+  u.role=document.getElementById('aeu-role')?.value||u.role;
+  _saveUsers(users);closeM();toast('ユーザー情報を更新しました','s');refreshPage();
+}
+function adminExportPlayersCSV(){
+  let csv='\uFEFF名前,年齢,ポジション,チーム,保護者,月謝状態\n';
+  DB.players.forEach(p=>{
+    const team=DB.teams.find(t=>t.id===p.team);
+    const guardian=p.guardianId?_getUsers().find(u=>u.id===p.guardianId):null;
+    const pay=_dbArr('payments').find(x=>x.player===p.id&&x.month===curMonth());
+    csv+=[p.name,p.age||'',p.pos||'',team?.name||'未所属',guardian?.name||'未紐付',pay?.status||'未生成'].join(',')+' \n';
+  });
+  const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='players_'+curMonth()+'.csv';a.click();
+}
+
+// ==================== ADMIN DATA MANAGEMENT ====================
+function adminDataMgmt(){
+  if(DB.currentUser?.role!=='admin') return '<div class="card text-center" style="padding:40px">🔒 管理者のみ</div>';
+  const tab=window._admDataTab||'adhoc';
+
+  const tabs=[
+    {k:'adhoc',l:'都度請求',icon:'📩',count:_dbArr('adhocInvoices').length},
+    {k:'coachpay',l:'コーチ代',icon:'💰',count:_dbArr('coachPay').length},
+    {k:'announce',l:'お知らせ',icon:'📢',count:(DB.announcements||[]).length},
+    {k:'events',l:'イベント',icon:'📅',count:_dbArr('events').length+_dbArr('teamEvents').length},
+    {k:'inventory',l:'在庫',icon:'📦',count:_dbArr('inventory').length},
+    {k:'matches',l:'チーム間マッチ',icon:'⚽',count:_dbArr('teamMatches').length},
+    {k:'reviews',l:'レビュー',icon:'⭐',count:_dbArr('teamReviews').length},
+    {k:'disclosures',l:'情報開示',icon:'🔓',count:_dbArr('disclosures').length},
+    {k:'notifs',l:'通知',icon:'🔔',count:_dbArr('notifs').length},
+    {k:'logs',l:'監査ログ',icon:'📋',count:_dbArr('moderationLog').length+_dbArr('emailLog').length},
+  ];
+
+  let html=`<div class="pg-head"><div class="pg-title">データ管理</div><div class="pg-sub">全データの確認・編集・削除</div></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+    ${tabs.map(t=>`<button class="btn ${tab===t.k?'btn-primary':'btn-ghost'} btn-sm" onclick="window._admDataTab='${t.k}';refreshPage()">${t.icon} ${t.l}<span style="font-size:10px;margin-left:4px;opacity:.7">${t.count}</span></button>`).join('')}
+  </div>`;
+
+  if(tab==='adhoc'){
+    const invoices=_dbArr('adhocInvoices');
+    html+=`<div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--bdr);font-weight:700">📩 都度請求一覧 (${invoices.length}件)</div>
+      ${invoices.length?`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:var(--surf2)"><th style="padding:8px 12px;text-align:left">タイトル</th><th style="padding:8px">金額</th><th style="padding:8px">対象</th><th style="padding:8px">状態</th><th style="padding:8px">操作</th></tr></thead><tbody>
+        ${invoices.map(i=>{
+          const pl=DB.players.find(p=>p.id===i.playerId);
+          return '<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(i.title||'',20)+'</td><td style="padding:8px;text-align:center">¥'+fmtNum(i.amount||0)+'</td><td style="padding:8px">'+sanitize(pl?.name||'',15)+'</td><td style="padding:8px;text-align:center"><span class="badge '+(i.status==='paid'?'b-green':'b-org')+'" style="font-size:10px">'+(i.status==='paid'?'済':'未')+'</span></td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="adminDeleteRecord(\'adhocInvoices\',\''+i.id+'\')">🗑️</button>'+(i.status!=='paid'?'<button class="btn btn-ghost btn-xs" onclick="adminMarkPaidAdhoc(\''+i.id+'\')">✅</button>':'')+'</td></tr>';
+        }).join('')}
+        </tbody></table></div>`:'<div class="text-center text-muted" style="padding:40px">データなし</div>'}
+    </div>`;
+  }
+
+  if(tab==='announce'){
+    const anns=DB.announcements||[];
+    html+=`<div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center">
+        <span class="fw7">📢 お知らせ一覧 (${anns.length}件)</span>
+        <button class="btn btn-primary btn-xs" onclick="adminNewAnnouncement()">+ 新規</button>
+      </div>
+      ${anns.length?anns.slice().reverse().map(a=>`<div style="padding:12px 16px;border-bottom:1px solid var(--bdr);font-size:13px">
+        <div class="flex justify-between items-center mb-4"><span class="fw7">${sanitize(a.title||'お知らせ',30)}</span><span class="text-xs text-muted">${a.date||''}</span></div>
+        <div class="text-sm text-muted mb-8" style="line-height:1.6">${sanitize(a.body||'',100)}</div>
+        <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="adminDeleteAnnounce('${a.id}')">🗑️ 削除</button>
+      </div>`).join(''):'<div class="text-center text-muted" style="padding:40px">お知らせなし</div>'}
+    </div>`;
+  }
+
+  if(tab==='matches'){
+    const matches=_dbArr('teamMatches');
+    html+=`<div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--bdr);font-weight:700">⚽ チーム間マッチング (${matches.length}件)</div>
+      ${matches.length?`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:var(--surf2)"><th style="padding:8px 12px;text-align:left">チームA</th><th style="padding:8px;text-align:left">チームB</th><th style="padding:8px">状態</th><th style="padding:8px">日程</th><th style="padding:8px">操作</th></tr></thead><tbody>
+        ${matches.map(m=>{
+          const tA=DB.teams.find(t=>t.id===m.teamA);
+          const tB=DB.teams.find(t=>t.id===m.teamB);
+          return '<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(tA?.name||'',15)+'</td><td style="padding:8px">'+sanitize(tB?.name||'',15)+'</td><td style="padding:8px;text-align:center"><span class="badge '+(m.status==='confirmed'?'b-green':m.status==='pending'?'b-yel':'b-gray')+'" style="font-size:10px">'+(m.status||'pending')+'</span></td><td style="padding:8px;text-align:center;font-size:11px">'+(m.date||'未定')+'</td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="adminDeleteRecord(\'teamMatches\',\''+m.id+'\')">🗑️</button></td></tr>';
+        }).join('')}
+        </tbody></table></div>`:'<div class="text-center text-muted" style="padding:40px">マッチングなし</div>'}
+    </div>`;
+  }
+
+  if(tab==='reviews'){
+    const reviews=_dbArr('teamReviews');
+    html+=`<div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--bdr);font-weight:700">⭐ レビュー一覧 (${reviews.length}件)</div>
+      ${reviews.length?reviews.map(r=>{
+        const from=DB.teams.find(t=>t.id===r.from);
+        const to=DB.teams.find(t=>t.id===r.to);
+        return '<div style="padding:12px 16px;border-bottom:1px solid var(--bdr);font-size:13px"><div class="flex justify-between"><span>'+sanitize(from?.name||'',12)+' → '+sanitize(to?.name||'',12)+'</span><span>'+'★'.repeat(r.rating||0)+'</span></div><div class="text-sm text-muted mt-4">'+sanitize(r.comment||'',80)+'</div><button class="btn btn-ghost btn-xs mt-4" style="color:var(--red)" onclick="adminDeleteRecord(\'teamReviews\',\''+r.id+'\')">🗑️</button></div>';
+      }).join(''):'<div class="text-center text-muted" style="padding:40px">レビューなし</div>'}
+    </div>`;
+  }
+
+  if(tab==='disclosures'){
+    const discs=_dbArr('disclosures');
+    html+=`<div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--bdr);font-weight:700">🔓 情報開示一覧 (${discs.length}件)</div>
+      ${discs.length?`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:var(--surf2)"><th style="padding:8px 12px;text-align:left">コーチ</th><th style="padding:8px;text-align:left">チーム</th><th style="padding:8px">同意日</th><th style="padding:8px">操作</th></tr></thead><tbody>
+        ${discs.map(d=>{
+          const coach=DB.coaches.find(c=>c.id===d.coachId);
+          const team=DB.teams.find(t=>t.id===d.teamId);
+          return '<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(coach?.name||'',15)+'</td><td style="padding:8px">'+sanitize(team?.name||'',15)+'</td><td style="padding:8px;text-align:center;font-size:11px">'+(d.agreedAt||'')+'</td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="adminDeleteRecord(\'disclosures\',\''+d.id+'\')">🗑️</button></td></tr>';
+        }).join('')}
+        </tbody></table></div>`:'<div class="text-center text-muted" style="padding:40px">開示データなし</div>'}
+    </div>`;
+  }
+
+
+  if(tab==='coachpay'){
+    const cpays=_dbArr('coachPay');
+    const totalPaid=cpays.filter(function(p){return p.status==='paid';}).reduce(function(s,p){return s+(p.coachReceives||0);},0);
+    const totalFee=cpays.filter(function(p){return p.status==='paid';}).reduce(function(s,p){return s+(p.platformTotal||0);},0);
+    html+='<div class="stat-row mb-16" style="grid-template-columns:repeat(3,1fr)"><div class="stat-box"><div class="stat-l">総件数</div><div class="stat-n">'+cpays.length+'</div></div><div class="stat-box"><div class="stat-l">コーチ受取合計</div><div class="stat-n">¥'+fmtNum(totalPaid)+'</div></div><div class="stat-box"><div class="stat-l">手数料合計</div><div class="stat-n" style="color:var(--org)">¥'+fmtNum(totalFee)+'</div></div></div>';
+    html+='<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:var(--surf2)"><th style="padding:8px 12px;text-align:left">コーチ</th><th style="padding:8px">チーム</th><th style="padding:8px">月</th><th style="padding:8px">金額</th><th style="padding:8px">受取</th><th style="padding:8px">手数料</th><th style="padding:8px">状態</th><th style="padding:8px">操作</th></tr></thead><tbody>';
+    cpays.slice().reverse().forEach(function(p){
+      var coach=DB.coaches.find(function(c){return c.id===p.coach;});
+      var team=DB.teams.find(function(t){return t.id===p.team||t.id===p.teamId;});
+      html+='<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(coach?.name||p.coachName||'',15)+'</td><td style="padding:8px">'+sanitize(team?.name||'',15)+'</td><td style="padding:8px;text-align:center;font-size:11px">'+(p.month||'')+'</td><td style="padding:8px;text-align:right">¥'+fmtNum(p.amount||0)+'</td><td style="padding:8px;text-align:right;color:var(--grn)">¥'+fmtNum(p.coachReceives||0)+'</td><td style="padding:8px;text-align:right;color:var(--org)">¥'+fmtNum(p.platformTotal||0)+'</td><td style="padding:8px;text-align:center"><span class="badge '+(p.status==='paid'?'b-green':'b-yel')+'" style="font-size:10px">'+(p.status==='paid'?'済':'未')+'</span></td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeleteRecord(\'coachPay\',\''+p.id+'\')">🗑</button></td></tr>';
+    });
+    html+='</tbody></table></div></div>';
+  }
+
+  if(tab==='events'){
+    var allEvts=_dbArr('events');
+    var tEvts=_dbArr('teamEvents');
+    html+='<div class="stat-row mb-16" style="grid-template-columns:repeat(3,1fr)"><div class="stat-box"><div class="stat-l">練習・試合</div><div class="stat-n">'+allEvts.length+'</div></div><div class="stat-box"><div class="stat-l">チーム間イベント</div><div class="stat-n">'+tEvts.length+'</div></div><div class="stat-box"><div class="stat-l">合計</div><div class="stat-n">'+(allEvts.length+tEvts.length)+'</div></div></div>';
+    html+='<div class="card" style="padding:0;overflow:hidden"><div style="padding:14px 16px;border-bottom:1px solid var(--bdr);font-weight:700">📅 イベント一覧</div>';
+    if(allEvts.length){
+      html+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:var(--surf2)"><th style="padding:8px 12px;text-align:left">タイトル</th><th style="padding:8px">種別</th><th style="padding:8px">日付</th><th style="padding:8px">時間</th><th style="padding:8px">操作</th></tr></thead><tbody>';
+      allEvts.forEach(function(e){
+        html+='<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(e.title||'',25)+'</td><td style="padding:8px;text-align:center"><span class="badge '+(e.type==='match'?'b-org':'b-blue')+'" style="font-size:10px">'+(e.type==='match'?'試合':'練習')+'</span></td><td style="padding:8px;text-align:center;font-size:11px">'+(e.year||'')+'-'+(e.month||'')+'-'+(e.date||'')+'</td><td style="padding:8px;text-align:center;font-size:11px">'+(e.time||'')+'</td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeleteEvent(\''+e.id+'\')">🗑</button></td></tr>';
+      });
+      html+='</tbody></table></div>';
+    } else { html+='<div class="text-center text-muted" style="padding:30px">イベントなし</div>'; }
+    if(tEvts.length){
+      html+='<div style="padding:14px 16px;border-bottom:1px solid var(--bdr);border-top:1px solid var(--bdr);font-weight:700;margin-top:0">⚽ チーム間イベント</div>';
+      tEvts.forEach(function(te){
+        var tA=DB.teams.find(function(t){return t.id===te.teamA;});
+        var tB=DB.teams.find(function(t){return t.id===te.teamB;});
+        html+='<div style="padding:10px 16px;border-bottom:1px solid var(--bdr);font-size:12px;display:flex;justify-content:space-between;align-items:center"><span>'+sanitize(tA?.name||'',12)+' vs '+sanitize(tB?.name||'',12)+' ('+(te.date||'未定')+')</span><span class="badge '+(te.status==='confirmed'?'b-green':'b-yel')+'" style="font-size:10px">'+(te.status||'pending')+'</span><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeleteRecord(\'teamEvents\',\''+te.id+'\')">🗑</button></div>';
+      });
+    }
+    html+='</div>';
+  }
+
+  if(tab==='inventory'){
+    var allInv=_dbArr('inventory');
+    var totalVal=allInv.reduce(function(s,i){return s+((i.price||0)*(i.qty||0));},0);
+    html+='<div class="stat-row mb-16" style="grid-template-columns:repeat(3,1fr)"><div class="stat-box"><div class="stat-l">物品種類</div><div class="stat-n">'+allInv.length+'</div></div><div class="stat-box"><div class="stat-l">総在庫数</div><div class="stat-n">'+allInv.reduce(function(s,i){return s+(i.qty||0);},0)+'</div></div><div class="stat-box"><div class="stat-l">総在庫金額</div><div class="stat-n">¥'+fmtNum(totalVal)+'</div></div></div>';
+    html+='<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:var(--surf2)"><th style="padding:8px 12px;text-align:left">品名</th><th style="padding:8px">カテゴリ</th><th style="padding:8px">数量</th><th style="padding:8px">単価</th><th style="padding:8px">小計</th><th style="padding:8px">操作</th></tr></thead><tbody>';
+    if(allInv.length){
+      allInv.forEach(function(i){
+        html+='<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(i.name||'',20)+'</td><td style="padding:8px;text-align:center"><span class="badge b-gray" style="font-size:10px">'+sanitize(i.cat||'',10)+'</span></td><td style="padding:8px;text-align:center">'+(i.qty||0)+'</td><td style="padding:8px;text-align:right">¥'+fmtNum(i.price||0)+'</td><td style="padding:8px;text-align:right">¥'+fmtNum((i.price||0)*(i.qty||0))+'</td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeleteRecord(\'inventory\',\''+i.id+'\')">🗑</button></td></tr>';
+      });
+    } else { html+='<tr><td colspan="6" class="text-center text-muted" style="padding:30px">在庫データなし</td></tr>'; }
+    html+='</tbody></table></div></div>';
+  }
+
+  if(tab==='notifs'){
+    var allN=_dbArr('notifs').slice().reverse();
+    html+='<div class="card mb-16" style="padding:0;overflow:hidden"><div style="padding:14px 16px;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center"><span class="fw7">🔔 通知一覧 ('+allN.length+'件)</span><button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="if(confirm(\'全通知を削除しますか？\')){DB.notifs=[];saveDB();toast(\'通知を全削除しました\',\'s\');refreshPage();}">🗑 全削除</button></div>';
+    if(allN.length){
+      allN.slice(0,50).forEach(function(n){
+        html+='<div style="padding:8px 16px;border-bottom:1px solid var(--bdr);font-size:12px;display:flex;justify-content:space-between;align-items:center"><div><i class="fa '+(n.icon||'fa-bell')+'" style="margin-right:6px;color:var(--org);font-size:10px"></i>'+sanitize(n.text||'',50)+'</div><span class="text-muted" style="font-size:10px;white-space:nowrap">'+(n.date||'')+'</span></div>';
+      });
+      if(allN.length>50) html+='<div class="text-center text-muted" style="padding:8px;font-size:11px">他 '+(allN.length-50)+'件…</div>';
+    } else { html+='<div class="text-center text-muted" style="padding:30px">通知なし</div>'; }
+    html+='</div>';
+    html+='<div class="card"><div class="fw7 mb-12">📣 一括通知送信</div><div class="form-group"><label class="label">通知テキスト</label><input id="adm-notif-text" class="input" placeholder="全ユーザーに送信する通知…"></div><button class="btn btn-primary btn-sm" onclick="adminBroadcastNotif()">📣 全員に送信</button></div>';
+  }
+
+    if(tab==='logs'){
+    const modLogs=_dbArr('moderationLog').slice(-30).reverse();
+    const emailLogs=_dbArr('emailLog').slice(-30).reverse();
+    html+=`<div class="card mb-16" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--bdr);font-weight:700">🛡️ モデレーションログ (直近30件)</div>
+      ${modLogs.length?modLogs.map(l=>`<div style="padding:8px 16px;border-bottom:1px solid var(--bdr);font-size:12px;display:flex;justify-content:space-between">
+        <span>${sanitize(l.action||'',30)} - ${sanitize(l.target||'',15)}</span>
+        <span class="text-muted">${l.date||''}</span>
+      </div>`).join(''):'<div class="text-center text-muted" style="padding:30px">ログなし</div>'}
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--bdr);font-weight:700">📧 メール送信ログ (直近30件)</div>
+      ${emailLogs.length?emailLogs.map(l=>`<div style="padding:8px 16px;border-bottom:1px solid var(--bdr);font-size:12px;display:flex;justify-content:space-between">
+        <span>${sanitize(l.subject||'',30)} → ${sanitize(l.to||'',20)}</span>
+        <span class="text-muted">${l.date||''}</span>
+      </div>`).join(''):'<div class="text-center text-muted" style="padding:30px">ログなし</div>'}
+    </div>
+    <button class="btn btn-ghost btn-sm mt-16" style="color:var(--red)" onclick="if(confirm('全ログを削除しますか？')){DB.moderationLog=[];DB.emailLog=[];saveDB();toast('ログを削除しました','s');refreshPage()}">🗑️ ログ全削除</button>`;
+  }
+
+  return html;
+}
+
+function adminDeleteRecord(arrayKey, id){
+  if(!confirm('このレコードを削除しますか？'))return;
+  if(!DB[arrayKey]||!Array.isArray(DB[arrayKey]))return;
+  DB[arrayKey]=DB[arrayKey].filter(x=>x.id!==id);
+  saveDB();toast('削除しました','s');refreshPage();
+}
+function adminMarkPaidAdhoc(id){
+  const inv=_dbArr('adhocInvoices').find(x=>x.id===id);
+  if(inv){inv.status='paid';inv.paidAt=new Date().toLocaleDateString('ja-JP');saveDB();toast('入金確認','s');refreshPage();}
+}
+function adminNewAnnouncement(){
+  openM('📢 新規お知らせ',`
+    <div class="form-group"><label class="label">タイトル</label><input id="ann-title" class="input" placeholder="お知らせタイトル"></div>
+    <div class="form-group"><label class="label">本文</label><textarea id="ann-body" class="input" rows="4" placeholder="お知らせ内容…"></textarea></div>
+    <button class="btn btn-primary w-full mt-12" onclick="adminPostAnnouncement()">📢 投稿する</button>
+  `);
+}
+function adminPostAnnouncement(){
+  const title=sanitize(document.getElementById('ann-title')?.value||'',50);
+  const body=sanitize(document.getElementById('ann-body')?.value||'',500);
+  if(!title){toast('タイトルを入力してください','e');return;}
+  if(!DB.announcements)DB.announcements=[];
+  DB.announcements.push({id:genId('ann'),title,body,date:new Date().toLocaleDateString('ja-JP'),author:DB.currentUser?.name||'事務局'});
+  saveDB();closeM();toast('お知らせを投稿しました','s');refreshPage();
+}
+function adminDeleteAnnounce(id){
+  if(!confirm('このお知らせを削除しますか？'))return;
+  DB.announcements=(DB.announcements||[]).filter(a=>a.id!==id);
+  saveDB();toast('削除しました','s');refreshPage();
 }
 
 // ==================== ADMIN DASHBOARD ====================
@@ -5234,6 +5822,8 @@ function teamMgmt(){
               <td style="padding:12px 8px">${unpaid?`<span class="badge b-org" style="font-size:10px">未払 ${unpaid}件</span>`:'<span class="badge b-green" style="font-size:10px">正常</span>'}</td>
               <td style="padding:12px 8px;text-align:center">
                 <button class="btn btn-ghost btn-xs" onclick="openAdminTeamDetail('${t.id}')">詳細</button>
+                <button class="btn btn-ghost btn-xs" onclick="adminEditTeam('${t.id}')">✏️</button>
+                <button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="adminDeleteTeam('${t.id}')">🗑️</button>
               </td>
             </tr>`;
           }).join('')}
@@ -5389,6 +5979,7 @@ function payMgmt(){
               <td style="padding:10px 12px;text-align:right">¥${(p.amount||0).toLocaleString()}</td>
               <td style="padding:10px 12px;text-align:center">
                 <button class="btn btn-primary btn-xs" onclick="markPaid('${p.id}');goTo('payments')">✓ 入金確認</button>
+                <button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeletePayment('${p.id}')">🗑</button>
               </td>
             </tr>`;
           }).join('')}
@@ -5398,7 +5989,7 @@ function payMgmt(){
   </div>`:''}
 
   <div class="card">
-    <div class="fw7 mb-14" style="font-size:14px">✅ 入金済み月謝（直近${Math.min(paidList.length,10)}件）</div>
+    <div class="fw7 mb-14" style="font-size:14px">✅ 入金済み月謝（${paidList.length}件）</div>
     ${paidList.length?`<div style="overflow-x:auto">
       <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead><tr style="background:var(--surf2);color:var(--txt3)">
@@ -5406,9 +5997,10 @@ function payMgmt(){
           <th style="padding:8px 12px;text-align:left">チーム</th>
           <th style="padding:8px 12px;text-align:right">金額</th>
           <th style="padding:8px 12px;text-align:right">手数料</th>
+          <th style="padding:8px 12px;text-align:center">操作</th>
         </tr></thead>
         <tbody>
-          ${paidList.slice(-10).reverse().map(p=>{
+          ${paidList.slice().reverse().map(p=>{
             const pl=DB.players.find(x=>x.id===p.player);
             const t=DB.teams.find(x=>x.id===p.team);
             const fee=p.fee||getFeeAmount(p.amount||0,p.team||p.teamId||'','monthlyFee');
@@ -5417,12 +6009,27 @@ function payMgmt(){
               <td style="padding:10px 12px">${sanitize(t?.name||'--',20)}</td>
               <td style="padding:10px 12px;text-align:right">¥${(p.amount||0).toLocaleString()}</td>
               <td style="padding:10px 12px;text-align:right;color:var(--org)">+¥${fee.toLocaleString()}</td>
+              <td style="padding:10px 12px;text-align:center"><button class="btn btn-ghost btn-xs" style="font-size:10px" onclick="adminTogglePayStatus('${p.id}')">↩未払</button><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeletePayment('${p.id}')">🗑</button></td>
             </tr>`;
           }).join('')}
         </tbody>
       </table>
     </div>`:'<div class="text-muted text-sm text-center py-16">入金記録なし</div>'}
+  </div>
+
+  <div class="card mt-20">
+    <div class="fw7 mb-14" style="font-size:14px">💰 コーチ代支払い（${_dbArr('coachPay').length}件）</div>
+    ${_dbArr('coachPay').length?'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:var(--surf2);color:var(--txt3)"><th style="padding:8px 12px;text-align:left">コーチ</th><th style="padding:8px">チーム</th><th style="padding:8px;text-align:center">月</th><th style="padding:8px;text-align:right">総額</th><th style="padding:8px;text-align:right">受取</th><th style="padding:8px;text-align:right">手数料</th><th style="padding:8px;text-align:center">状態</th><th style="padding:8px;text-align:center">操作</th></tr></thead><tbody>'+_dbArr('coachPay').slice().reverse().map(cp=>{const co=DB.coaches.find(x=>x.id===cp.coach);const tm=DB.teams.find(x=>x.id===(cp.team||cp.teamId));return'<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(co?.name||cp.coachName||'',15)+'</td><td style="padding:8px">'+sanitize(tm?.name||'',15)+'</td><td style="padding:8px;text-align:center;font-size:11px">'+(cp.month||'')+'</td><td style="padding:8px;text-align:right">¥'+(cp.amount||0).toLocaleString()+'</td><td style="padding:8px;text-align:right;color:var(--grn)">¥'+(cp.coachReceives||0).toLocaleString()+'</td><td style="padding:8px;text-align:right;color:var(--org)">¥'+(cp.platformTotal||0).toLocaleString()+'</td><td style="padding:8px;text-align:center"><span class="badge '+(cp.status==='paid'?'b-green':'b-yel')+'" style="font-size:10px">'+(cp.status==='paid'?'済':'未')+'</span></td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeleteRecord(\'coachPay\',\''+cp.id+'\')">🗑</button></td></tr>';}).join('')+'</tbody></table></div>':'<div class="text-muted text-sm text-center py-16">コーチ代支払い記録なし</div>'}
   </div>`;
+}
+
+
+// ── コーチ代支払い管理セクション（payMgmt内の下部に追加表示） ──
+
+function adminDeletePayment(payId){
+  if(!confirm('この支払いレコードを削除しますか？'))return;
+  DB.payments=_dbArr('payments').filter(function(x){return x.id!==payId;});
+  saveDB();toast('削除しました','s');refreshPage();
 }
 
 function exportPaymentsCSV(){
