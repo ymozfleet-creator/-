@@ -4179,6 +4179,17 @@ function clearLoginLimit(){
 // ブラウザを閉じても登録データが保持される
 // ============================================================
 const STORAGE_KEY = 'mycoach_myteam_db_v1';
+const APP_VERSION = 'prod_v1';
+// 本番移行: 旧デモデータを自動クリア
+(function(){
+  try{
+    if(localStorage.getItem('_app_ver')!==APP_VERSION){
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('mycoach_users_v1');
+      localStorage.setItem('_app_ver',APP_VERSION);
+    }
+  }catch(e){}
+})();
 
 // 保存対象フィールド（個人情報を含むため慎重に管理）
 const PERSIST_FIELDS = [
@@ -19569,6 +19580,59 @@ window.addEventListener('DOMContentLoaded', function() {
 
     // localStorageからデータを復元
     const restored = loadDB();
+
+    // ── 本番バージョンマイグレーション ──
+    // デモデータが残っている場合は自動クリア
+    const PROD_VERSION = 'prod_v1_clean';
+    try {
+      if(localStorage.getItem('_app_version') !== PROD_VERSION){
+        // 旧デモデータを完全クリア
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem('mycoach_users_v1');
+        localStorage.setItem('_app_version', PROD_VERSION);
+        // DB をクリーン状態にリセット
+        DB.coaches = [];
+        DB.teams = [];
+        DB.players = [];
+        DB.payments = [];
+        DB.coachPay = [];
+        DB.adhocInvoices = [];
+        DB.teamMatches = [];
+        DB.inventory = [];
+        DB.emailLog = [];
+        DB.teamEvents = [];
+        DB.teamReviews = [];
+        DB.requests = [];
+        DB.disclosures = [];
+        DB.payThreads = [];
+        DB.doneSets = {};
+        DB.moderationLog = [];
+        DB.userWarnings = {};
+        DB.suspendedUsers = {};
+        DB.customWorkouts = [];
+        DB.nutritionLog = {};
+        DB.teamFiles = [];
+        DB.events = [];
+        DB.notifs = [];
+        DB.announcements = [];
+        DB.chats = {};
+        DB.conditionLog = {};
+        DB.trainingLog = {};
+        DB.bodyLog = {};
+        DB.injuryHistory = {};
+        DB.matchHistory = [];
+        DB.mealHistory = {};
+        DB.myFoods = [];
+        DB.meals = { today: [], water: 0 };
+        DB.mealTemplates = [];
+        DB.teamFeeRates = {};
+        DB.settings = {};
+        DB.currentUser = null;
+        saveDB();
+        console.log('[PROD] Demo data cleared. Clean production state.');
+      }
+    } catch(e){ console.warn('Migration error:', e); }
+
     loadCustomWorkouts();
     loadAIHistory();
     loadCalRepeatEvents();
