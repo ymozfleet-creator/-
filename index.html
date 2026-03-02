@@ -2802,24 +2802,8 @@ const API_BASE = (typeof window !== 'undefined' && window.MC_API_BASE)
   : (location.protocol === 'https:' ? '' : '');
 
 // ==================== DATA ====================
-const DEMO_COACHES = [
-  {id:'demo-c1',name:'田中 慎太郎',email:'tanaka@example.com',sport:'サッカー',spec:'ジュニア育成',area:'東京都',price:50000,priceOnetime:15000,rating:4.8,reviews:24,exp:12,bio:'元Jリーグ育成コーチ。子どもの個性を伸ばす指導を大切にしています。',avail:true,team:null,verified:true,color:'#2563eb',createdAt:'2025-01-15'},
-  {id:'demo-c2',name:'鈴木 美咲',email:'suzuki@example.com',sport:'バスケットボール',spec:'フィジカル強化',area:'神奈川県',price:40000,priceOnetime:12000,rating:4.5,reviews:18,exp:8,bio:'全国大会出場経験あり。基礎体力とメンタル両面からサポートします。',avail:true,team:null,verified:true,color:'#dc2626',createdAt:'2025-02-10'},
-  {id:'demo-c3',name:'佐藤 健一',email:'sato@example.com',sport:'野球',spec:'バッティング指導',area:'大阪府',price:60000,priceOnetime:18000,rating:4.9,reviews:42,exp:15,bio:'元プロ野球選手。実践的なバッティング技術と試合でのメンタル管理を指導。',avail:true,team:null,verified:true,color:'#059669',createdAt:'2025-01-20'},
-  {id:'demo-c4',name:'山本 彩香',email:'yamamoto@example.com',sport:'サッカー',spec:'GKコーチ',area:'東京都',price:45000,rating:4.3,reviews:11,exp:6,bio:'女子サッカーU-18代表帯同経験。GK専門トレーニングからフィールド指導まで。',avail:true,team:null,verified:false,color:'#7c3aed',createdAt:'2025-03-01'},
-  {id:'demo-c5',name:'高橋 大輔',email:'takahashi@example.com',sport:'バスケットボール',spec:'戦術指導',area:'千葉県',price:55000,rating:4.7,reviews:31,exp:10,bio:'B.LEAGUE解説員経験あり。チーム戦術構築とリーダーシップ育成が専門。',avail:true,team:null,verified:true,color:'#ea580c',createdAt:'2025-02-20'},
-  {id:'demo-c6',name:'伊藤 翔',email:'ito@example.com',sport:'野球',spec:'ピッチング指導',area:'愛知県',price:35000,rating:4.1,reviews:8,exp:4,bio:'大学野球で投手として活躍。少年野球を中心にピッチングフォーム改善を指導。',avail:true,team:null,verified:true,color:'#0891b2',createdAt:'2025-04-05'},
-];
-const DEMO_TEAMS = [
-  {id:'demo-t1',name:'FC渋谷ユナイテッド',email:'fc-shibuya@example.com',sport:'サッカー',area:'東京都渋谷区',fee:8000,coach:'demo-c1',wins:12,losses:5,code:'T100001',color:'#2563eb',description:'渋谷区を拠点に活動するジュニアサッカークラブ。毎週土日に代々木公園で練習中。U-12を中心に区大会3連覇を目指しています。',ageGroup:'U-12',practiceDays:'土・日',homeGround:'代々木公園グラウンド',memberCount:22,matchMessage:'練習試合の相手を常に探しています！同レベルのU-12チーム大歓迎。ホームでもアウェイでもOK！',lookingFor:'同レベルのU-12サッカーチーム',teamLevel:'中級',matchDays:'土日祝',matchLocation:'代々木公園または都内近郊',createdAt:'2024-08-01',rating:4.6,reviewCount:8},
-  {id:'demo-t2',name:'世田谷キッカーズ',email:'setagaya-k@example.com',sport:'サッカー',area:'東京都世田谷区',fee:7000,coach:null,wins:8,losses:7,code:'T100002',color:'#16a34a',description:'世田谷区の少年サッカーチーム。楽しくサッカーを学ぶことがモットー。初心者歓迎、体験練習随時受付中！',ageGroup:'U-10 / U-12',practiceDays:'水・土',homeGround:'砧公園運動場',memberCount:18,matchMessage:'楽しくサッカーできるチームと対戦したい！初心者チームも歓迎です。',lookingFor:'初心者〜初級のサッカーチーム',teamLevel:'初級',matchDays:'土曜日',matchLocation:'世田谷区内',createdAt:'2024-09-15',rating:4.3,reviewCount:5},
-  {id:'demo-t3',name:'品川ドラゴンズ',email:'shinagawa-d@example.com',sport:'野球',area:'東京都品川区',fee:6000,coach:'demo-c3',wins:15,losses:3,code:'T100003',color:'#dc2626',description:'品川区の少年野球チーム。区大会優勝常連。基礎を大切にした指導で全員が試合に出場する方針です。',ageGroup:'U-12',practiceDays:'土・日・祝',homeGround:'品川区民公園野球場',memberCount:25,matchMessage:'区大会に向けて実戦経験を積みたい！真剣勝負できるチーム募集中。',lookingFor:'大会出場経験のある野球チーム',teamLevel:'上級',matchDays:'日曜・祝日',matchLocation:'品川区民公園または23区内',createdAt:'2024-06-01',rating:4.8,reviewCount:12},
-  {id:'demo-t4',name:'目黒ホークス',email:'meguro-h@example.com',sport:'バスケットボール',area:'東京都目黒区',fee:9000,coach:'demo-c2',wins:10,losses:6,code:'T100004',color:'#ea580c',description:'目黒区のジュニアバスケットボールクラブ。個人技術とチームプレーの両立を目指す。練習は区立体育館で実施。',ageGroup:'U-12 / U-15',practiceDays:'火・木・土',homeGround:'目黒区立体育館',memberCount:20,createdAt:'2024-10-01',rating:4.4,reviewCount:6},
-  {id:'demo-t5',name:'杉並サンダーズ',email:'suginami-s@example.com',sport:'バスケットボール',area:'東京都杉並区',fee:7500,coach:null,wins:6,losses:9,code:'T100005',color:'#7c3aed',description:'杉並区で活動する中学生バスケットボールチーム。区大会ベスト4入りを目標に日々練習中。マネージャーも募集中！',ageGroup:'U-15',practiceDays:'月・水・金',homeGround:'杉並第十小学校体育館',memberCount:15,createdAt:'2024-11-01',rating:4.1,reviewCount:3},
-  {id:'demo-t6',name:'新宿ジャガーズ',email:'shinjuku-j@example.com',sport:'サッカー',area:'東京都新宿区',fee:10000,coach:null,wins:11,losses:4,code:'T100006',color:'#0891b2',description:'新宿区の強豪ジュニアサッカーチーム。都大会ベスト8の実績あり。セレクション制で本気でサッカーに取り組む選手を募集。',ageGroup:'U-12 / U-15',practiceDays:'火・木・土・日',homeGround:'新宿区立戸山グラウンド',memberCount:30,createdAt:'2024-05-01',rating:4.7,reviewCount:15},
-  {id:'demo-t7',name:'練馬ウィングス',email:'nerima-w@example.com',sport:'野球',area:'東京都練馬区',fee:5500,coach:null,wins:7,losses:8,code:'T100007',color:'#b45309',description:'練馬区の少年野球チーム。のびのび野球がモットー。低学年から入団可能で、親子で楽しめるイベントも多数開催。',ageGroup:'U-10 / U-12',practiceDays:'土・日',homeGround:'光が丘公園野球場',memberCount:19,createdAt:'2024-07-15',rating:4.2,reviewCount:4},
-  {id:'demo-t8',name:'中野ファイターズ',email:'nakano-f@example.com',sport:'サッカー',area:'東京都中野区',fee:6500,coach:null,wins:9,losses:6,code:'T100008',color:'#059669',description:'中野区で10年以上の歴史を持つサッカークラブ。OBコーチ陣による丁寧な指導。フットサル大会にも積極参加。',ageGroup:'U-12',practiceDays:'水・土・日',homeGround:'中野区立哲学堂グラウンド',memberCount:24,createdAt:'2024-04-01',rating:4.5,reviewCount:9},
-];
+const DEMO_COACHES = [];
+const DEMO_TEAMS = [];
 const DB = {
   currentUser: null,
   currentRole: 'admin',
@@ -2827,11 +2811,11 @@ const DB = {
   pendingRole: 'team',
 
   // ============================================================
-  // 本番データ: 登録ユーザーはlocalStorageに保存・ロードされます
-  // デモデータはすべて削除済み（本番稼働用クリーン状態）
+  // 本番環境: すべてのデータは空の状態で開始
+  // 管理者がコーチ・チーム・選手を手動で登録します
   // ============================================================
-  coaches:    DEMO_COACHES.map(c=>({...c})),
-  teams:      DEMO_TEAMS.map(t=>({...t})),
+  coaches:    [],
+  teams:      [],
   players:    [],
   payments:   [],
   coachPay:   [],
@@ -2874,6 +2858,7 @@ const DB = {
   customWorkouts: [],
   nutritionLog: {},
   inventory: [],
+  teamFiles: [],
   emailLog: [],
 };
 
@@ -2906,6 +2891,7 @@ const ROLE_NAV = {
     {k:'my-team',i:'fa-users-cog',l:'マイチーム'},
     {k:'fee',i:'fa-money-bill-wave',l:'月謝管理'},
     {k:'inventory',i:'fa-boxes',l:'物品管理'},
+    {k:'team-files',i:'fa-folder-open',l:'資料・動画共有'},
     {cat:'コミュニケーション'},
     {k:'chat',i:'fa-comments',l:'メッセージ'},
     {k:'calendar',i:'fa-calendar-alt',l:'スケジュール'},
@@ -2923,6 +2909,7 @@ const ROLE_NAV = {
     {k:'threads',i:'fa-comments-dollar',l:'支払いスレッド'},
     {k:'earnings',i:'fa-yen-sign',l:'収益管理'},
     {cat:'コミュニケーション'},
+    {k:'shared-files',i:'fa-folder-open',l:'チーム資料'},
     {k:'chat',i:'fa-comments',l:'メッセージ'},
     {k:'schedule',i:'fa-calendar-check',l:'スケジュール'},
     {cat:'アカウント'},
@@ -2936,6 +2923,7 @@ const ROLE_NAV = {
     {k:'training',i:'fa-dumbbell',l:'トレーニング'},
     {k:'stats',i:'fa-running',l:'マイ成績'},
     {cat:'サポート'},
+    {k:'shared-files',i:'fa-folder-open',l:'チーム資料'},
     {k:'ai',i:'fa-robot',l:'AI アドバイザー'},
     {k:'chat',i:'fa-comments',l:'メッセージ'},
     {k:'calendar',i:'fa-calendar-alt',l:'スケジュール'},
@@ -4203,7 +4191,7 @@ const PERSIST_FIELDS = [
   'teamMatches', 'teamEvents', 'teamReviews', 'adhocInvoices', 'emailLog', 'teamFeeRates',
   'pendingRole', 'pendingEmail', 'pendingName', 'pendingUserId', 'pendingTeamId',
   'announcements', 'customWorkouts', 'nutritionLog', 'inventory',
-  'pendingTeamCode', 'pendingProfile', 'pendingParentTeamId',
+  'pendingTeamCode', 'pendingProfile', 'pendingParentTeamId', 'teamFiles',
 ];
 
 // DBをlocalStorageに保存
@@ -4256,8 +4244,9 @@ function resetAllData() {
   if(DB.currentUser?.role!=='admin'){toast('この操作は事務局のみ実行できます','e');return;}
   if(!confirm('⚠️ 全データを削除します。この操作は取り消せません。\n本当にリセットしますか？')) return;
   localStorage.removeItem(STORAGE_KEY);
-  DB.coaches    = DEMO_COACHES.map(c=>({...c}));
-  DB.teams      = DEMO_TEAMS.map(t=>({...t}));
+  localStorage.removeItem('mycoach_users_v1');
+  DB.coaches    = [];
+  DB.teams      = [];
   DB.players    = [];
   DB.payments   = [];
   DB.coachPay   = [];
@@ -4277,17 +4266,22 @@ function resetAllData() {
   DB.suspendedUsers = {};
   DB.customWorkouts = [];
   DB.nutritionLog = {};
+  DB.teamFiles = [];
+  DB.events = [];
   DB.notifs = [];
-  DB.teamReviews = [];
-  DB.teamEvents = [];
-  DB.emailLog = [];
+  DB.announcements = [];
+  DB.chats = {};
+  DB.conditionLog = {};
+  DB.trainingLog = {};
+  DB.bodyLog = {};
+  DB.injuryHistory = {};
+  DB.matchHistory = [];
+  DB.mealHistory = {};
+  DB.myFoods = [];
+  DB.meals = { today: [], water: 0 };
+  DB.mealTemplates = [];
   DB.teamFeeRates = {};
-  DB.payThreads = [];
-  DB.requests   = [];
-  DB.disclosures= [];
-  DB.notifs     = [];
-  DB.events     = [];
-  DB.moderationLog = [];
+  DB.settings = {};
   DB.userWarnings = {};
   DB.suspendedUsers = {};
   DB.chats      = {'g1':{name:'全体連絡',sub:'事務局・全チーム',avi:'📢',msgs:[{from:'admin',name:'事務局',text:'データをリセットしました。',time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}),read:false}],unread:1}};
@@ -4555,18 +4549,7 @@ function launchApp(){
     }
   }
 
-  // カレンダーにサンプルイベントを挿入（初回のみ）
-  if(!DB.events || DB.events.length === 0){
-    const now = new Date();
-    const y = now.getFullYear(), m = now.getMonth();
-    DB.events = [
-      {id:'ev_sample1', title:'チーム練習', date: now.getDate(),    year:y, month:m, time:'17:00', type:'practice', repeat:'weekly', note:'グラウンドA集合'},
-      {id:'ev_sample2', title:'練習試合 vs FCサンプル', date: Math.min(now.getDate()+5, 28), year:y, month:m, time:'13:00', type:'match', note:'アウェー', repeat:'none'},
-      {id:'ev_sample3', title:'月謝支払い期限', date: 25, year:y, month:m, time:'', type:'payment', repeat:'monthly', note:'毎月25日締め'},
-      {id:'ev_sample4', title:'チーム練習', date: Math.min(now.getDate()+3, 28), year:y, month:m, time:'17:00', type:'practice', repeat:'weekly', note:''},
-    ];
-    saveDB();
-  }
+  // 本番環境: イベントは空の状態で開始（ユーザーが手動で追加）
 }
 function buildNav(r){
   // 選手の機能制限対象ページ
@@ -4668,10 +4651,10 @@ function goTo(page){
   // ── ロールアクセス制御 ──────────────────────────────
   const r=DB.currentUser?.role;
   const ROLE_PAGES={
-    admin:  ['dashboard','coaches','teams','payments','threads','chat','settings','calendar'],
-    team:   ['dashboard','fee','my-team','coach-search','team-match','threads','chat','calendar','profile','profile-settings','inventory','team-profile-edit'],
-    coach:  ['dashboard','team-search','profile','profile-settings','earnings','coach-players','coach-report','threads','chat','calendar','schedule'],
-    player: ['dashboard','training','nutrition','ai','stats','chat','calendar','profile','profile-settings'],
+    admin:  ['dashboard','coaches','teams','payments','threads','chat','settings','calendar','admin-players','admin-data'],
+    team:   ['dashboard','fee','my-team','coach-search','team-match','threads','chat','calendar','profile','profile-settings','inventory','team-profile-edit','team-files'],
+    coach:  ['dashboard','team-search','profile','profile-settings','earnings','coach-players','coach-report','threads','chat','calendar','schedule','shared-files'],
+    player: ['dashboard','training','nutrition','ai','stats','chat','calendar','profile','profile-settings','shared-files'],
     parent: ['dashboard','parent-fee','parent-report','profile','profile-settings','chat','calendar'],
   };
   // 全ロール共通ページ（制限なし）
@@ -4697,6 +4680,7 @@ function goTo(page){
     ai:()=>r==='player'&&!isPlayerActivated()?playerLockedPage():aiPage(),
     stats:()=>r==='player'&&!isPlayerActivated()?playerLockedPage():statsPage(),
     'team-profile-edit':teamProfileEditPage,
+    'team-files':teamFilesPage,'shared-files':sharedFilesPage,
     'admin-players':adminPlayersMgmt,
     'admin-data':adminDataMgmt,
   };
@@ -4939,6 +4923,263 @@ function adminViewPlayerDetail(pid){
   openM('📋 '+sanitize(p.name,15)+' - 選手詳細', h);
 }
 
+
+// ==================== TEAM FILES SHARING ====================
+function teamFilesPage(){
+  if(DB.currentUser?.role!=='team'){return '<div class="card text-center" style="padding:40px">🔒 チーム管理者のみ利用できます</div>';}
+  var team=getMyTeam();
+  if(!team) return '<div class="card text-center" style="padding:40px">チーム情報が見つかりません</div>';
+  var files=_dbArr('teamFiles').filter(function(f){return f.teamId===team.id;});
+  var cats=['練習資料','戦術ボード','試合映像','トレーニング動画','ミーティング','その他'];
+  var curCat=window._tfCat||'all';
+  var filtered=curCat==='all'?files:files.filter(function(f){return f.category===curCat;});
+  filtered.sort(function(a,b){return(b.createdAt||'')>(a.createdAt||'')?1:-1;});
+
+  var html='<div class="pg-head flex justify-between items-center"><div><div class="pg-title">📂 資料・動画共有</div><div class="pg-sub">チームメンバーとコーチに資料を共有</div></div>'
+    +'<button class="btn btn-primary btn-sm" onclick="openAddTeamFile()">＋ 資料を追加</button></div>';
+
+  // Category filter
+  html+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">'
+    +'<button class="btn '+(curCat==='all'?'btn-primary':'btn-ghost')+' btn-sm" onclick="window._tfCat=\'all\';refreshPage()">全て <span style="font-size:10px;opacity:.7">'+files.length+'</span></button>';
+  cats.forEach(function(c){
+    var cnt=files.filter(function(f){return f.category===c;}).length;
+    if(cnt>0) html+='<button class="btn '+(curCat===c?'btn-primary':'btn-ghost')+' btn-sm" onclick="window._tfCat=\''+c+'\';refreshPage()">'+c+' <span style="font-size:10px;opacity:.7">'+cnt+'</span></button>';
+  });
+  html+='</div>';
+
+  if(filtered.length===0){
+    html+='<div class="card text-center" style="padding:48px"><div style="font-size:48px;margin-bottom:12px">📁</div><div class="fw7 mb-8">まだ資料がありません</div><div class="text-sm text-muted">「＋ 資料を追加」から動画リンクや画像を共有しましょう</div></div>';
+  } else {
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">';
+    filtered.forEach(function(f){
+      var typeIcon=f.type==='video'?'🎬':f.type==='image'?'🖼️':f.type==='link'?'🔗':'📄';
+      var thumb='';
+      if(f.type==='video'&&f.url){
+        var ytId=_extractYoutubeId(f.url);
+        if(ytId) thumb='<div style="width:100%;aspect-ratio:16/9;background:url(https://img.youtube.com/vi/'+ytId+'/mqdefault.jpg) center/cover;border-radius:8px 8px 0 0"></div>';
+        else thumb='<div style="width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#1e3a5f,#0ea5e9);border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-size:40px;color:#fff">🎬</div>';
+      } else if(f.type==='image'&&f.data){
+        thumb='<div style="width:100%;aspect-ratio:16/9;background:url('+f.data+') center/cover;border-radius:8px 8px 0 0"></div>';
+      } else {
+        thumb='<div style="width:100%;height:60px;background:var(--surf2);border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-size:28px">'+typeIcon+'</div>';
+      }
+      html+='<div class="card" style="padding:0;overflow:hidden;cursor:pointer" onclick="openTeamFileDetail(\''+f.id+'\')">'
+        +thumb
+        +'<div style="padding:12px 14px">'
+        +'<div class="flex items-center gap-6 mb-4"><span style="font-size:14px">'+typeIcon+'</span><span class="fw7 text-sm" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+sanitize(f.title||'無題',30)+'</span></div>'
+        +'<div class="text-xs text-muted mb-6">'+sanitize(f.category||'',10)+' · '+(f.createdAt||'').slice(0,10)+'</div>'
+        +(f.description?'<div class="text-xs text-muted" style="line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+sanitize(f.description,80)+'</div>':'')
+        +'<div class="flex gap-4 mt-8"><button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();editTeamFile(\''+f.id+'\')">✏️</button><button class="btn btn-ghost btn-xs" style="color:var(--red)" onclick="event.stopPropagation();deleteTeamFile(\''+f.id+'\')">🗑️</button></div>'
+        +'</div></div>';
+    });
+    html+='</div>';
+  }
+  return html;
+}
+
+// ── 選手・コーチ用 閲覧ページ ──
+function sharedFilesPage(){
+  var teamId=_getMyTeamId();
+  var team=teamId?DB.teams.find(function(t){return t.id===teamId;}):null;
+  // コーチ: matched requests からもチーム検索
+  if(!team&&DB.currentUser?.role==='coach'){
+    var c=getMyCoach();
+    if(c){
+      var mReq=_dbArr('requests').find(function(r){return r.coachId===c.id&&r.status==='matched';});
+      if(mReq){teamId=mReq.teamId;team=DB.teams.find(function(t){return t.id===teamId;});}
+    }
+  }
+  if(!team) return '<div class="card text-center" style="padding:40px"><div style="font-size:48px;margin-bottom:12px">📁</div><div class="fw7 mb-8">所属チームがありません</div><div class="text-sm text-muted">チームに参加すると資料が閲覧できます</div></div>';
+  var files=_dbArr('teamFiles').filter(function(f){return f.teamId===team.id;});
+  var cats=['練習資料','戦術ボード','試合映像','トレーニング動画','ミーティング','その他'];
+  var curCat=window._sfCat||'all';
+  var filtered=curCat==='all'?files:files.filter(function(f){return f.category===curCat;});
+  filtered.sort(function(a,b){return(b.createdAt||'')>(a.createdAt||'')?1:-1;});
+
+  var html='<div class="pg-head"><div class="pg-title">📂 '+sanitize(team.name,15)+' の資料</div><div class="pg-sub">チームから共有された資料・動画</div></div>';
+
+  html+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">'
+    +'<button class="btn '+(curCat==='all'?'btn-primary':'btn-ghost')+' btn-sm" onclick="window._sfCat=\'all\';refreshPage()">全て <span style="font-size:10px;opacity:.7">'+files.length+'</span></button>';
+  cats.forEach(function(c){
+    var cnt=files.filter(function(f){return f.category===c;}).length;
+    if(cnt>0) html+='<button class="btn '+(curCat===c?'btn-primary':'btn-ghost')+' btn-sm" onclick="window._sfCat=\''+c+'\';refreshPage()">'+c+' <span style="font-size:10px;opacity:.7">'+cnt+'</span></button>';
+  });
+  html+='</div>';
+
+  if(filtered.length===0){
+    html+='<div class="card text-center" style="padding:48px"><div style="font-size:48px;margin-bottom:12px">📁</div><div class="fw7 mb-8">共有資料はまだありません</div><div class="text-sm text-muted">チーム管理者が資料を追加すると、ここに表示されます</div></div>';
+  } else {
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">';
+    filtered.forEach(function(f){
+      var typeIcon=f.type==='video'?'🎬':f.type==='image'?'🖼️':f.type==='link'?'🔗':'📄';
+      var thumb='';
+      if(f.type==='video'&&f.url){
+        var ytId=_extractYoutubeId(f.url);
+        if(ytId) thumb='<div style="width:100%;aspect-ratio:16/9;background:url(https://img.youtube.com/vi/'+ytId+'/mqdefault.jpg) center/cover;border-radius:8px 8px 0 0"></div>';
+        else thumb='<div style="width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#1e3a5f,#0ea5e9);border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-size:40px;color:#fff">🎬</div>';
+      } else if(f.type==='image'&&f.data){
+        thumb='<div style="width:100%;aspect-ratio:16/9;background:url('+f.data+') center/cover;border-radius:8px 8px 0 0"></div>';
+      } else {
+        thumb='<div style="width:100%;height:60px;background:var(--surf2);border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-size:28px">'+typeIcon+'</div>';
+      }
+      html+='<div class="card" style="padding:0;overflow:hidden;cursor:pointer" onclick="openTeamFileDetail(\''+f.id+'\')">'
+        +thumb
+        +'<div style="padding:12px 14px">'
+        +'<div class="flex items-center gap-6 mb-4"><span style="font-size:14px">'+typeIcon+'</span><span class="fw7 text-sm" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+sanitize(f.title||'無題',30)+'</span></div>'
+        +'<div class="text-xs text-muted mb-6">'+sanitize(f.category||'',10)+' · '+(f.createdAt||'').slice(0,10)+'</div>'
+        +(f.description?'<div class="text-xs text-muted" style="line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+sanitize(f.description,80)+'</div>':'')
+        +'</div></div>';
+    });
+    html+='</div>';
+  }
+  return html;
+}
+
+// ── Helper: YouTube ID抽出 ──
+function _extractYoutubeId(url){
+  if(!url)return null;
+  var m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+  return m?m[1]:null;
+}
+
+// ── 資料追加モーダル ──
+function openAddTeamFile(){
+  var team=getMyTeam();if(!team)return;
+  openM('📂 資料を追加',
+    '<div class="form-group"><label class="label">タイトル <span style="color:var(--red)">*</span></label><input id="tf-title" class="input" placeholder="例: 第3節 戦術解説動画"></div>'
+    +'<div class="form-group"><label class="label">種類</label><div style="display:flex;gap:6px;flex-wrap:wrap">'
+    +'<label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="radio" name="tf-type" value="video" checked> 🎬 動画URL</label>'
+    +'<label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="radio" name="tf-type" value="image"> 🖼️ 画像</label>'
+    +'<label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="radio" name="tf-type" value="link"> 🔗 リンク</label>'
+    +'<label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="radio" name="tf-type" value="note"> 📄 テキスト</label>'
+    +'</div></div>'
+    +'<div class="form-group"><label class="label">URL（動画/リンク）</label><input id="tf-url" class="input" placeholder="https://youtube.com/watch?v=... や Google Drive リンク"></div>'
+    +'<div class="form-group"><label class="label">画像（任意）</label><input type="file" id="tf-img" accept="image/*" class="input" style="padding:8px" onchange="_previewTeamFileImg(this)"><div id="tf-img-preview" style="margin-top:8px"></div></div>'
+    +'<div class="form-group"><label class="label">カテゴリ</label><select id="tf-cat" class="input"><option value="練習資料">練習資料</option><option value="戦術ボード">戦術ボード</option><option value="試合映像">試合映像</option><option value="トレーニング動画">トレーニング動画</option><option value="ミーティング">ミーティング</option><option value="その他">その他</option></select></div>'
+    +'<div class="form-group"><label class="label">説明・メモ</label><textarea id="tf-desc" class="input" rows="3" placeholder="選手やコーチへの補足メモ…"></textarea></div>'
+    +'<button class="btn btn-primary w-full mt-12" onclick="saveTeamFile()">📤 共有する</button>'
+  );
+}
+function _previewTeamFileImg(input){
+  var preview=document.getElementById('tf-img-preview');
+  if(!preview)return;
+  if(input.files&&input.files[0]){
+    if(input.files[0].size>2*1024*1024){toast('画像は2MB以下にしてください','e');input.value='';return;}
+    var reader=new FileReader();
+    reader.onload=function(e){
+      _compressPhoto(e.target.result,400).then(function(compressed){
+        preview.innerHTML='<img src="'+compressed+'" style="max-width:100%;max-height:150px;border-radius:8px">';
+        preview.dataset.data=compressed;
+      });
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+function saveTeamFile(editId){
+  var team=getMyTeam();if(!team)return;
+  var title=sanitize(document.getElementById('tf-title')?.value||'',60);
+  if(!title){toast('タイトルを入力してください','e');return;}
+  var typeEl=document.querySelector('input[name="tf-type"]:checked');
+  var type=typeEl?typeEl.value:'note';
+  var url=sanitize(document.getElementById('tf-url')?.value||'',500);
+  var category=document.getElementById('tf-cat')?.value||'その他';
+  var description=sanitize(document.getElementById('tf-desc')?.value||'',300);
+  var imgPreview=document.getElementById('tf-img-preview');
+  var imgData=imgPreview?.dataset?.data||'';
+
+  if(editId){
+    var existing=_dbArr('teamFiles').find(function(f){return f.id===editId;});
+    if(existing){
+      existing.title=title;existing.type=type;existing.url=url;
+      existing.category=category;existing.description=description;
+      if(imgData)existing.data=imgData;
+      existing.updatedAt=new Date().toISOString();
+    }
+  } else {
+    _dbArr('teamFiles').push({
+      id:genId('tf'),teamId:team.id,title:title,type:type,url:url,
+      data:imgData,category:category,description:description,
+      createdBy:DB.currentUser?.name||'',createdAt:new Date().toISOString()
+    });
+  }
+  saveDB();closeM();toast(editId?'資料を更新しました':'資料を共有しました','s');refreshPage();
+}
+function editTeamFile(fid){
+  if(DB.currentUser?.role!=='team'&&DB.currentUser?.role!=='admin'){toast('編集はチーム管理者のみ可能です','e');return;}
+  var f=_dbArr('teamFiles').find(function(x){return x.id===fid;});
+  if(!f)return;
+  openM('✏️ 資料を編集',
+    '<div class="form-group"><label class="label">タイトル</label><input id="tf-title" class="input" value="'+sanitize(f.title||'')+'"></div>'
+    +'<div class="form-group"><label class="label">種類</label><div style="display:flex;gap:6px;flex-wrap:wrap">'
+    +'<label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="radio" name="tf-type" value="video" '+(f.type==='video'?'checked':'')+'> 🎬 動画URL</label>'
+    +'<label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="radio" name="tf-type" value="image" '+(f.type==='image'?'checked':'')+'> 🖼️ 画像</label>'
+    +'<label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="radio" name="tf-type" value="link" '+(f.type==='link'?'checked':'')+'> 🔗 リンク</label>'
+    +'<label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="radio" name="tf-type" value="note" '+(f.type==='note'?'checked':'')+'> 📄 テキスト</label>'
+    +'</div></div>'
+    +'<div class="form-group"><label class="label">URL</label><input id="tf-url" class="input" value="'+sanitize(f.url||'')+'"></div>'
+    +'<div class="form-group"><label class="label">画像</label><input type="file" id="tf-img" accept="image/*" class="input" style="padding:8px" onchange="_previewTeamFileImg(this)"><div id="tf-img-preview" style="margin-top:8px">'+(f.data?'<img src="'+f.data+'" style="max-width:100%;max-height:150px;border-radius:8px">':'')+'</div></div>'
+    +'<div class="form-group"><label class="label">カテゴリ</label><select id="tf-cat" class="input"><option value="練習資料" '+(f.category==='練習資料'?'selected':'')+'>練習資料</option><option value="戦術ボード" '+(f.category==='戦術ボード'?'selected':'')+'>戦術ボード</option><option value="試合映像" '+(f.category==='試合映像'?'selected':'')+'>試合映像</option><option value="トレーニング動画" '+(f.category==='トレーニング動画'?'selected':'')+'>トレーニング動画</option><option value="ミーティング" '+(f.category==='ミーティング'?'selected':'')+'>ミーティング</option><option value="その他" '+(f.category==='その他'?'selected':'')+'>その他</option></select></div>'
+    +'<div class="form-group"><label class="label">説明</label><textarea id="tf-desc" class="input" rows="3">'+sanitize(f.description||'')+'</textarea></div>'
+    +'<button class="btn btn-primary w-full mt-12" onclick="saveTeamFile(\''+f.id+'\')">💾 更新</button>'
+  );
+  if(f.data){var p=document.getElementById('tf-img-preview');if(p)p.dataset.data=f.data;}
+}
+function deleteTeamFile(fid){
+  if(DB.currentUser?.role!=='team'&&DB.currentUser?.role!=='admin'){toast('削除はチーム管理者のみ可能です','e');return;}
+  if(!confirm('この資料を削除しますか？'))return;
+  DB.teamFiles=_dbArr('teamFiles').filter(function(x){return x.id!==fid;});
+  saveDB();toast('削除しました','s');refreshPage();
+}
+function openTeamFileDetail(fid){
+  var f=_dbArr('teamFiles').find(function(x){return x.id===fid;});
+  if(!f)return;
+  // Access check: only allow if user's team matches file's team
+  var myTeamId=_getMyTeamId();
+  if(DB.currentUser?.role!=='admin'){
+    // Coach: also check matched requests
+    if(DB.currentUser?.role==='coach'&&!myTeamId){
+      var c=getMyCoach();
+      if(c){var mR=_dbArr('requests').find(function(r){return r.coachId===c.id&&r.status==='matched';});if(mR)myTeamId=mR.teamId;}
+    }
+    if(myTeamId!==f.teamId){toast('この資料へのアクセス権がありません','e');return;}
+  }
+  var typeIcon=f.type==='video'?'🎬':f.type==='image'?'🖼️':f.type==='link'?'🔗':'📄';
+  var h='<div style="max-height:70vh;overflow-y:auto">';
+
+  // Video embed
+  if(f.type==='video'&&f.url){
+    var ytId=_extractYoutubeId(f.url);
+    if(ytId){
+      h+='<div style="width:100%;aspect-ratio:16/9;margin-bottom:16px;border-radius:10px;overflow:hidden"><iframe src="https://www.youtube.com/embed/'+ytId+'" style="width:100%;height:100%;border:none" allowfullscreen></iframe></div>';
+    } else {
+      h+='<div style="margin-bottom:16px"><a href="'+sanitize(f.url,200)+'" target="_blank" rel="noopener" class="btn btn-primary btn-sm">🎬 動画を開く</a></div>';
+    }
+  }
+
+  // Image
+  if(f.type==='image'&&f.data){
+    h+='<div style="margin-bottom:16px;text-align:center"><img src="'+f.data+'" style="max-width:100%;max-height:400px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.1)"></div>';
+  }
+
+  // Link
+  if(f.type==='link'&&f.url){
+    h+='<div style="margin-bottom:16px"><a href="'+sanitize(f.url,200)+'" target="_blank" rel="noopener" class="btn btn-primary btn-sm">🔗 リンクを開く</a></div>';
+  }
+
+  // Category badge
+  h+='<div class="mb-8"><span class="badge b-blue" style="font-size:11px">'+sanitize(f.category||'',12)+'</span><span class="text-xs text-muted" style="margin-left:8px">'+(f.createdAt||'').slice(0,10)+'</span></div>';
+
+  // Description
+  if(f.description){
+    h+='<div style="font-size:14px;line-height:1.8;color:var(--txt2);white-space:pre-wrap;margin-bottom:16px">'+sanitize(f.description,500)+'</div>';
+  }
+
+  h+='<div class="text-xs text-muted">投稿者: '+sanitize(f.createdBy||'',20)+'</div>';
+  h+='</div>';
+
+  openM(typeIcon+' '+sanitize(f.title||'資料',30), h);
+}
+
 // ==================== ADMIN PLAYERS/PARENTS MANAGEMENT ====================
 function adminPlayersMgmt(){
   if(DB.currentUser?.role!=='admin') return '<div class="card text-center" style="padding:40px">🔒 管理者のみ</div>';
@@ -5124,6 +5365,7 @@ function adminDataMgmt(){
     {k:'reviews',l:'レビュー',icon:'⭐',count:_dbArr('teamReviews').length},
     {k:'disclosures',l:'情報開示',icon:'🔓',count:_dbArr('disclosures').length},
     {k:'notifs',l:'通知',icon:'🔔',count:_dbArr('notifs').length},
+    {k:'teamfiles',l:'共有資料',icon:'📂',count:_dbArr('teamFiles').length},
     {k:'logs',l:'監査ログ',icon:'📋',count:_dbArr('moderationLog').length+_dbArr('emailLog').length},
   ];
 
@@ -5265,6 +5507,21 @@ function adminDataMgmt(){
     } else { html+='<div class="text-center text-muted" style="padding:30px">通知なし</div>'; }
     html+='</div>';
     html+='<div class="card"><div class="fw7 mb-12">📣 一括通知送信</div><div class="form-group"><label class="label">通知テキスト</label><input id="adm-notif-text" class="input" placeholder="全ユーザーに送信する通知…"></div><button class="btn btn-primary btn-sm" onclick="adminBroadcastNotif()">📣 全員に送信</button></div>';
+  }
+
+    if(tab==='teamfiles'){
+    var tFiles=_dbArr('teamFiles');
+    html+='<div class="card" style="padding:0;overflow:hidden"><div style="padding:14px 16px;border-bottom:1px solid var(--bdr);font-weight:700">📂 チーム共有資料 ('+tFiles.length+'件)</div>';
+    if(tFiles.length){
+      html+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:var(--surf2)"><th style="padding:8px 12px;text-align:left">タイトル</th><th style="padding:8px">チーム</th><th style="padding:8px">種類</th><th style="padding:8px">カテゴリ</th><th style="padding:8px">日付</th><th style="padding:8px">操作</th></tr></thead><tbody>';
+      tFiles.slice().reverse().forEach(function(f){
+        var team=DB.teams.find(function(t){return t.id===f.teamId;});
+        var typeLabel={video:'🎬',image:'🖼️',link:'🔗',note:'📄'}[f.type]||'📄';
+        html+='<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(f.title||'',25)+'</td><td style="padding:8px">'+sanitize(team?.name||'',12)+'</td><td style="padding:8px;text-align:center">'+typeLabel+'</td><td style="padding:8px">'+sanitize(f.category||'',10)+'</td><td style="padding:8px;font-size:11px">'+(f.createdAt||'').slice(0,10)+'</td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeleteRecord(\'teamFiles\',\''+f.id+'\')">🗑</button></td></tr>';
+      });
+      html+='</tbody></table></div>';
+    } else { html+='<div class="text-center text-muted" style="padding:30px">共有資料なし</div>'; }
+    html+='</div>';
   }
 
     if(tab==='logs'){
@@ -6809,11 +7066,7 @@ function exportRosterCSV(){
 }
 
 function coachSearch(){
-  // セーフガード: コーチが0件なら即座にデモデータ注入
-  if(DB.coaches.length === 0 && typeof DEMO_COACHES !== 'undefined'){
-    DEMO_COACHES.forEach(dc => DB.coaches.push({...dc}));
-    saveDB();
-  }
+  // 本番: コーチ0件は正常状態（管理者が追加する）
   const team=getMyTeam();
   const teamId=team?.id||null;
   const myReqs=teamId?_dbArr('requests').filter(r=>r.teamId===teamId):[];
@@ -16827,7 +17080,7 @@ function _getMyTeamId(){
   const u=DB.currentUser;if(!u)return null;
   const r=u.role;
   if(r==='team'){ const t=getMyTeam(); return t?t.id:null; }
-  if(r==='coach'){ const c=getMyCoach(); const t=DB.teams.find(t=>t.coach===c?.id); return t?t.id:null; }
+  if(r==='coach'){ const c=getMyCoach(); if(!c)return null; const t=DB.teams.find(t=>t.coach===c.id); if(t)return t.id; const mR=_dbArr('requests').find(r=>r.coachId===c.id&&r.status==='matched'); return mR?mR.teamId:null; }
   if(r==='player'){ const p=DB.players.find(x=>x.id===u.id); return p?p.team:null; }
   if(r==='parent'){
     const users=_getUsers();
@@ -16847,7 +17100,7 @@ function _getMyTeamIds(){
   const r=u.role;
   if(r==='admin') return DB.teams.map(t=>t.id);
   if(r==='team'){ const t=getMyTeam(); return t?[t.id]:[]; }
-  if(r==='coach'){ const c=getMyCoach(); return c?DB.teams.filter(t=>t.coach===c.id).map(t=>t.id):[]; }
+  if(r==='coach'){ const c=getMyCoach(); if(!c)return []; const ids=new Set(DB.teams.filter(t=>t.coach===c.id).map(t=>t.id)); _dbArr('requests').filter(r=>r.coachId===c.id&&r.status==='matched').forEach(r=>{if(r.teamId)ids.add(r.teamId);}); return [...ids]; }
   if(r==='player'){ const p=DB.players.find(x=>x.id===u.id); return p&&p.team?[p.team]:[]; }
   if(r==='parent'){
     const tid=_getMyTeamId();
@@ -17194,8 +17447,7 @@ function inventoryPage(){
       <div style="font-size:44px;margin-bottom:10px;opacity:.5">📦</div>
       <div class="fw7 mb-8" style="font-size:14px">${q||catF!=='all'?'該当する物品がありません':'物品をまだ登録していません'}</div>
       <div class="text-sm text-muted mb-16">「＋ 追加」ボタンから登録しましょう</div>
-      ${!items.length?`<button class="btn btn-primary" onclick="invLoadDemo()">📦 サンプルを追加</button>`:''}
-    </div>`;
+          </div>`;
 
     // カテゴリ別グループ化
     const groups={};
@@ -17389,25 +17641,8 @@ function invDelete(id){
 
 // デモデータ
 function invLoadDemo(){
-  const team=getMyTeam();if(!team)return;
-  const now=new Date().toISOString();
-  const demos=[
-    {name:'練習用サッカーボール',icon:'⚽',category:'ボール',unit:'個',qty:15,price:4500,minQty:5,note:'モルテン 4号球・グラウンド用'},
-    {name:'試合用サッカーボール',icon:'⚽',category:'ボール',unit:'個',qty:5,price:12000,minQty:3,note:'アディダス公式試合球'},
-    {name:'ビブス（赤）',icon:'🎽',category:'ウェア',unit:'枚',qty:20,price:800,minQty:10,note:'フリーサイズ・洗濯替え用'},
-    {name:'ビブス（青）',icon:'🎽',category:'ウェア',unit:'枚',qty:18,price:800,minQty:10,note:'フリーサイズ'},
-    {name:'マーカーコーン',icon:'🔧',category:'トレーニング用具',unit:'個',qty:40,price:200,minQty:20,note:'蛍光イエロー'},
-    {name:'ミニゴール',icon:'🥅',category:'設備',unit:'台',qty:2,price:25000,minQty:0,note:'折りたたみ式・倉庫保管'},
-    {name:'救急セット',icon:'🩹',category:'医療品',unit:'セット',qty:3,price:3500,minQty:2,note:'応急処置用・試合帯同用含む'},
-    {name:'アイスバッグ',icon:'🧊',category:'医療品',unit:'個',qty:8,price:500,minQty:4,note:'アイシング用'},
-    {name:'ドリンクタンク（20L）',icon:'🪣',category:'設備',unit:'台',qty:2,price:8000,minQty:1,note:'夏場練習用'},
-    {name:'チームフラッグ',icon:'🏴',category:'その他',unit:'枚',qty:1,price:15000,minQty:0,note:'大会用・チーム名入り'},
-  ];
-  demos.forEach(d=>{
-    _dbArr('inventory').push({id:'inv'+Date.now()+Math.random().toString(36).slice(2,6),teamId:team.id,...d,createdAt:now,updatedAt:now,deleted:false,
-      history:[{date:now.slice(0,10),from:0,to:d.qty,by:'初期登録'}]});
-  });
-  saveDB();toast('サンプルデータを追加しました','s');refreshPage();
+  // 本番環境: サンプルデータ機能は無効
+  toast('物品は「＋追加」ボタンから登録してください','i');
 }
 
 function teamMatchPage(){
@@ -19352,14 +19587,8 @@ window.addEventListener('DOMContentLoaded', function() {
     // アーカイブでDB変更があった場合に備えて保存
     saveDB();
     if(restored){
-      const hasDemoCoach = DEMO_COACHES.some(dc => DB.coaches.find(c => c.id === dc.id));
-      if(!hasDemoCoach){
-        // デモコーチを追加（既存コーチは保持）
-        DEMO_COACHES.forEach(dc => {
-          if(!DB.coaches.find(c => c.id === dc.id)){
-            DB.coaches.push({...dc});
-          }
-        });
+      // 本番: デモデータ注入なし（管理者が手動追加）
+      if(false){
         saveDB();
       }
     }
@@ -20158,7 +20387,7 @@ function openMatchResultModal(eventId){
   h+='</div>';
   // Opponent name
   h+='<div class="form-group"><label style="font-size:11px;color:var(--txt3)">対戦相手</label>';
-  h+='<input class="input" id="mr-opponent" value="'+sanitize(result.opponent||'',30)+'" placeholder="例: FCサンプル" style="font-size:13px"></div>';
+  h+='<input class="input" id="mr-opponent" value="'+sanitize(result.opponent||'',30)+'" placeholder="例: 対戦チーム名" style="font-size:13px"></div>';
   // Player stats (goals, assists)
   if(players.length>0){
     h+='<details'+(result.playerStats?' open':'')+' style="margin-top:8px"><summary style="font-size:12px;font-weight:700;color:var(--txt2);cursor:pointer">⚽ 個人スタッツ</summary>';
@@ -20906,10 +21135,9 @@ function addEvent(dateStr){
   goTo('calendar');
 }
 
-// コーチ検索のデモデータ初期化（コーチが0人の場合にサンプル表示）
+// 本番環境: コーチデータは管理者が登録
 function ensureCoachSamples(){
-  if(DB.coaches.length > 0) return;
-  // デモ用コーチデータは追加しない（本番環境）
+  // no-op in production
 }
 
 
