@@ -6942,7 +6942,7 @@ function payMgmt(){
     +_dbArr('coachPay').filter(p=>p.status==='paid').reduce((s,p)=>s+(p.platformTotal||getFeeAmount(p.amount,p.teamId||'','coachFee')),0)
     +(!DB.adhocInvoices?[]:DB.adhocInvoices).filter(i=>i.status==='paid').reduce((s,i)=>s+(i.fee||0),0);
   const totalPaid=_dbArr('payments').filter(p=>p.status==='paid').reduce((s,p)=>s+(p.amount||0),0);
-  const unpaidList=_dbArr('payments').filter(p=>p.status==='unpaid'||p.status==='pending');
+  const unpaidList=_dbArr('payments').filter(p=>p.status==='unpaid'||p.status==='overdue');
   const paidList=_dbArr('payments').filter(p=>p.status==='paid');
   const coachPayTotal=_dbArr('coachPay').filter(p=>p.status==='paid').reduce((s,p)=>s+(p.coachReceives||0),0);
   const thisM=curMonth();
@@ -7202,8 +7202,10 @@ function settingsPage(){
       <div class="form-group mb-10">
         <label class="label">APIキー</label>
         <div class="flex gap-6">
-          <input type="password" id="set-api-key" class="input" placeholder="AIza...（プロキシ使用時は不要）" value="${DB.settings?.apiKey?'設定済み（非表示）':''}" style="flex:1">
-          <button class="btn btn-primary btn-xs" onclick="saveApiKey()">保存</button>
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:8px;flex:1">
+            <i class="fa fa-shield-alt" style="color:var(--grn)"></i>
+            <span style="font-size:12px;color:var(--grn)">サーバー側で安全に管理中 ✓</span>
+          </div>
         </div>
         <div class="text-xs text-muted mt-4">本番環境ではサーバーサイドで管理してください</div>
       </div>
@@ -7271,12 +7273,8 @@ function saveRateSetting(key){
   saveDB();toast('手数料率を保存しました','s');
 }
 function saveApiKey(){
-  const val=(document.getElementById('set-api-key')?.value||'').trim();
-  if(!val||val==='設定済み（非表示）'){toast('APIキーを入力してください','e');return;}
-  if(!DB.settings)DB.settings={};
-  if(!val.startsWith('sk-')){toast('無効なAPIキーです。sk-で始まるキーを入力してください','e');return;}
-  DB.settings.apiKey=val;
-  saveDB();toast('APIキーを保存しました','s');goTo('settings');
+  // セキュリティ: APIキーはバックエンドサーバーの環境変数でのみ管理
+  toast('APIキーはサーバー側で安全に管理されています。設定変更はサーバー管理者にお問い合わせください。','i');
 }
 function saveToggleSetting(key,val){
   if(!DB.settings)DB.settings={};
@@ -8770,7 +8768,7 @@ function earningsPage(){
   const totalReceived = pays.filter(p=>p.status==='paid').reduce((s,p)=>s+(p.coachReceives||0),0);
   const thisM = curMonth();
   const thisMonthPay = pays.filter(p=>p.month===thisM&&p.status==='paid').reduce((s,p)=>s+(p.coachReceives||0),0);
-  const pendingPay = pays.filter(p=>p.status==='pending').reduce((s,p)=>s+(p.coachReceives||0),0);
+  const pendingPay = _dbArr('payThreads').filter(pt=>pt.coachId===me.id).reduce((s,pt)=>{return s+(pt.invoices||[]).filter(i=>i.status==='unpaid').reduce((ss,i)=>ss+(i.coachReceives||0),0);},0);
 
   // 過去6ヶ月の収益
   const last6 = Array.from({length:6},(_,i)=>{
@@ -12017,28 +12015,20 @@ async function tryAIAnalysis(dataUrl) {
   var base64 = dataUrl.split(',')[1];
   if (!base64) throw new Error('no base64');
 
-  var _geminiKey = DB.settings?.apiKey || '';
-  var _useProxy = typeof API_BASE !== 'undefined' && API_BASE && !API_BASE.includes('localhost');
-  var response;
-  if(_useProxy){
-    response = await fetch(API_BASE + '/api/ai/chat', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        messages: [{role:'user', content:'あなたは栄養士AIです。この食事写真の全食品を特定し栄養素を推定。JSON配列のみ返答。[{"name":"食品名","amount":"量","kcal":数値,"protein":数値,"carb":数値,"fat":数値,"fiber":数値,"vitC":数値,"calcium":数値,"iron":数値}] kcal=kcal,p/c/f/fiber=g,vitC/calcium/iron=mg。食べ物なしなら[]。JSONのみ。'}],
-        image: {mimeType:'image/jpeg', data:base64}
-      })
-    });
-  } else {
-    response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+_geminiKey, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        contents: [{parts:[
-          {inlineData:{mimeType:'image/jpeg',data:base64}},
-          {text:'あなたは栄養士AIです。この食事写真の全食品を特定し栄養素を推定。JSON配列のみ返答。[{"name":"食品名","amount":"量","kcal":数値,"protein":数値,"carb":数値,"fat":数値,"fiber":数値,"vitC":数値,"calcium":数値,"iron":数値}] kcal=kcal,p/c/f/fiber=g,vitC/calcium/iron=mg。食べ物なしなら[]。JSONのみ。'}
-        ]}]
-      })
-    });
+  // セキュリティ: AI呼び出しは必ずバックエンドプロキシ経由（APIキーはサーバー側のみ保持）
+  if(typeof API_BASE === 'undefined' || !API_BASE){
+    throw new Error('AI機能はバックエンドサーバーが必要です');
   }
+  var _fbToken = '';
+  try { _fbToken = await window._fbAuth?.currentUser?.getIdToken() || ''; } catch(e){}
+  var response = await fetch(API_BASE + '/api/ai/chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _fbToken},
+    body: JSON.stringify({
+      messages: [{role:'user', content:'あなたは栄養士AIです。この食事写真の全食品を特定し栄養素を推定。JSON配列のみ返答。[{"name":"食品名","amount":"量","kcal":数値,"protein":数値,"carb":数値,"fat":数値,"fiber":数値,"vitC":数値,"calcium":数値,"iron":数値}] kcal=kcal,p/c/f/fiber=g,vitC/calcium/iron=mg。食べ物なしなら[]。JSONのみ。'}],
+      image: {mimeType:'image/jpeg', data:base64}
+    })
+  });
 
   if (!response.ok) throw new Error('API ' + response.status);
   var data = await response.json();
@@ -13733,28 +13723,21 @@ ${condAvg?'【直近コンディション平均】調子'+condAvg.mood+'/5 睡�
       {role:'user',content:text}
     ];
 
-    const _geminiKey2 = DB.settings?.apiKey || '';
-    const _useProxy2 = typeof API_BASE!=='undefined'&&API_BASE&&!API_BASE.includes('localhost');
-    var res, data, reply;
-    if(_useProxy2){
-      res = await fetch(API_BASE+'/api/ai/chat',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({system:systemPrompt,messages,maxTokens:2048})
-      });
-      data = await res.json();
-      if(data.error) throw new Error(data.error.message);
-      reply = data.text || '';
-    } else {
-      const geminiMessages = messages.map(function(m){return {role:m.role==='assistant'?'model':'user',parts:[{text:m.content||m.text||''}]};});
-      if(systemPrompt) geminiMessages.unshift({role:'user',parts:[{text:systemPrompt}]},{role:'model',parts:[{text:'はい、承知しました。'}]});
-      res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+_geminiKey2,{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({contents:geminiMessages,generationConfig:{maxOutputTokens:2048,temperature:0.7}})
-      });
-      data = await res.json();
-      if(data.error) throw new Error(data.error.message);
-      reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'エラーが発生しました。';
+    // セキュリティ: AI呼び出しは必ずバックエンドプロキシ経由
+    if(typeof API_BASE === 'undefined' || !API_BASE){
+      throw new Error('AI機能はバックエンドサーバーが必要です');
     }
+    var _fbToken2 = '';
+    try { _fbToken2 = await window._fbAuth?.currentUser?.getIdToken() || ''; } catch(e){}
+    var res, data, reply;
+    res = await fetch(API_BASE+'/api/ai/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_fbToken2},
+      body:JSON.stringify({system:systemPrompt,messages,maxTokens:2048})
+    });
+    data = await res.json();
+    if(data.error) throw new Error(data.error.message);
+    reply = data.text || '';
     aiHistory.push({role:'ai',text:reply});
     saveAIHistory();
   } catch(e) {
@@ -15767,7 +15750,7 @@ function parentFeePage(){
 
   const myPayments = _dbArr('payments').filter(p=>p.player===child.id);
   const totalPaid = myPayments.filter(p=>p.status==='paid').reduce((s,p)=>s+p.amount,0);
-  const unpaid = myPayments.filter(p=>p.status==='unpaid'||p.status==='pending');
+  const unpaid = myPayments.filter(p=>p.status==='unpaid'||p.status==='overdue');
   const monthlyFee = team?.fee||5000;
 
   // 今年の月別支払い状況
@@ -16749,13 +16732,13 @@ function payThreadPage(){
   if(role==='team'){const mt=getMyTeam();if(mt)threads=_dbArr('payThreads').filter(pt=>pt.teamId===mt.id);}
   else if(role==='coach'){const me=getMyCoach();if(me)threads=_dbArr('payThreads').filter(pt=>pt.coachId===me.id);}
   else threads=[...DB.payThreads];
-  const pendingTotal=threads.reduce((s,pt)=>s+(pt.invoices||[]).filter(i=>i.status==='pending').length,0);
+  const pendingTotal=threads.reduce((s,pt)=>s+(pt.invoices||[]).filter(i=>i.status==='unpaid').length,0);
   const stMap={pending_negotiation:{l:'💬 相談中',c:'var(--blue)'},pending_contract:{l:'⏳ 契約確認中',c:'var(--yel)'},active:{l:'✅ 契約中',c:'var(--teal)'},payment_requested:{l:'📄 お支払い待ち',c:'var(--org)'},paid:{l:'✓ 支払い完了',c:'var(--grn)'},completed:{l:'完了',c:'var(--txt3)'}};
   const threadCards=threads.map(pt=>{
     const team=DB.teams.find(t=>t.id===pt.teamId);
     const coach=DB.coaches.find(c=>c.id===pt.coachId);
     const st=stMap[pt.status]||stMap.active;
-    const pending=(pt.invoices||[]).filter(i=>i.status==='pending');
+    const pending=(pt.invoices||[]).filter(i=>i.status==='unpaid');
     const lastMsg=(pt.messages||[]).slice(-1)[0];
     const lastTxt=lastMsg?(lastMsg.from==='system'?'🤖 ':'')+(lastMsg.text||'').slice(0,40):'メッセージなし';
     const _myAmt = role==='coach' ? pt.coachReceives : pt.teamPays;
@@ -16802,7 +16785,7 @@ function renderPayThread(pt){
   const team=DB.teams.find(t=>t.id===pt.teamId);
   const coach=DB.coaches.find(c=>c.id===pt.coachId);
   const role=DB.currentUser?.role;
-  const pendingInv=pt.invoices.filter(i=>i.status==='pending');
+  const pendingInv=pt.invoices.filter(i=>i.status==='unpaid');
   const lastMsg=pt.messages[pt.messages.length-1];
   const stMap={pending_contract:{l:'⏳ 確認中',c:'var(--yel)'},active:{l:'✅ 契約中',c:'var(--teal)'},payment_requested:{l:'📄 お支払い待ち',c:'var(--org)'},paid:{l:'✓ 支払い完了',c:'var(--green)'},completed:{l:'完了',c:'var(--txt3)'}};
   const st=stMap[pt.status]||stMap.active;
@@ -16851,7 +16834,7 @@ function openThreadDetail(ptId){
         ${isCoach?'<div style="font-size:12px;color:var(--txt3)">上のボタンから請求書を発行してください</div>':'<div style="font-size:12px;color:var(--txt3)">コーチからの請求をお待ちください</div>'}
       </div>`
     :(pt.invoices||[]).map(inv=>{
-      const isPending=inv.status==='pending';
+      const isPending=inv.status==='unpaid';
       const isPaid=inv.status==='paid';
       return `<div style="padding:14px 16px;border-bottom:1px solid var(--b1);${isPending?'background:rgba(255,107,43,.04)':''}">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:${isPending&&isTeam?'12px':'0'}">
@@ -16870,7 +16853,7 @@ function openThreadDetail(ptId){
     }).join('');
   // 支払いサマリー
   const paidCount=(pt.invoices||[]).filter(i=>i.status==='paid').length;
-  const pendingCount=(pt.invoices||[]).filter(i=>i.status==='pending').length;
+  const pendingCount=(pt.invoices||[]).filter(i=>i.status==='unpaid').length;
   const totalPaid=(pt.invoices||[]).filter(i=>i.status==='paid').reduce((s,i)=>s+(isCoach?i.coachReceives:i.teamPays),0);
   // チャット
   // チャットルームのメッセージも統合表示
@@ -17196,7 +17179,7 @@ function createInvoice(ptId){
   const note=document.getElementById('inv-note')?.value||`${month}分 指導料`;
   const feeRate=getFeeRate(pt.teamId,'coachFee');
   const platformFee=Math.round(amt*feeRate/100);
-  const inv={id:'inv'+Date.now(),month,status:'pending',teamPays:amt+platformFee,coachReceives:amt,platformFee,paidAt:null,note};
+  const inv={id:'inv'+Date.now(),month,status:'unpaid',teamPays:amt+platformFee,coachReceives:amt,platformFee,paidAt:null,note};
   if(!pt.invoices)pt.invoices=[];
   pt.invoices.push(inv);
   pt.status='payment_requested';
@@ -19424,7 +19407,7 @@ function approveRequest(reqId){
       contractType:'onetime', onetimeTitle:req.onetimeTitle||'臨時コーチ',
       online:req.online||false,
       createdAt:new Date().toISOString().slice(0,10),
-      invoices:isOtNeg?[]:[{id:'inv'+Date.now(),month:req.onetimeDate||curMonth(),status:'pending',
+      invoices:isOtNeg?[]:[{id:'inv'+Date.now(),month:req.onetimeDate||curMonth(),status:'unpaid',
         teamPays:price,coachReceives:price-coachFee,paidAt:null,note:req.onetimeTitle||'臨時コーチ報酬'}],
       messages:[{from:'system',text:isOtNeg
         ?`臨時コーチが承認されました！\n📋 ${req.onetimeTitle||''}\n💬 報酬は要相談。チャットで金額を確認してください。${req.online?'\n💻 オンライン対応':''}`
@@ -19848,24 +19831,20 @@ ${summaryData}
   openM('🤖 AI週次サマリー生成中...',`<div style="text-align:center;padding:30px"><div style="font-size:32px;margin-bottom:12px">🤖</div><div class="text-sm text-muted">Claudeが選手データを分析中...</div></div>`);
 
   try{
-    const _geminiKey3=DB.settings?.apiKey||'';
-    const _useProxy3=typeof API_BASE!=='undefined'&&API_BASE&&!API_BASE.includes('localhost');
-    var res3,data3,summary;
-    if(_useProxy3){
-      res3=await fetch(API_BASE+'/api/ai/chat',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({messages:[{role:'user',content:prompt}]})
-      });
-      data3=await res3.json();
-      summary=data3.text||'サマリーを取得できませんでした。';
-    } else {
-      res3=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+_geminiKey3,{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:1024,temperature:0.7}})
-      });
-      data3=await res3.json();
-      summary=data3.candidates?.[0]?.content?.parts?.[0]?.text||'サマリーを取得できませんでした。';
+    // セキュリティ: AI呼び出しは必ずバックエンドプロキシ経由
+    if(typeof API_BASE === 'undefined' || !API_BASE){
+      throw new Error('AI機能はバックエンドサーバーが必要です');
     }
+    var _fbToken3='';
+    try { _fbToken3=await window._fbAuth?.currentUser?.getIdToken()||''; } catch(e){}
+    var res3,data3,summary;
+    res3=await fetch(API_BASE+'/api/ai/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_fbToken3},
+      body:JSON.stringify({messages:[{role:'user',content:prompt}]})
+    });
+    data3=await res3.json();
+    summary=data3.text||'サマリーを取得できませんでした。';
     openM('🤖 AI週次サマリー',`<div>
       <div style="padding:16px;background:rgba(0,207,170,.06);border:1px solid rgba(0,207,170,.2);border-radius:12px;margin-bottom:14px">
         <div class="text-xs fw7 mb-8" style="color:var(--teal)">📊 AIによる分析 · ${new Date().toLocaleDateString('ja-JP')}</div>
@@ -20072,7 +20051,7 @@ function sendEmailNotif(toEmail, toName, subject, body){
   if(typeof API_BASE!=='undefined'&&API_BASE){
     fetch(API_BASE+'/api/email/send',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+(DB.settings?.apiSecret||'')},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({to:toEmail,toName:toName||'',subject,body})
     }).then(function(r){
       if(r.ok){entry.status='sent';}else{entry.status='failed';}
