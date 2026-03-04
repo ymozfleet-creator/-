@@ -6,12 +6,12 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://www.gstatic.com https://www.googletagmanager.com https://browser.sentry-cdn.com https://apis.google.com https://js.stripe.com blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.google-analytics.com https://*.sentry.io https://bukatsu-backend.onrender.com wss://*.firebaseio.com https://generativelanguage.googleapis.com https://api.stripe.com https://*.firebaseapp.com https://firestore.googleapis.com; manifest-src 'self' blob:; frame-src https://*.firebaseapp.com https://js.stripe.com https://checkout.stripe.com https://connect.stripe.com">
 <script>if(location.protocol==='http:' && location.hostname!=='localhost' && location.hostname!=='127.0.0.1'){location.replace('https://'+location.host+location.pathname+location.search+location.hash);}</script>
-<meta name="description" content="部勝（ブカツ）｜スポーツチーム運営プラットフォーム。チーム管理・コーチマッチング・選手育成・AI栄養管理をワンストップで。">
+<meta name="description" content="MyCOACH-MyTEAM（マイコーチーマイチーム）｜スポーツチーム運営プラットフォーム。チーム管理・コーチマッチング・選手育成・AI栄養管理をワンストップで。">
 <meta name="keywords" content="スポーツ,コーチ,チーム,月謝管理,マッチング,育成">
 <meta name="theme-color" content="#0ea5e9">
 <!-- OGP -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="部勝（ブカツ）｜スポーツチーム運営プラットフォーム">
+<meta property="og:title" content="MyCOACH-MyTEAM（マイコーチーマイチーム）｜スポーツチーム運営プラットフォーム">
 <meta property="og:description" content="スポーツチーム運営プラットフォーム。チーム管理・コーチマッチング・選手育成・AI栄養管理をワンストップで。">
 <meta property="og:image" content="/og-image.png">
 <meta property="og:site_name" content="MyCOACH-MyTEAM">
@@ -24,7 +24,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MyCOACH">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="twitter:title" content="部勝（ブカツ）｜スポーツチーム運営プラットフォーム">
+<meta name="twitter:title" content="MyCOACH-MyTEAM（マイコーチーマイチーム）｜スポーツチーム運営プラットフォーム">
 <meta name="twitter:description" content="コーチとチームをつなぐスポーツ運営プラットフォーム。">
 <meta name="twitter:image" content="/og-image.png">
 <!-- Favicon (SVG inline) -->
@@ -4170,8 +4170,7 @@ function doRegister(){
 }
 function doLogout(){
   addAuditLog('logout', (DB.currentUser?.name||'') + ' がログアウト');
-  _stopSharedListener();
-  _stopAllChatListeners();
+  _stopAllListeners();
   // 個人データのみクリア（共有データは残す）
   _localDirty = false;
   clearCurrentUserSession();
@@ -4981,6 +4980,8 @@ async function _ensureFirestoreSync(){
         await _syncToFirestore();
         console.log('[Firestore] Ensured sync on attempt', i+1);
         toast('☁️ クラウドに同期しました','s');
+        // リスナーも確実に開始（Auth完了後なので接続可能）
+        _startAllListeners();
         return;
       } catch(e){ console.warn('[Firestore] sync retry', i+1, e.message); }
     } else {
@@ -5115,16 +5116,18 @@ const PERSIST_FIELDS = [
   'teamMatches', 'teamEvents', 'teamReviews', 'adhocInvoices', 'emailLog', 'teamFeeRates',
   'pendingRole', 'pendingEmail', 'pendingName', 'pendingUserId', 'pendingTeamId',
   'announcements', 'customWorkouts', 'nutritionLog', 'inventory',
-  'pendingTeamCode', 'pendingProfile', 'pendingParentTeamId', 'teamFiles', 'nutriGoals', 'consentLog', 'auditLog', '_syncedAt'];
+  'pendingTeamCode', 'pendingProfile', 'pendingParentTeamId', 'teamFiles', 'nutriGoals', 'consentLog', 'auditLog', '_syncedAt',
+  'playerMealHistory'];
 const SHARED_FIELDS = [
   'coaches','teams','players','payments','coachPay','payThreads','requests',
   'disclosures','events','chats','teamMatches','teamEvents','teamReviews',
   'adhocInvoices','teamFeeRates','announcements','inventory','teamFiles',
-  'notifs','moderationLog','userWarnings','suspendedUsers','emailLog','consentLog','auditLog'
+  'notifs','moderationLog','userWarnings','suspendedUsers','emailLog','consentLog','auditLog',
+  'trainingLog','conditionLog','bodyLog','injuryHistory','playerMealHistory'
 ];
 const PRIVATE_FIELDS = [
-  'currentUser','meals','mealHistory','myFoods','trainingLog','doneSets',
-  'bodyLog','conditionLog','injuryHistory','matchHistory','mealTemplates',
+  'currentUser','meals','mealHistory','myFoods','doneSets',
+  'matchHistory','mealTemplates',
   'stripeSetupNeeded','settings','nutriGoals','customWorkouts','nutritionLog',
   'pendingRole','pendingEmail','pendingName','pendingUserId','pendingTeamId',
   'pendingTeamCode','pendingProfile','pendingParentTeamId'
@@ -5275,10 +5278,14 @@ function autoFixData(){
     if(!_offlineBanner)return;
     _offlineBanner.remove();_offlineBanner=null;
     const app=document.getElementById('app');if(app)app.style.paddingTop='';
-    // 復帰時にFirestore同期を試行
-    if(typeof _syncToFirestore==='function'){
+    // 復帰時にFirestore同期・リスナー再開
+    if(DB.currentUser){
       toast('🌐 オンライン復帰 — クラウド同期中...','i');
-      setTimeout(()=>{try{_syncToFirestore();}catch(e){}},1000);
+      setTimeout(()=>{
+        try{_syncToFirestore();}catch(e){}
+        // リスナーが切れていたら再開
+        _startAllListeners();
+      },1000);
     }
   }
   window.addEventListener('offline',showOfflineBanner);
@@ -5362,8 +5369,11 @@ function saveDB() {
     console.error('[SaveDB] 保存失敗:', e.message);
     if(e.name==='QuotaExceededError') toast('⚠️ ストレージ容量不足','e');
   }
-  // ローカル変更フラグをON（onSnapshotからの上書きを防止）
+  // ローカル変更フラグをON（onSnapshotからの上書きを一時防止）
   _localDirty = true;
+  // 5秒後に自動解除（syncが失敗してもリスナーがブロックされ続けない）
+  if(_dirtyTimer) clearTimeout(_dirtyTimer);
+  _dirtyTimer = setTimeout(() => { _localDirty = false; _dirtyTimer = null; }, 5000);
   // Firestore sync（リフレッシュ中は抑制）
   if(window._suppressSync) return;
   if(!window._fbInitialSyncDone){
@@ -5380,10 +5390,12 @@ var _fbUidCache = null;
 var _suppressSnapshot = false; // onSnapshotコールバック抑制フラグ
 var _lastSyncedAt = ''; // 最後に自分が同期したタイムスタンプ
 var _localDirty = false; // ローカルに未同期の変更がある
+var _sessionId = 'ses_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); // セッション固有ID
+var _dirtyTimer = null; // dirty自動解除タイマー
  // Firebase UID cache
 function _debouncedFirestoreSync(){
   if(_fsTimer) clearTimeout(_fsTimer);
-  _fsTimer = setTimeout(_syncToFirestore, 1500);
+  _fsTimer = setTimeout(_syncToFirestore, 800);
 }
 async function _syncToFirestore(){
   try {
@@ -5403,19 +5415,40 @@ async function _syncToFirestore(){
       });
     };
     // ── 共有データ → appdata/shared ──
+    // 選手の食事データを共有フィールドに同期
+    if(typeof _syncPlayerMealsToShared === 'function') _syncPlayerMealsToShared();
     const shared = {};
     SHARED_FIELDS.forEach(k => { if(DB[k] !== undefined) shared[k] = DB[k]; });
     if(shared.coaches) shared.coaches = _stripPhotos(shared.coaches);
     if(shared.teams) shared.teams = _stripPhotos(shared.teams);
     if(shared.players) shared.players = _stripPhotos(shared.players);
+    // 大量データの日付トリミング（Firestoreの1MBドキュメント制限対策）
+    const _trimDays = 60; // 直近60日分のみ同期
+    const _cutoff = new Date(Date.now() - _trimDays*86400000).toISOString().slice(0,10);
+    ['trainingLog','conditionLog','bodyLog','playerMealHistory'].forEach(fk => {
+      if(shared[fk] && typeof shared[fk] === 'object'){
+        const trimmed = {};
+        Object.keys(shared[fk]).forEach(pid => {
+          if(typeof shared[fk][pid] === 'object' && !Array.isArray(shared[fk][pid])){
+            const pData = {};
+            Object.keys(shared[fk][pid]).forEach(dk => { if(dk >= _cutoff) pData[dk] = shared[fk][pid][dk]; });
+            if(Object.keys(pData).length > 0) trimmed[pid] = pData;
+          } else {
+            trimmed[pid] = shared[fk][pid];
+          }
+        });
+        shared[fk] = trimmed;
+      }
+    });
     shared._syncedAt = new Date().toISOString();
-    shared._syncedBy = uid;
+    shared._syncedBy = _sessionId;
     shared._dataVersion = window._currentDataVersion || 'prod_v5_launch';
     _suppressSnapshot = true;
     _lastSyncedAt = shared._syncedAt;
     await fn.setDoc(fn.doc(window._fbDB, 'appdata', 'shared'), shared, {merge:true});
-    setTimeout(() => { _suppressSnapshot = false; }, 2000);
+    setTimeout(() => { _suppressSnapshot = false; }, 1500);
     _localDirty = false; // 同期完了 → dirty解除
+    if(_dirtyTimer){ clearTimeout(_dirtyTimer); _dirtyTimer = null; }
     // ── 個人データ → appdata/{uid} ──
     const priv = {};
     PRIVATE_FIELDS.forEach(k => { if(k!=='currentUser' && DB[k] !== undefined) priv[k] = DB[k]; });
@@ -5494,17 +5527,42 @@ function _startSharedListener(){
   _sharedUnsub = fn.onSnapshot(fn.doc(window._fbDB, 'appdata', 'shared'), (snap) => {
     if(!snap.exists()) return;
     if(_suppressSnapshot) return; // 自分の書き込み中はスキップ
-    if(_localDirty) return; // ローカルに未同期の変更がある場合はスキップ
     const sd = snap.data();
     const remoteTime = sd._syncedAt || '';
-    const syncedBy = sd._syncedBy || '';
-    const myUid = window._fbAuth?.currentUser?.uid || _fbUidCache || '';
-    // 自分が同期したデータはスキップ（ループ防止）
-    if(syncedBy === myUid) return;
+    const syncedBySession = sd._syncedBy || '';
+    // 同一セッションからの更新はスキップ（ループ防止）
+    if(syncedBySession === _sessionId) return;
     if(remoteTime === _lastSyncedAt) return;
-    if(!remoteTime || remoteTime <= (DB._syncedAt || '')) return;
-    // 他のユーザーからの更新 → 共有データを反映
-    SHARED_FIELDS.forEach(k => { if(sd[k] !== undefined) DB[k] = sd[k]; });
+    if(!remoteTime) return;
+    // _localDirtyでもタイムスタンプが新しければ受け入れ（他ユーザーの更新を逃さない）
+    if(_localDirty && remoteTime <= (DB._syncedAt || '')) return;
+    // 他のデバイス/ユーザーからの更新 → スマートマージ
+    const MERGE_KEYS = ['trainingLog','conditionLog','bodyLog','injuryHistory','playerMealHistory','chats'];
+    SHARED_FIELDS.forEach(k => {
+      if(sd[k] === undefined) return;
+      if(MERGE_KEYS.includes(k) && typeof sd[k] === 'object' && !Array.isArray(sd[k])){
+        // オブジェクト型はディープマージ（ローカルの未同期データを失わない）
+        if(!DB[k] || typeof DB[k] !== 'object') DB[k] = {};
+        Object.keys(sd[k]).forEach(pid => {
+          if(typeof sd[k][pid] === 'object' && !Array.isArray(sd[k][pid]) && typeof DB[k][pid] === 'object' && !Array.isArray(DB[k][pid])){
+            // 日付キーレベルでマージ（新しいもの優先）
+            Object.keys(sd[k][pid]).forEach(dk => {
+              var remote = sd[k][pid][dk];
+              var local = DB[k][pid][dk];
+              if(!local || (remote?.updatedAt && (!local?.updatedAt || remote.updatedAt > local.updatedAt))){
+                DB[k][pid][dk] = remote;
+              }
+            });
+          } else {
+            // 配列やプリミティブはリモート優先
+            DB[k][pid] = sd[k][pid];
+          }
+        });
+      } else {
+        // 配列・プリミティブは上書き
+        DB[k] = sd[k];
+      }
+    });
     DB._syncedAt = remoteTime;
     // localStorageにキャッシュ（saveDBは呼ばない！ループ防止）
     try {
@@ -5514,9 +5572,24 @@ function _startSharedListener(){
     } catch(e){}
     // 画面を再描画（ただしsaveDBはトリガーしない）
     _refreshCurrentPage();
-    console.log('[RT] Updated from other user:', syncedBy);
+    // 同期バッジ表示
+    _showSyncBadge();
+    console.log('[RT] Updated from:', syncedBySession);
   }, (err) => { console.warn('[RT] listener error:', err.message); });
-  console.log('[RT] Shared listener started');
+  console.log('[RT] Shared listener started (session:', _sessionId, ')');
+}
+// 同期受信バッジ
+function _showSyncBadge(){
+  var badge = document.getElementById('sync-badge');
+  if(!badge){
+    badge = document.createElement('div');
+    badge.id = 'sync-badge';
+    badge.style.cssText = 'position:fixed;top:8px;right:8px;z-index:99999;background:var(--teal);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;opacity:0;transition:opacity .3s;pointer-events:none';
+    if(document.body) document.body.appendChild(badge);
+  }
+  badge.textContent = '☁️ 同期完了';
+  badge.style.opacity = '1';
+  setTimeout(() => { badge.style.opacity = '0'; }, 2000);
 }
 async function _clearFirestoreShared(){
   // 共有データの削除は危険なため無効化（全ユーザーのデータが消える）
@@ -5525,37 +5598,135 @@ async function _clearFirestoreShared(){
 function _stopSharedListener(){
   if(_sharedUnsub){ _sharedUnsub(); _sharedUnsub = null; }
 }
+
+// ── 個人データ リアルタイムリスナー（同一ユーザー・別デバイス間同期） ──
+var _privateUnsub = null;
+function _startPrivateListener(){
+  if(_privateUnsub) return;
+  if(!window._fbReady || !window._fbFn) return;
+  const uid = window._fbAuth?.currentUser?.uid || _fbUidCache;
+  if(!uid) return;
+  const fn = window._fbFn;
+  _privateUnsub = fn.onSnapshot(fn.doc(window._fbDB, 'appdata', uid), (snap) => {
+    if(!snap.exists()) return;
+    if(_suppressSnapshot) return;
+    const pd = snap.data();
+    const remoteTime = pd._syncedAt || '';
+    // 自分の同期はスキップ
+    if(remoteTime === _lastSyncedAt) return;
+    if(!remoteTime) return;
+    // 個人データをマージ
+    let updated = false;
+    PRIVATE_FIELDS.forEach(k => {
+      if(k === 'currentUser') return;
+      if(pd[k] === undefined) return;
+      // meals, mealHistory等はマージ
+      if(typeof pd[k] === 'object' && !Array.isArray(pd[k]) && typeof DB[k] === 'object' && !Array.isArray(DB[k])){
+        Object.keys(pd[k]).forEach(dk => { DB[k][dk] = pd[k][dk]; });
+      } else {
+        DB[k] = pd[k];
+      }
+      updated = true;
+    });
+    if(updated){
+      try { const c={}; PERSIST_FIELDS.forEach(k=>{c[k]=DB[k];}); localStorage.setItem(STORAGE_KEY,JSON.stringify(c)); } catch(e){}
+      _refreshCurrentPage();
+      console.log('[RT-Private] Updated from another device');
+    }
+  }, (err) => { console.warn('[RT-Private] listener error:', err.message); });
+  console.log('[RT-Private] Private listener started for:', uid);
+}
+function _stopPrivateListener(){
+  if(_privateUnsub){ _privateUnsub(); _privateUnsub = null; }
+}
+
+// ── 接続状態監視 & 自動再接続 ──
+var _heartbeatTimer = null;
+function _startSyncHeartbeat(){
+  if(_heartbeatTimer) return;
+  _heartbeatTimer = setInterval(async () => {
+    if(!DB.currentUser || !window._fbReady) return;
+    // リスナーが切れていたら再開
+    if(!_sharedUnsub){
+      console.log('[Heartbeat] Shared listener down, restarting...');
+      _startSharedListener();
+    }
+    const uid = window._fbAuth?.currentUser?.uid || _fbUidCache;
+    if(uid && !_privateUnsub){
+      console.log('[Heartbeat] Private listener down, restarting...');
+      _startPrivateListener();
+    }
+    // 未同期のローカル変更があればプッシュ
+    if(_localDirty && uid){
+      console.log('[Heartbeat] Pushing pending local changes...');
+      try { await _syncToFirestore(); } catch(e){}
+    }
+  }, 30000); // 30秒間隔
+}
+function _stopSyncHeartbeat(){
+  if(_heartbeatTimer){ clearInterval(_heartbeatTimer); _heartbeatTimer = null; }
+}
+
+// ── 全リスナー一括開始/停止 ──
+function _startAllListeners(){
+  _startSharedListener();
+  _startPrivateListener();
+  _startSyncHeartbeat();
+}
+function _stopAllListeners(){
+  _stopSharedListener();
+  _stopPrivateListener();
+  _stopSyncHeartbeat();
+  _stopAllChatListeners();
+}
 var _lastRefreshTime = 0;
 function _refreshCurrentPage(){
   try {
-    // 最低3秒間隔で再描画（高速ループ防止）
+    // 最低2秒間隔で再描画（高速ループ防止）
     const now = Date.now();
-    if(now - _lastRefreshTime < 3000) return;
+    if(now - _lastRefreshTime < 2000) return;
     _lastRefreshTime = now;
     if(window._isRefreshing) return;
     window._isRefreshing = true;
-    const cur = document.querySelector('.nav-item.active');
-    if(cur){
-      const m = cur.getAttribute('onclick')?.match(/goTo\('([^']+)'\)/);
-      if(m && m[1]){
-        // チャット・設定ページは再描画しない（ループ防止）
-        if(m[1] === 'chat' || m[1] === 'profile-settings') {
-          updateNotifBadge();
-          window._isRefreshing = false;
-          return;
-        }
-        window._suppressSync = true;
-        goTo(m[1]);
-        setTimeout(() => { window._suppressSync = false; }, 1000);
-      }
-    }
+    // 通知バッジは常に更新
     updateNotifBadge();
+    // 現在のページを特定
+    const curP = typeof curPage !== 'undefined' ? curPage : null;
+    if(curP){
+      // 設定ページはフォーム入力中の可能性があるため再描画しない
+      if(curP === 'profile-settings') {
+        window._isRefreshing = false;
+        return;
+      }
+      // チャットページ: サイドバーのルーム一覧のみ更新（メッセージ入力中を保護）
+      if(curP === 'chat') {
+        try {
+          var chatLeft = document.querySelector('.chat-left');
+          if(chatLeft && typeof chatPage === 'function'){
+            // ルーム一覧のバッジのみ更新
+            chatLeft.querySelectorAll('.room-item').forEach(el => {
+              var rk = el.getAttribute('data-room') || el.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+              if(rk && DB.chats[rk]){
+                var unread = DB.chats[rk].unread || 0;
+                var badge = el.querySelector('.room-badge');
+                if(badge) badge.textContent = unread > 0 ? unread : '';
+              }
+            });
+          }
+        } catch(e){}
+        window._isRefreshing = false;
+        return;
+      }
+      window._suppressSync = true;
+      goTo(curP);
+      setTimeout(() => { window._suppressSync = false; }, 1000);
+    }
     window._isRefreshing = false;
   } catch(e){ window._isRefreshing = false; }
 }
 // 後方互換: ポーリング関数はリスナー開始にリダイレクト
 async function _pollFirestoreUpdates(){
-  _startSharedListener();
+  _startAllListeners();
 }
 
 function _stopAllChatListeners(){
@@ -5684,6 +5855,7 @@ function resetAllData() {
   DB.injuryHistory = {};
   DB.matchHistory = [];
   DB.mealHistory = {};
+  DB.playerMealHistory = {};
   DB.myFoods = [];
   DB.meals = { today: [], water: 0 };
   DB.mealTemplates = [];
@@ -5946,10 +6118,30 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
-// visibilitychange: バックグラウンド移行時も同期
+// visibilitychange: バックグラウンド移行時も同期 + フォアグラウンド復帰時にリフレッシュ
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'hidden' && window._fbAuth?.currentUser && _localDirty){
     _syncToFirestore();
+  }
+  if(document.visibilityState === 'visible' && DB.currentUser){
+    // フォアグラウンド復帰時: Firestoreから最新データを取得
+    setTimeout(() => {
+      if(!window._fbReady || !window._fbAuth?.currentUser) return;
+      const fn = window._fbFn;
+      fn.getDoc(fn.doc(window._fbDB, 'appdata', 'shared')).then(snap => {
+        if(!snap.exists()) return;
+        const sd = snap.data();
+        const remoteTime = sd._syncedAt || '';
+        if(remoteTime && remoteTime > (DB._syncedAt || '')){
+          SHARED_FIELDS.forEach(k => { if(sd[k] !== undefined) DB[k] = sd[k]; });
+          DB._syncedAt = remoteTime;
+          try { const c={}; PERSIST_FIELDS.forEach(k=>{c[k]=DB[k];}); localStorage.setItem(STORAGE_KEY,JSON.stringify(c)); } catch(e){}
+          _refreshCurrentPage();
+          _showSyncBadge();
+          console.log('[Visibility] Refreshed from Firestore on foreground');
+        }
+      }).catch(()=>{});
+    }, 500);
   }
 });
 
@@ -5989,8 +6181,8 @@ function launchApp(){
   _autodiag();
   _showSetupGuideIfNeeded();
   // チャット・マッチングポーリング（リアルタイム補完）
-  // リアルタイムリスナー開始
-  _startSharedListener();
+  // リアルタイムリスナー開始（共有+個人+ハートビート）
+  _startAllListeners();
   _deduplicateNotifs();
   updateNotifBadge();
   // admin以外のユーザー: 事務局への問い合わせルームを自動作成
@@ -9401,8 +9593,10 @@ function openPlayerDetailModal(pid){
   // ━━━━ 食事タブ ━━━━
   else if(tab==='nutrition'){
     const fsData=window._playerFsData?.[pid];
-    const mealH=fsData?.mealHistory||{};
-    const todayMeals=fsData?.meals?.today||[];
+    const pmh=(DB.playerMealHistory||{})[pid]||{};
+    const mealH=fsData?.mealHistory||pmh;
+    const todayStr2=new Date().toISOString().slice(0,10);
+    const todayMeals=fsData?.meals?.today||(pmh[todayStr2]||[]);
     const water=fsData?.meals?.water||0;
     const mealDates=Object.keys(mealH).sort().reverse().slice(0,14);
     const hasData=mealDates.length>0||todayMeals.length>0;
@@ -9442,11 +9636,11 @@ function openPlayerDetailModal(pid){
   // ━━━━ コンディションタブ ━━━━
   else if(tab==='condition'){
     const fsData=window._playerFsData?.[pid];
-    const tLog=fsData?.trainingLog?.[pid]||log;
+    const tLog=fsData?.trainingLog?.[pid]||DB.trainingLog[pid]||log;
     const condEntries=Object.values(tLog).filter(e=>e.cond).sort((a,b)=>(b.date||'')>(a.date||'')?1:-1);
-    const bodyLog=fsData?.bodyLog||{};
+    const bodyLog=fsData?.bodyLog||DB.bodyLog[pid]||{};
     const bodyEntries=Object.values(bodyLog).sort((a,b)=>(b.date||'')>(a.date||'')?1:-1).slice(0,14);
-    const injuries=fsData?.injuryHistory||[];
+    const injuries=fsData?.injuryHistory||(DB.injuryHistory||{})[pid]||[];
 
     body+=`
     ${condEntries.length?`<div style="margin-bottom:14px">
@@ -9515,9 +9709,13 @@ function openPlayerDetailModal(pid){
 // ── 食事サマリ（概要タブ用） ──
 function _renderPlayerNutritionSummary(pid){
   const fs=window._playerFsData?.[pid];
-  if(!fs) return `<div style="padding:10px;background:var(--surf2);border-radius:8px;font-size:12px;color:var(--txt3);text-align:center">🍽️ 食事データ: 「🔄」で取得</div>`;
-  const todayM=fs.meals?.today||[];
-  const mDays=Object.keys(fs.mealHistory||{}).length;
+  // 共有データからも食事履歴を取得
+  const pmh=(DB.playerMealHistory||{})[pid]||{};
+  const mealH=fs?.mealHistory||pmh;
+  const todayStr=new Date().toISOString().slice(0,10);
+  const todayM=fs?.meals?.today||(pmh[todayStr]||[]);
+  const mDays=Object.keys(mealH).length;
+  if(!fs && mDays===0) return `<div style="padding:10px;background:var(--surf2);border-radius:8px;font-size:12px;color:var(--txt3);text-align:center">🍽️ 食事データ: 「🔄」で取得</div>`;
   const todayKcal=todayM.reduce((s,m)=>s+(m.kcal||m.cal||0),0);
   return`<div style="padding:10px;background:var(--surf2);border-radius:8px">
     <div class="text-xs fw7 mb-6">🍽️ 食事概要</div>
@@ -12825,6 +13023,33 @@ function archiveMealsIfNewDay() {
       }
     }
   }
+  _syncPlayerMealsToShared();
+}
+
+// 選手の食事データを共有フィールドに同期（チーム管理者が閲覧可能にする）
+function _syncPlayerMealsToShared(){
+  var u=DB.currentUser;
+  if(!u||u.role!=='player') return;
+  var pid=u.id;
+  if(!pid) return;
+  if(!DB.playerMealHistory) DB.playerMealHistory={};
+  if(!DB.playerMealHistory[pid]) DB.playerMealHistory[pid]={};
+  // 今日の食事を同期
+  var today=new Date().toISOString().slice(0,10);
+  var todayMeals=(DB.meals&&DB.meals.today)||[];
+  if(todayMeals.length>0){
+    DB.playerMealHistory[pid][today]=todayMeals.map(function(m){
+      return{name:m.name,kcal:m.kcal||0,protein:m.protein||0,carb:m.carb||0,fat:m.fat||0,type:m.type||'',time:m.time||''};
+    });
+  }
+  // 直近14日間のmealHistoryも同期
+  var hist=DB.mealHistory||{};
+  var keys=Object.keys(hist).sort().slice(-14);
+  for(var i=0;i<keys.length;i++){
+    if(hist[keys[i]]&&hist[keys[i]].length>0){
+      DB.playerMealHistory[pid][keys[i]]=hist[keys[i]];
+    }
+  }
 }
 
 // よく食べるものTOP N（頻度順）
@@ -13480,7 +13705,17 @@ function openPlayerNutritionReport(playerId) {
   var p = DB.players.find(function(x){return x.id===playerId;});
   if (!p) { toast('選手が見つかりません','e'); return; }
 
-  var history = DB.mealHistory || {};
+  // 共有フィールドから選手別の食事履歴を取得（他デバイスから同期済み）
+  var pMealHist = (DB.playerMealHistory||{})[playerId] || {};
+  // フォールバック: 自分自身のデータの場合はmealHistoryも参照
+  var history = (DB.currentUser?.id === playerId) ? (DB.mealHistory || {}) : pMealHist;
+  // 両方マージ（自分のデータの場合）
+  if(DB.currentUser?.id === playerId && Object.keys(pMealHist).length > 0){
+    var merged = {};
+    Object.keys(history).forEach(function(k){ merged[k] = history[k]; });
+    Object.keys(pMealHist).forEach(function(k){ if(!merged[k] || merged[k].length < pMealHist[k].length) merged[k] = pMealHist[k]; });
+    history = merged;
+  }
   var myFoods = DB.myFoods || [];
   var bLog = DB.bodyLog[playerId] || {};
   var days = Object.keys(history).sort().slice(-14);
@@ -22745,7 +22980,7 @@ function initMultiTabSync(){
     _syncChannel.onmessage=function(e){
       if(e.data&&typeof e.data==='object'&&e.data.type==='db_update'&&typeof e.data.from==='string'&&e.data.from!==_tabId){
         loadDB();
-        if(typeof refreshPage==='function')refreshPage();
+        _refreshCurrentPage();
         console.log('[SYNC] DB updated from another tab');
       }
     };
@@ -23256,6 +23491,7 @@ window.addEventListener('DOMContentLoaded', function() {
         DB.injuryHistory = {};
         DB.matchHistory = [];
         DB.mealHistory = {};
+        DB.playerMealHistory = {};
         DB.myFoods = [];
         DB.meals = { today: [], water: 0 };
         DB.mealTemplates = [];
@@ -25602,7 +25838,7 @@ if(location.hostname !== 'localhost' && location.hostname !== '127.0.0.1'){
   <div class="lp-section-wrap">
     <div style="text-align:center;margin-bottom:3.5rem;">
       <span class="lp-tag-label">機能紹介</span>
-      <h2 class="lp-section-h2">現場を変える3つの機能</h2>
+      <h2 class="lp-section-h2">現場を変えるオールインワン機能</h2>
       <p class="lp-section-sub">事務作業の負担を減らし、選手・スタッフと向き合える時間に</p>
     </div>
 
@@ -25649,7 +25885,7 @@ if(location.hostname !== 'localhost' && location.hostname !== '127.0.0.1'){
           <i class="fas fa-chart-line"></i> MyTEAM
         </span>
         <h3 class="service-h3">チーム運営を<br>スマホひとつで</h3>
-        <p class="service-desc">現金での部費徴収はもう過去のもの。集金・連絡・コンディション管理をひとつのアプリで完結。保護者もスマホからすべてが確認できます。</p>
+        <p class="service-desc">現金での部費徴収はもう過去のもの。集金・連絡・コンディション管理・食事管理をひとつのアプリで完結。保護者もスマホからすべてが確認できます。</p>
         <div class="feature-list">
           <div class="feature-item">
             <div class="feature-icon" style="background:#f1f5f9;color:#0f172a;"><i class="fas fa-credit-card"></i></div>
@@ -25666,10 +25902,31 @@ if(location.hostname !== 'localhost' && location.hostname !== '127.0.0.1'){
             </div>
           </div>
           <div class="feature-item">
-            <div class="feature-icon" style="background:#f1f5f9;color:#0f172a;"><i class="fas fa-utensils"></i></div>
+            <div class="feature-icon" style="background:#f0fdf4;color:#16a34a;"><i class="fas fa-heart-pulse"></i></div>
             <div>
-              <div class="feature-name">AI食事解析（フードコンディショニング）</div>
-              <div class="feature-note">写真を撮るだけで栄養状態を確認。<span style="color:#94a3b8;">※参考情報であり医学的診断に代わるものではありません。</span></div>
+              <div class="feature-name">コンディション管理・ウェルネススコア</div>
+              <div class="feature-note">体調・睡眠・疲労・痛みを毎日記録。100点満点のウェルネススコアで選手の状態を一目で把握。ケガの兆候を早期発見できます。</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-utensils"></i></div>
+            <div>
+              <div class="feature-name">AI食事解析（写真認識対応）</div>
+              <div class="feature-note">食事を記録するだけでカロリー・PFCバランスを自動計算。カメラで撮影するだけのAI写真食事解析にも対応。お気に入り食品の保存で入力を時短できます。<span style="color:#94a3b8;">※参考情報であり医学的診断に代わるものではありません。</span></div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-comments"></i></div>
+            <div>
+              <div class="feature-name">高機能チームチャット（18機能搭載）</div>
+              <div class="feature-note">メッセージ編集・転送・ピン留め・検索・返信/引用・絵文字リアクション・グループチャット・ファイル添付に対応。チーム内の連絡を一元化します。</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon" style="background:#e0f2fe;color:#0284c7;"><i class="fas fa-cloud-arrow-up"></i></div>
+            <div>
+              <div class="feature-name">リアルタイムクラウド同期（6層同期システム）</div>
+              <div class="feature-note">選手がスマホで記録したトレーニング・コンディション・食事データが、管理者・コーチ・保護者の画面にリアルタイム反映。自動復旧ハートビートで接続切れも自動回復します。</div>
             </div>
           </div>
         </div>
@@ -25711,6 +25968,291 @@ if(location.hostname !== 'localhost' && location.hostname !== '127.0.0.1'){
         </button>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ===== FEATURE HIGHLIGHTS ===== -->
+<section style="background:#fff;padding:5rem 0;">
+  <div class="lp-section-wrap">
+    <div style="text-align:center;margin-bottom:3rem;">
+      <span class="lp-tag-label">もっと便利に</span>
+      <h2 class="lp-section-h2">すべてのユーザーに届く、充実の機能</h2>
+      <p class="lp-section-sub">40以上の機能で、チーム運営者・コーチ・選手・保護者それぞれの画面にリアルタイムで情報が連携されます</p>
+    </div>
+
+    <!-- カテゴリ: 選手の成長を支える -->
+    <div style="margin-bottom:2.5rem;">
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1.25rem;padding-left:.25rem;">
+        <div style="width:28px;height:28px;border-radius:8px;background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:.8rem;"><i class="fas fa-trophy"></i></div>
+        <span style="font-size:.82rem;font-weight:800;color:#16a34a;letter-spacing:.06em;">選手の成長を支える</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;">
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#ecfdf5;color:#059669;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-robot"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">AIコーチ</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">トレーニングメニュー提案・栄養アドバイス・コンディション分析をAIがサポート。選手一人ひとりに最適化された情報を提供します。<span style="color:#94a3b8;"> ※参考情報です。</span></div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fef3c7;color:#d97706;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-fire"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">デイリーミッション&レベルアップ</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">毎日の練習・食事・コンディション記録でXPを獲得しレベルアップ。連続達成のストリーク記録で、選手の自主性とモチベーションを育てます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#ede9fe;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-weight-scale"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">体組成管理</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">体重・体脂肪率・筋肉量を記録し推移をグラフ化。成長期の選手の身体づくりをデータで可視化します。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#e0f2fe;color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-chart-radar"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">選手統計ダッシュボード</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">筋力レーダーチャート・トレーニング頻度・ボリューム推移をグラフで表示。自分の強み・弱みを視覚的に把握できます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fce7f3;color:#db2777;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-crosshairs"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">栄養目標設定</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">カロリー・タンパク質・脂質・炭水化物の1日の摂取目標を設定。食事記録との差分をリアルタイムで確認でき、目標管理を支援します。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#e0f2fe;color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-droplet"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">水分摂取トラッキング</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">1日の水分補給量を記録・目標管理。練習中の脱水リスクを防ぎ、適切なコンディション維持をサポートします。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fff1f2;color:#e11d48;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-notes-medical"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">ケガ・故障履歴管理</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">痛みの部位・程度・種類を記録し故障歴を蓄積。部位選択UIとタイムラインで、再発傾向の把握と予防に活用できます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#ecfdf5;color:#059669;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-camera"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">AI写真食事解析</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">食事をスマホのカメラで撮影するだけで、AIが食品を自動認識しカロリー・栄養素を推定。手入力不要で毎日の記録がラクになります。<span style="color:#94a3b8;"> ※推定値であり正確な数値を保証するものではありません。</span></div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#dbeafe;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-stopwatch"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">インターバルタイマー</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">セット間の休憩時間をカウントダウン表示。アラームで次のセット開始を通知し、集中力を切らさずトレーニングに取り組めます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fef3c7;color:#d97706;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-calculator"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">1RM計算機＆自己ベスト記録</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">重量×回数から最大挙上重量（1RM）を自動推定。種目ごとの自己ベスト更新を検知し、成長を数字で実感できます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-bookmark"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">マイフード（お気に入り食品）</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">よく食べる食品・メニューをお気に入り登録。次回からワンタップで食事記録に追加でき、毎日の入力を大幅に時短します。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#ede9fe;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-wand-magic-sparkles"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">AI自動目標最適化</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">体重・身長・活動量・目的（増量/減量/維持）からAIが最適なカロリー・PFC目標を自動算出。専門知識がなくても適切な栄養管理ができます。<span style="color:#94a3b8;"> ※参考情報です。</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- カテゴリ: チーム運営を効率化 -->
+    <div style="margin-bottom:2.5rem;">
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1.25rem;padding-left:.25rem;">
+        <div style="width:28px;height:28px;border-radius:8px;background:#eff6ff;color:#0ea5e9;display:flex;align-items:center;justify-content:center;font-size:.8rem;"><i class="fas fa-users-gear"></i></div>
+        <span style="font-size:.82rem;font-weight:800;color:#0ea5e9;letter-spacing:.06em;">チーム運営を効率化</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;">
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#e0f2fe;color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-calendar-alt"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">カレンダー・スケジュール共有</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">練習日・試合・イベントをチーム全体で共有。繰り返し予定や今日のスケジュールをダッシュボードに自動表示します。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fef3c7;color:#d97706;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-futbol"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">チームマッチング（練習試合）</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">近隣の同スポーツチームを検索して練習試合・交流戦を申し込み。マッチング成立から日程調整までアプリ内で完結します。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#dbeafe;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-clipboard-list"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">練習メニュービルダー</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">カスタムワークアウトを作成・保存・チームに共有。種目・セット・レップ・重量をテンプレート化し、日々の練習を効率的に管理できます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fef9c3;color:#ca8a04;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-ranking-star"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">試合記録・レビュー</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">試合結果のスコア・MVP・コメントを記録。コーチから選手への個別評価・フィードバック機能で、試合後の振り返りを支援します。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-bullhorn"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">アナウンス・プッシュ通知</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">チームからのお知らせをプッシュ通知で即時配信。月謝未払いアラートや練習試合の申込通知も自動で届きます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-file-invoice-dollar"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">臨時請求・コーチ報酬管理</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">合宿費・遠征費などの臨時請求をワンクリック発行。コーチへの報酬支払いも管理画面から一括で確認・処理できます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#e0e7ff;color:#4338ca;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-boxes-stacked"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">備品・在庫管理</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">ユニフォーム・ボール・トレーニング器具などの在庫数を管理。不足時のアラートで発注忘れを防止します。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#f1f5f9;color:#475569;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-folder-open"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">ファイル共有</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">練習計画書・大会要項・チーム資料をアプリ内で共有。コーチ・選手・保護者がいつでもアクセスできます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fce7f3;color:#db2777;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-user-group"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">保護者ダッシュボード</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">お子さまのコンディション・トレーニング・食事状況をリアルタイム確認。月謝の支払い状況もスマホひとつで把握できます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#dbeafe;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-chart-column"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">コーチ向けレポート</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">担当選手のコンディション推移・体組成グラフ・栄養データをコーチ画面で一括閲覧。データに基づいた的確な指導を支援します。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#f3e8ff;color:#9333ea;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-clock"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">コーチスケジュール管理</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">コーチの空き時間・指導可能日をカレンダーで管理。チームとの日程調整がスムーズになります。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#ecfdf5;color:#059669;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-qrcode"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">招待コードでチーム参加</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">チーム固有の招待コードを共有するだけで、選手・保護者がワンステップでチームに参加。面倒な手続きは不要です。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fef9c3;color:#ca8a04;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-sliders"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">月謝料金プラン設定</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">学年別・コース別など複数の料金プランを柔軟に設定。手数料率のカスタマイズにも対応し、チーム運営に最適化できます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fef3c7;color:#d97706;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-receipt"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">お支払い管理・決済追跡</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">月謝・臨時請求の決済ステータスをスレッド形式で一覧管理。未払い・処理中・完了が一目で確認でき、督促も簡単です。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#ecfdf5;color:#059669;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-hat-wizard"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">初回セットアップウィザード</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">初めての方でも迷わない、ステップバイステップの対話型ガイド。利用規約の同意・電子署名・プロフィール設定まで、わかりやすくナビゲートします。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#e0f2fe;color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-user-check"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">選手コンディション一覧</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">全選手の今日のコンディション・気分・痛みアラートをダッシュボードに一覧表示。ウェルネススコア100点満点で、体調不良の兆候を即座に把握できます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fce7f3;color:#db2777;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-utensils"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">選手栄養レポート</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">選手ごとの14日間栄養履歴・マクロ栄養素の推移・よく食べる食品をレポート形式で表示。管理者・コーチ・保護者がリアルタイムで閲覧できます。</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- カテゴリ: 安心のインフラ -->
+    <div>
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1.25rem;padding-left:.25rem;">
+        <div style="width:28px;height:28px;border-radius:8px;background:#f1f5f9;color:#475569;display:flex;align-items:center;justify-content:center;font-size:.8rem;"><i class="fas fa-shield-halved"></i></div>
+        <span style="font-size:.82rem;font-weight:800;color:#475569;letter-spacing:.06em;">安心のインフラ</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;">
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#e0f2fe;color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-cloud-arrow-up"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">6層リアルタイムクラウド同期</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">選手がスマホで記録したデータが、管理者・コーチ・保護者の画面にリアルタイムで反映。共有データ＋個人データの2チャンネル同期で、どのデバイスからでも最新情報を確認できます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#ecfdf5;color:#059669;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-heartbeat"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">自動復旧ハートビート</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">30秒間隔で接続状態を監視し、ネット切断やバックグラウンド復帰時にリスナーを自動再接続。手動操作なしで常に最新の状態が保たれます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#ede9fe;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-clone"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">マルチタブ・マルチデバイス同期</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">同じブラウザの複数タブ間はBroadcastChannelで即座に同期。異なるデバイス間はFirestoreリアルタイムリスナーで自動連携します。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#f3e8ff;color:#9333ea;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-mobile-screen"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">PWA対応（アプリ化）</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">ホーム画面に追加するだけで、ネイティブアプリのように動作。アプリストアからのインストール不要で、すぐに使い始められます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#f1f5f9;color:#475569;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-wifi-slash"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">オフライン対応</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">ネットワーク接続が不安定な体育館・グラウンドでもデータを入力可能。復帰時にクラウドへ自動同期されます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fef3c7;color:#d97706;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-file-signature"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">電子署名・同意記録</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">登録時の利用規約同意を電子署名付きで記録・保全。同意日時・署名テキスト・端末情報を法的証跡として保存します。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#e0e7ff;color:#4338ca;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-download"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">データエクスポート</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">チームの全データをJSONファイルでバックアップ。万が一の際のデータ復旧や、外部ツールとの連携に活用できます。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-user-shield"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">セキュリティ&監査ログ</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">ログイン・データ変更・操作履歴を自動記録。不正アクセス対策のレート制限・セッション管理・ブルートフォース防御を搭載しています。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#fef3c7;color:#d97706;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-trash-can-arrow-up"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">GDPR対応・データ削除権</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">ユーザーは自分のデータの完全削除をいつでも申請可能。管理者画面から個人データ・関連レコードを一括削除でき、プライバシー法規に対応しています。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#e0e7ff;color:#4338ca;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-key"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">パスワードリセット</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">パスワードを忘れた場合、メールアドレス認証で安全にパスワードを再設定。Firebase認証連携で、アカウントのセキュリティを維持します。</div>
+        </div>
+
+        <div style="padding:1.5rem;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.75rem;"><i class="fas fa-stethoscope"></i></div>
+          <div style="font-weight:800;font-size:.9rem;margin-bottom:.4rem;color:#0f172a;">システム診断パネル</div>
+          <div style="font-size:.8rem;color:#64748b;line-height:1.65;">Firebase接続・データ整合性・ストレージ使用量を管理者画面からワンクリック診断。問題の早期発見と迅速な対応をサポートします。</div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </section>
 
