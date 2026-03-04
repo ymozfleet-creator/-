@@ -1885,7 +1885,7 @@ const SessionMgr = {
         warn = document.createElement('div');
         warn.id = 'session-warn';
         warn.className = 'session-warn';
-        document.body.appendChild(warn);
+        if(document.body) document.body.appendChild(warn);
       }
       warn.textContent = '⏱ セッション切れまであと' + remaining + '分';
       warn.style.display = 'block';
@@ -3431,6 +3431,11 @@ const PAGE_TITLE={
   training:'トレーニング管理',
   ai:'AIアドバイザー',
   stats:'マイ成績',
+  'admin-players':'選手管理',
+  'admin-data':'データ管理',
+  'shared-files':'共有ファイル',
+  'team-files':'チームファイル',
+  'team-profile-edit':'チームプロフィール編集',
 };
 
 // ==================== PAGE ROUTING ====================
