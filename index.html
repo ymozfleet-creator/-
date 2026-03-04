@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://www.gstatic.com https://www.googletagmanager.com https://browser.sentry-cdn.com https://apis.google.com blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.google-analytics.com https://*.sentry.io https://bukatsu-backend.onrender.com wss://*.firebaseio.com https://generativelanguage.googleapis.com; frame-src https://*.firebaseapp.com https://js.stripe.com; frame-ancestors 'none'">
+<script>if(location.protocol==='http:' && location.hostname!=='localhost' && location.hostname!=='127.0.0.1'){location.replace('https://'+location.host+location.pathname+location.search+location.hash);}</script>
 <meta name="description" content="部勝（ブカツ）｜スポーツチーム運営プラットフォーム。チーム管理・コーチマッチング・選手育成・AI栄養管理をワンストップで。">
 <meta name="keywords" content="スポーツ,コーチ,チーム,月謝管理,マッチング,育成">
 <meta name="theme-color" content="#0ea5e9">
@@ -17,10 +20,11 @@
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <!-- PWA -->
-<link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0ea5e9">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MyCOACH">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="twitter:title" content="部勝（ブカツ）｜スポーツチーム運営プラットフォーム">
 <meta name="twitter:description" content="コーチとチームをつなぐスポーツ運営プラットフォーム。">
 <meta name="twitter:image" content="/og-image.png">
@@ -35,7 +39,15 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
 </script>
-<link rel="manifest" href="data:application/json,{%22name%22:%22MyCOACH-MyTEAM%22,%22short_name%22:%22MyCoach%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%230e1e32%22,%22theme_color%22:%22%23ff6b2b%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%23ff6b2b'/></svg>%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22}]}">
+<script>
+// PWA Manifest (動的生成でstart_urlを正しく設定)
+const _mf = {name:'MyCOACH-MyTEAM',short_name:'MyCoach',start_url:location.origin+'/',display:'standalone',background_color:'#0e1e32',theme_color:'#ff6b2b',icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%23ff6b2b'/%3E%3C/svg%3E",sizes:'192x192',type:'image/svg+xml'}]};
+const _mfBlob = new Blob([JSON.stringify(_mf)], {type:'application/json'});
+const _mfLink = document.createElement('link');
+_mfLink.rel = 'manifest';
+_mfLink.href = URL.createObjectURL(_mfBlob);
+document.head.appendChild(_mfLink);
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 
@@ -383,6 +395,47 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 .hero-kpi-card .kpi-value{font-size:28px;font-weight:800;font-family:'Montserrat',sans-serif;line-height:1.1}
 .hero-kpi-card .kpi-label{font-size:12px;color:var(--txt3);margin-top:4px}
 .hero-kpi-card .kpi-sub{font-size:11px;margin-top:8px;display:flex;align-items:center;gap:4px}
+
+/* ─── Admin Dashboard V2 Enhanced Styles ─── */
+.admin-dash-tabs{display:flex;gap:4px;background:var(--surf2);padding:3px;border-radius:12px;margin-bottom:16px;overflow-x:auto}
+.admin-dash-tab{padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;color:var(--txt2);border:none;background:transparent;font-family:inherit}
+.admin-dash-tab:hover{background:rgba(59,100,180,.06)}
+.admin-dash-tab.active{background:var(--surf);color:var(--txt1);box-shadow:0 2px 8px rgba(30,50,86,.08)}
+.admin-stat-ring{position:relative;width:64px;height:64px;flex-shrink:0}
+.admin-stat-ring svg{transform:rotate(-90deg)}
+.admin-stat-ring-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif}
+.admin-timeline{position:relative;padding-left:24px}
+.admin-timeline::before{content:'';position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:var(--b2);border-radius:1px}
+.admin-timeline-item{position:relative;padding:8px 0;display:flex;gap:10px;align-items:flex-start}
+.admin-timeline-dot{position:absolute;left:-20px;top:12px;width:10px;height:10px;border-radius:50%;border:2px solid var(--surf);z-index:1}
+.admin-insight-card{background:linear-gradient(135deg,rgba(37,99,235,.04),rgba(0,207,170,.03));border:1px solid rgba(37,99,235,.1);border-radius:14px;padding:16px;transition:all .2s}
+.admin-insight-card:hover{border-color:rgba(37,99,235,.2);box-shadow:0 4px 16px rgba(37,99,235,.06)}
+.admin-progress{height:8px;background:var(--b1);border-radius:4px;overflow:hidden;position:relative}
+.admin-progress-bar{height:100%;border-radius:4px;transition:width .6s ease}
+.admin-data-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+.admin-data-table thead th{padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);background:var(--surf2);border-bottom:2px solid var(--b2);position:sticky;top:0;z-index:1}
+.admin-data-table thead th:first-child{border-radius:10px 0 0 0}
+.admin-data-table thead th:last-child{border-radius:0 10px 0 0}
+.admin-data-table tbody tr{transition:background .1s}
+.admin-data-table tbody tr:hover{background:rgba(37,99,235,.03)}
+.admin-data-table tbody td{padding:10px 12px;border-bottom:1px solid var(--b1);vertical-align:middle}
+.admin-data-table tbody tr:last-child td{border-bottom:none}
+.admin-export-menu{position:absolute;right:0;top:100%;background:var(--surf);border:1px solid var(--b2);border-radius:12px;padding:6px;box-shadow:0 8px 32px rgba(30,50,86,.12);z-index:50;min-width:180px;display:none}
+.admin-export-menu.show{display:block}
+.admin-export-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background .1s;color:var(--txt1)}
+.admin-export-item:hover{background:var(--surf2)}
+.admin-export-item i{width:20px;text-align:center;color:var(--txt3)}
+.admin-quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.admin-quick-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--surf);border:1px solid var(--b1);border-radius:14px;cursor:pointer;transition:all .2s;text-decoration:none}
+.admin-quick-btn:hover{border-color:var(--b2);box-shadow:0 4px 16px rgba(30,50,86,.06);transform:translateY(-2px)}
+.admin-quick-btn .q-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.admin-quick-btn .q-label{font-size:11px;font-weight:700;color:var(--txt1)}
+.admin-quick-btn .q-sub{font-size:9px;color:var(--txt3)}
+@media(max-width:768px){
+  .admin-quick-grid{grid-template-columns:repeat(2,1fr)}
+  .admin-dash-tabs{gap:2px}
+  .admin-dash-tab{padding:6px 12px;font-size:11px}
+}
 /* ── Today Action Card ── */
 .today-action{border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:10px;margin-bottom:10px;transition:all .2s}@media(max-width:640px){.today-action{padding:10px 12px;gap:8px;margin-bottom:8px;border-radius:12px}}
 .today-action:hover{transform:translateY(-1px)}
@@ -1521,6 +1574,18 @@ select.input {
 [data-theme="dark"] .mini-profile{background:var(--surf2)}
 [data-theme="dark"] .info-row{border-bottom-color:var(--b1)}
 [data-theme="dark"] .dash-greeting{box-shadow:0 4px 24px rgba(0,0,0,.3)}
+[data-theme="dark"] .admin-dash-tabs{background:var(--surf)}
+[data-theme="dark"] .admin-dash-tab{color:var(--txt3)}
+[data-theme="dark"] .admin-dash-tab.active{background:var(--surf2);color:var(--txt1)}
+[data-theme="dark"] .admin-data-table thead th{background:var(--surf2);color:var(--txt3);border-bottom-color:var(--b2)}
+[data-theme="dark"] .admin-data-table tbody tr:hover{background:rgba(37,99,235,.06)}
+[data-theme="dark"] .admin-data-table tbody td{border-bottom-color:var(--b1)}
+[data-theme="dark"] .admin-export-menu{background:var(--surf);border-color:var(--b2);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+[data-theme="dark"] .admin-export-item:hover{background:var(--surf2)}
+[data-theme="dark"] .admin-quick-btn{background:var(--surf);border-color:var(--b1)}
+[data-theme="dark"] .admin-quick-btn:hover{background:var(--surf2);border-color:var(--b2)}
+[data-theme="dark"] .admin-insight-card{background:rgba(37,99,235,.06);border-color:rgba(37,99,235,.15)}
+[data-theme="dark"] .admin-progress{background:var(--b2)}
 [data-theme="dark"] .flow-stepper{background:var(--surf2);border-color:var(--b1)}
 [data-theme="dark"] .flow-step-label{color:var(--txt2)}
 [data-theme="dark"] .flow-connector{background:var(--b2)}
@@ -1664,6 +1729,32 @@ select,textarea,input[type="text"],input[type="email"],input[type="password"],in
 @media(max-width:375px){
   .card{padding:12px!important}
   .modal{padding:16px!important}
+}
+/* ── 印刷スタイルシート ── */
+@media print{
+  .sidebar,.topbar,.bottom-nav,.toast-container,.modal-bg,#offline-banner,.skip-link,.fab,[onclick]{display:none!important}
+  body,html{background:#fff!important;color:#000!important;font-size:12pt}
+  .card{border:1px solid #ccc!important;box-shadow:none!important;break-inside:avoid;background:#fff!important}
+  .page-body{margin:0!important;padding:0!important;width:100%!important}
+  .stat-box{border:1px solid #ddd!important;background:#f9f9f9!important}
+  a{color:#000!important;text-decoration:underline}
+  .btn{display:none!important}
+  @page{margin:15mm}
+}
+/* ── ダークモード自動検知 ── */
+@media(prefers-color-scheme:dark){
+  html:not([data-theme]){--bg:#0f172a;--surf:rgba(30,41,59,.95);--surf2:rgba(51,65,85,.6);--b1:rgba(255,255,255,.08);--b2:rgba(255,255,255,.14);--txt:#f1f5f9;--txt1:#f1f5f9;--txt2:#94a3b8;--txt3:#64748b}
+  html:not([data-theme]) body{background:var(--bg);color:var(--txt)}
+  html:not([data-theme]) .sidebar{background:#1e293b}
+  html:not([data-theme]) .card{background:var(--surf);border-color:var(--b1)}
+  html:not([data-theme]) .modal{background:var(--surf)}
+  html:not([data-theme]) .input{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:var(--txt)}
+}
+/* ── 同期インジケーター ── */
+.sync-indicator{position:fixed;bottom:70px;right:16px;z-index:999;background:var(--surf);border:1px solid var(--b1);border-radius:20px;padding:4px 12px;font-size:10px;display:none;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:opacity .3s}
+.sync-indicator.show{display:flex}
+.sync-dot{width:6px;height:6px;border-radius:50%;animation:syncPulse 1s infinite}
+@keyframes syncPulse{0%,100%{opacity:1}50%{opacity:.3}}
 </style>
 
 <script>
@@ -1888,17 +1979,271 @@ const LoadingUI = {
 
 
 // ================================================================
-// Global Error Handler — エラー監視
+// Global Error Handler — エラー監視 (Sentry連携)
 // ================================================================
 window.onerror = function(msg, src, line, col, err) {
   console.error('[GlobalError]', msg, 'at', src, ':', line);
-  // 本番: Sentryに送信
-  // if (window.Sentry) Sentry.captureException(err);
+  if (window.Sentry && Sentry.captureException) Sentry.captureException(err || new Error(msg));
+  if (typeof addAuditLog === 'function') addAuditLog('error', String(msg).slice(0,120), {src:String(src).slice(-40),line});
   return false;
 };
 window.addEventListener('unhandledrejection', function(e) {
   console.error('[UnhandledPromise]', e.reason);
+  if (window.Sentry && Sentry.captureException) Sentry.captureException(e.reason);
 });
+
+// ================================================================
+// 監査ログシステム (Admin Audit Log)
+// ================================================================
+function addAuditLog(action, detail, meta){
+  if(!DB.auditLog) DB.auditLog = [];
+  const entry = {
+    id: 'aud_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    action: action,
+    detail: String(detail||'').slice(0,200),
+    meta: meta || {},
+    user: DB.currentUser ? {id:DB.currentUser.id, name:DB.currentUser.name, role:DB.currentUser.role} : null,
+    timestamp: new Date().toISOString(),
+    ua: navigator.userAgent.slice(0,80)
+  };
+  DB.auditLog.push(entry);
+  // 最大500件に制限
+  if(DB.auditLog.length > 500) DB.auditLog = DB.auditLog.slice(-500);
+  // saveDBは呼び出し元で行うため、ここでは保存しない（循環防止）
+  console.log('[Audit]', action, detail);
+  return entry;
+}
+
+// 主要操作をラップする監査ログヘルパー
+function auditWrap(action, detail, fn){
+  addAuditLog(action, detail);
+  try { const result = fn(); saveDB(); return result; }
+  catch(e){ addAuditLog('error', action + ' failed: ' + e.message); throw e; }
+}
+
+// ================================================================
+// GDPR / 個人情報管理
+// ================================================================
+function adminDeleteUserAllData(userId){
+  if(DB.currentUser?.role !== 'admin'){ toast('管理者権限が必要です','e'); return; }
+  if(!userId){ toast('ユーザーIDが不明です','e'); return; }
+
+  const user = _getUsers().find(u => u.id === userId);
+  if(!user){ toast('ユーザーが見つかりません','e'); return; }
+  const userName = user.name || 'ユーザー';
+
+  openM('🗑️ 個人データ完全削除', `
+    <div style="padding:8px 0">
+      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="font-size:14px;font-weight:700;color:var(--red);margin-bottom:8px">⚠️ この操作は取り消せません</div>
+        <div style="font-size:12px;color:var(--txt2);line-height:1.6">
+          <b>${sanitize(userName,20)}</b>（${user.role}）の以下のデータが完全に削除されます：
+        </div>
+        <ul style="font-size:11px;color:var(--txt2);margin:8px 0 0 16px;line-height:1.8">
+          <li>ユーザーアカウント情報</li>
+          <li>関連する支払い履歴</li>
+          <li>チャットメッセージ</li>
+          <li>通知・イベント履歴</li>
+          <li>コンディション・栄養ログ</li>
+          ${user.role==='coach'?'<li>コーチプロフィール・マッチング履歴</li>':''}
+          ${user.role==='player'?'<li>トレーニング・栄養データ</li>':''}
+          ${user.role==='team'?'<li>チーム情報・所属選手の紐付け</li>':''}
+        </ul>
+      </div>
+      <div class="form-group">
+        <label class="label">確認のため「削除」と入力してください</label>
+        <input id="gdpr-confirm" class="input" placeholder="削除" autocomplete="off">
+      </div>
+      <div class="flex gap-8 mt-16">
+        <button class="btn btn-danger flex-1" onclick="executeGDPRDelete('${userId}')">🗑️ 完全削除を実行</button>
+        <button class="btn btn-ghost flex-1" onclick="closeM()">キャンセル</button>
+      </div>
+    </div>
+  `);
+}
+
+function executeGDPRDelete(userId){
+  const confirmVal = (document.getElementById('gdpr-confirm')?.value||'').trim();
+  if(confirmVal !== '削除'){ toast('「削除」と入力してください','e'); return; }
+
+  const user = _getUsers().find(u => u.id === userId);
+  if(!user){ toast('ユーザーが見つかりません','e'); return; }
+  const userName = user.name || userId;
+
+  addAuditLog('gdpr_delete', userName + '(' + user.role + ') の全データを削除', {targetId:userId, role:user.role});
+
+  // ロールに応じたデータ削除
+  if(user.role === 'coach'){
+    DB.coaches = DB.coaches.filter(c => c.id !== userId && c.userId !== userId);
+    DB.requests = (DB.requests||[]).filter(r => r.coachId !== userId);
+    DB.coachPay = (DB.coachPay||[]).filter(p => p.coachId !== userId);
+    // 情報開示の削除
+    DB.disclosures = (DB.disclosures||[]).filter(d => d.coachId !== userId);
+  }
+  if(user.role === 'player'){
+    DB.players = DB.players.filter(p => p.id !== userId && p.userId !== userId);
+    DB.payments = (DB.payments||[]).filter(p => p.player !== userId);
+    // コンディションログ
+    if(DB.conditionLog) delete DB.conditionLog[userId];
+    // 栄養ログ
+    if(DB.nutritionLog) delete DB.nutritionLog[userId];
+  }
+  if(user.role === 'team'){
+    const teamId = DB.teams.find(t => t.userId === userId || t.id === userId)?.id;
+    if(teamId){
+      // チーム所属選手の紐付け解除（選手データ自体は残す）
+      DB.players.forEach(p => { if(p.team === teamId) p.team = ''; });
+      DB.teams = DB.teams.filter(t => t.id !== teamId);
+      DB.payments = (DB.payments||[]).filter(p => p.team !== teamId && p.teamId !== teamId);
+      DB.requests = (DB.requests||[]).filter(r => r.teamId !== teamId);
+    }
+  }
+  if(user.role === 'parent'){
+    // 保護者紐付け解除
+    DB.players.forEach(p => { if(p.guardianId === userId) p.guardianId = ''; });
+  }
+
+  // チャットからメッセージ削除
+  Object.values(DB.chats||{}).forEach(ch => {
+    if(ch.msgs) ch.msgs = ch.msgs.filter(m => m.from !== userId);
+  });
+
+  // 通知の削除
+  DB.notifs = (DB.notifs||[]).filter(n => n.userId !== userId);
+
+  // イベントの削除
+  DB.events = (DB.events||[]).filter(e => e.createdBy !== userId);
+
+  // 同意ログに削除記録を追加（GDPR対応証跡）
+  if(!DB.consentLog) DB.consentLog = [];
+  DB.consentLog.push({
+    type: 'data_deletion',
+    userId: userId,
+    userName: userName,
+    role: user.role,
+    deletedAt: new Date().toISOString(),
+    deletedBy: DB.currentUser?.id || 'admin',
+    scope: 'full_account'
+  });
+
+  // ユーザーアカウント削除
+  const users = _getUsers().filter(u => u.id !== userId);
+  _saveUsers(users);
+
+  saveDB();
+  closeM();
+  toast(userName + ' のデータを完全削除しました','s');
+  refreshPage();
+}
+
+// ユーザー自身によるデータエクスポート（GDPR データポータビリティ）
+function exportMyData(){
+  const me = DB.currentUser;
+  if(!me){ toast('ログインが必要です','e'); return; }
+
+  const myData = {
+    account: { id:me.id, name:me.name, email:me.email, role:me.role, createdAt:me.createdAt },
+    profile: {},
+    payments: [],
+    events: [],
+    consentLog: (DB.consentLog||[]).filter(c => c.userId === me.id)
+  };
+
+  if(me.role === 'coach') myData.profile = DB.coaches.find(c => c.id === me.id || c.userId === me.id) || {};
+  if(me.role === 'player'){
+    myData.profile = DB.players.find(p => p.id === me.id || p.userId === me.id) || {};
+    myData.payments = _dbArr('payments').filter(p => p.player === me.id);
+  }
+  if(me.role === 'team'){
+    const team = DB.teams.find(t => t.userId === me.id || t.id === me.id);
+    if(team) myData.profile = team;
+    myData.payments = _dbArr('payments').filter(p => p.team === team?.id || p.teamId === team?.id);
+  }
+  myData.events = (DB.events||[]).filter(e => e.createdBy === me.id);
+
+  const json = JSON.stringify(myData, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mydata_' + me.id + '_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  addAuditLog('data_export', me.name + ' が個人データをエクスポート');
+  saveDB();
+  toast('個人データをエクスポートしました','s');
+}
+
+// 自分の同意ログ表示
+function showMyConsentLog(){
+  const me = DB.currentUser;
+  if(!me){ toast('ログインが必要です','e'); return; }
+  const logs = (DB.consentLog||[]).filter(c => c.userId === me.id);
+  let h = '<div style="max-height:400px;overflow-y:auto">';
+  if(!logs.length){
+    h += '<div class="text-muted text-sm text-center" style="padding:24px">同意履歴はありません</div>';
+  } else {
+    logs.reverse().forEach(l => {
+      const icon = l.type==='registration'?'📝':l.type==='data_deletion'?'🗑️':'📋';
+      h += `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--b1);font-size:12px">
+        <span style="font-size:16px">${icon}</span>
+        <div style="flex:1"><div class="fw7">${l.type==='registration'?'利用規約への同意':l.type==='data_deletion'?'データ削除':l.type||'同意'}</div>
+        <div class="text-xs text-muted">${(l.agreedAt||l.deletedAt||l.timestamp||'').slice(0,16).replace('T',' ')}</div></div>
+      </div>`;
+    });
+  }
+  h += '</div>';
+  openM('📋 同意・データ処理履歴', h);
+}
+
+// 管理者用: 全ユーザー同意ログ
+function showConsentLogAdmin(){
+  if(DB.currentUser?.role!=='admin'){ toast('管理者権限が必要です','e'); return; }
+  const logs = (DB.consentLog||[]).slice(-50).reverse();
+  let h = '<div style="max-height:500px;overflow-y:auto">';
+  if(!logs.length){
+    h += '<div class="text-muted text-sm text-center" style="padding:24px">同意ログなし</div>';
+  } else {
+    logs.forEach(l => {
+      const icon = l.type==='registration'?'📝':l.type==='data_deletion'?'🗑️':'📋';
+      h += `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--b1);font-size:11px">
+        <span style="font-size:14px">${icon}</span>
+        <div style="flex:1">
+          <div class="fw7">${sanitize(l.userName||l.userId||'不明',20)} <span class="badge b-gray" style="font-size:9px">${l.role||'--'}</span></div>
+          <div class="text-xs text-muted">${l.type||'consent'} · ${(l.agreedAt||l.deletedAt||l.timestamp||'').slice(0,16).replace('T',' ')}</div>
+        </div>
+      </div>`;
+    });
+  }
+  h += '</div>';
+  openM('📋 全ユーザー同意ログ (' + (DB.consentLog||[]).length + '件)', h, true);
+}
+
+// 管理者用: GDPR削除パネル
+function openAdminGDPRPanel(){
+  if(DB.currentUser?.role!=='admin'){ toast('管理者権限が必要です','e'); return; }
+  const allUsers = _getUsers().filter(u => u.role !== 'admin');
+  let h = '<div style="margin-bottom:12px;font-size:12px;color:var(--txt3);line-height:1.6">ユーザーを選択して個人データを完全に削除します。この操作はGDPR「忘れられる権利」に基づきます。</div>';
+  h += '<div style="margin-bottom:12px"><input class="input" placeholder="🔍 名前で検索…" oninput="filterGDPRUsers(this.value)" style="font-size:12px;height:36px"></div>';
+  h += '<div id="gdpr-user-list" style="max-height:400px;overflow-y:auto">';
+  const roleLabels = {coach:'コーチ',team:'チーム',player:'選手',parent:'保護者'};
+  const roleColors = {coach:'var(--org)',team:'var(--blue)',player:'var(--teal)',parent:'#a855f7'};
+  allUsers.forEach(u => {
+    h += `<div class="gdpr-user-row" data-name="${(u.name||'').toLowerCase()}" style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b1)">
+      <div class="avi" style="background:${roleColors[u.role]||'var(--txt3)'};width:32px;height:32px;font-size:12px;flex-shrink:0">${(u.name||'?')[0]}</div>
+      <div style="flex:1;min-width:0"><div class="fw7 text-sm">${sanitize(u.name||'--',20)}</div><div class="text-xs text-muted">${sanitize(u.email||'',24)}</div></div>
+      <span class="badge" style="background:${roleColors[u.role]||'#888'}18;color:${roleColors[u.role]||'#888'};font-size:10px">${roleLabels[u.role]||u.role}</span>
+      <button class="btn btn-ghost btn-xs" style="color:var(--red);border-color:rgba(239,68,68,.3);flex-shrink:0" onclick="closeM();adminDeleteUserAllData('${u.id}')">削除</button>
+    </div>`;
+  });
+  h += '</div>';
+  if(!allUsers.length) h += '<div class="text-muted text-sm text-center" style="padding:20px">削除対象のユーザーがいません</div>';
+  openM('🛡️ GDPR データ削除パネル', h, true);
+}
+function filterGDPRUsers(q){
+  const query = q.toLowerCase();
+  document.querySelectorAll('.gdpr-user-row').forEach(r => {
+    r.style.display = (r.getAttribute('data-name')||'').includes(query) ? 'flex' : 'none';
+  });
+}
 
 // ================================================================
 // Performance Monitor — パフォーマンス計測
@@ -2325,38 +2670,43 @@ function _initAdminCharts() {
       .reduce((s,p)=>s+(p.platformTotal||getFeeAmount(p.amount,p.teamId||'','coachFee')),0)/months.length
   );
 
-  renderChart('admin-fee-chart',{
-    type:'bar',
-    data:{
-      labels:months.map(m=>m.slice(5)+'月'),
-      datasets:[
-        {label:'月謝手数料',data:feePay,backgroundColor:'rgba(255,107,43,.75)',borderRadius:6},
-        {label:'コーチ代手数料',data:feeCoach,backgroundColor:'rgba(0,207,170,.75)',borderRadius:6},
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#7ea3c4'}}},
-      scales:{
-        x:{stacked:true,grid:{display:false}},
-        y:{stacked:true,grid:{color:'rgba(255,255,255,.06)'},ticks:{callback:v=>'¥'+v.toLocaleString()}}
-      }}
-  });
+  if(document.getElementById('admin-fee-chart')){
+    renderChart('admin-fee-chart',{
+      type:'bar',
+      data:{
+        labels:months.map(m=>m.slice(5)+'月'),
+        datasets:[
+          {label:'月謝手数料',data:feePay,backgroundColor:'rgba(255,107,43,.75)',borderRadius:6},
+          {label:'コーチ代手数料',data:feeCoach,backgroundColor:'rgba(0,207,170,.75)',borderRadius:6},
+        ]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#7ea3c4'}}},
+        scales:{
+          x:{stacked:true,grid:{display:false}},
+          y:{stacked:true,grid:{color:'rgba(255,255,255,.06)'},ticks:{callback:v=>'¥'+v.toLocaleString()}}
+        }}
+    });
+  }
 
   // 登録者数ドーナツ
-  renderChart('admin-users-chart',{
-    type:'doughnut',
-    data:{
-      labels:['コーチ','チーム','選手'],
-      datasets:[{
-        data:[DB.coaches.length||0,DB.teams.length||0,DB.players.length||0],
-        backgroundColor:['rgba(255,107,43,.8)','rgba(59,130,246,.8)','rgba(0,207,170,.8)'],
-        borderWidth:2,borderColor:['#ff6b2b','#3b82f6','#00cfaa'],hoverOffset:6
-      }]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      cutout:'55%',
-      plugins:{legend:{position:'bottom'}}}
-  });
+  if(document.getElementById('admin-users-chart')){
+    const parentCount=_getUsers().filter(u=>u.role==='parent').length;
+    renderChart('admin-users-chart',{
+      type:'doughnut',
+      data:{
+        labels:['コーチ','チーム','選手','保護者'],
+        datasets:[{
+          data:[DB.coaches.length||0,DB.teams.length||0,DB.players.length||0,parentCount||0],
+          backgroundColor:['rgba(255,107,43,.8)','rgba(59,130,246,.8)','rgba(0,207,170,.8)','rgba(168,85,247,.8)'],
+          borderWidth:2,borderColor:['#ff6b2b','#3b82f6','#00cfaa','#a855f7'],hoverOffset:6
+        }]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        cutout:'55%',
+        plugins:{legend:{position:'bottom'}}}
+    });
+  }
 
   // payMgmt月謝収入推移チャート
   if(document.getElementById('paymgmt-chart')){
@@ -2873,6 +3223,13 @@ const API_BASE = (typeof window !== 'undefined' && window.MC_API_BASE)
   ? window.MC_API_BASE
   : 'https://bukatsu-backend.onrender.com';
 
+// API認証ヘッダー取得ヘルパー
+async function _apiHeaders(){
+  let token='';
+  try{ token=await window._fbAuth?.currentUser?.getIdToken()||''; }catch(e){}
+  return {'Content-Type':'application/json','Authorization':'Bearer '+token};
+}
+
 // ==================== DATA ====================
 const DEMO_COACHES = [];
 const DEMO_TEAMS = [];
@@ -2932,6 +3289,7 @@ const DB = {
   inventory: [],
   teamFiles: [],
   emailLog: [],
+  auditLog: [],
 };
 
 const ROLE_NAV = {
@@ -3475,6 +3833,7 @@ async function doLogin(){
   if(!found){
     if(btn){ btn.disabled=false; btn.innerHTML='ログイン'; }
     emailEl && (emailEl.style.borderColor='#ef4444');
+    addAuditLog('login_fail','未登録メールでログイン試行',{email:email.slice(0,3)+'***'});
     toast('このメールアドレスは登録されていません。新規登録をお試しください。','e');
     return;
   }
@@ -3485,21 +3844,39 @@ async function doLogin(){
     if(hash !== found.pwHash){
       if(btn){ btn.disabled=false; btn.innerHTML='ログイン'; }
       pwEl && (pwEl.style.borderColor='#ef4444');
+      recordLoginFail();
+      addAuditLog('login_fail','パスワード不一致: '+sanitize(found.name||'',15),{userId:found.id});
       toast('パスワードが間違っています','e');
       return;
     }
-    // Firebase Auth にもサインイン（バックグラウンド）
+    // Firebase Auth にもサインイン（アプリ初期化前に完了を待つ）
     if(window._fbReady && window._fbAuth){
-      window._fbFn.signInWithEmailAndPassword(window._fbAuth, email, pw).then(cred=>{
-        _loadFromFirestore(cred.user.uid);
-      }).catch(()=>{
-        window._fbFn.createUserWithEmailAndPassword(window._fbAuth, email, pw).then(cred=>{
-          window._fbFn.setDoc(window._fbFn.doc(window._fbDB,'users',cred.user.uid),{
+      try {
+        const cred = await window._fbFn.signInWithEmailAndPassword(window._fbAuth, email, pw);
+        _fbUidCache = cred.user.uid;
+        console.log('[Login] Firebase Auth OK, uid:', cred.user.uid);
+        // メール確認チェック
+        if(!cred.user.emailVerified){
+          try {
+            await window._fbFn.sendEmailVerification(cred.user);
+            console.log('[Login] 確認メール送信済み');
+          } catch(ev){ console.log('[Login] 確認メール送信失敗:', ev.code); }
+          DB._emailNotVerified = true;
+        } else {
+          DB._emailNotVerified = false;
+        }
+        await _loadFromFirestore(cred.user.uid);
+      } catch(e){
+        console.log('[Login] Firebase Auth sign-in failed, trying create:', e.code);
+        try {
+          const cred = await window._fbFn.createUserWithEmailAndPassword(window._fbAuth, email, pw);
+          _fbUidCache = cred.user.uid;
+          await window._fbFn.setDoc(window._fbFn.doc(window._fbDB,'users',cred.user.uid),{
             id:found.id, role:found.role, name:found.name, email, createdAt:found.createdAt
           });
-          _syncToFirestore();
-        }).catch(()=>{});
-      });
+          await _syncToFirestore();
+        } catch(e2){ console.log('[Login] Firebase Auth create also failed:', e2.code); }
+      }
     }
   }
 
@@ -3702,6 +4079,7 @@ function doRegister(){
   });
 }
 function doLogout(){
+  addAuditLog('logout', (DB.currentUser?.name||'') + ' がログアウト');
   _stopSharedListener();
   _stopAllChatListeners();
   // 個人データのみクリア（共有データは残す）
@@ -3956,13 +4334,13 @@ const PREFS_PREFS=['北海道','青森県','岩手県','宮城県','秋田県','
 
 function obImgPreview(input,previewId,key){
   if(!input.files||!input.files[0])return;
-  const r=new FileReader();
-  r.onload=e=>{
+  const file=input.files[0];
+  if(file.size>5*1024*1024){toast('画像は5MB以下にしてください','e');return;}
+  _compressPhotoAsync(file,300,0.7).then(compressed=>{
     const el=document.getElementById(previewId);
-    if(el){el.innerHTML=`<img src="${e.target.result}" alt="プロフィール写真" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    profileData[key]=e.target.result;}
-  };
-  r.readAsDataURL(input.files[0]);
+    if(el){el.innerHTML=`<img src="${compressed}" alt="プロフィール写真" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+    profileData[key]=compressed;
+  }).catch(()=>toast('画像の読み込みに失敗しました','e'));
 }
 function chkProfBtn(){
   const role=DB.pendingRole||'team';
@@ -3996,7 +4374,7 @@ function renderObPayment(){return`
   <div style="background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);border-radius:12px;padding:14px;margin-bottom:16px">
     <div style="font-size:12px;font-weight:700;color:var(--org);margin-bottom:10px">📋 本番稼働時のStripe連携手順</div>
     <ol style="margin:0;padding-left:18px;font-size:12px;color:var(--txt2);line-height:2.1">
-      <li><a href="https://dashboard.stripe.com/register" target="_blank" style="color:var(--org)">dashboard.stripe.com</a> でアカウント作成（無料）</li>
+      <li><a href="https://dashboard.stripe.com/register" target="_blank" rel="noopener noreferrer" style="color:var(--org)">dashboard.stripe.com</a> でアカウント作成（無料）</li>
       <li>「開発者 → APIキー」から秘密鍵（シークレットキー）を取得</li>
       <li>バックエンドの <b>.env</b> に <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;font-size:10px">STRIPE_SECRET_KEY</code> を設定してデプロイ</li>
       <li>Stripe側で Webhook URL <code style="background:var(--surf2);padding:1px 5px;border-radius:4px;font-size:10px">/api/webhook</code> を登録</li>
@@ -4472,6 +4850,7 @@ function completeOnboarding(){
 
   // ウェルカム通知
   addNotif(`ようこそ、${user.name}さん！登録が完了しました。`, 'fa-check-circle', 'dashboard');
+  addAuditLog('user_register', user.name + ' が' + (ROLE_NAMES[user.role]||user.role) + 'として登録', {userId:user.id, role:user.role});
 
   // Stripe設定フラグ（チーム・コーチのみ）- 通知ではなくダッシュボードでガイド
   if(r === 'team' || r === 'coach'){
@@ -4604,12 +4983,12 @@ const PERSIST_FIELDS = [
   'teamMatches', 'teamEvents', 'teamReviews', 'adhocInvoices', 'emailLog', 'teamFeeRates',
   'pendingRole', 'pendingEmail', 'pendingName', 'pendingUserId', 'pendingTeamId',
   'announcements', 'customWorkouts', 'nutritionLog', 'inventory',
-  'pendingTeamCode', 'pendingProfile', 'pendingParentTeamId', 'teamFiles', 'nutriGoals', 'consentLog', '_syncedAt'];
+  'pendingTeamCode', 'pendingProfile', 'pendingParentTeamId', 'teamFiles', 'nutriGoals', 'consentLog', 'auditLog', '_syncedAt'];
 const SHARED_FIELDS = [
   'coaches','teams','players','payments','coachPay','payThreads','requests',
   'disclosures','events','chats','teamMatches','teamEvents','teamReviews',
   'adhocInvoices','teamFeeRates','announcements','inventory','teamFiles',
-  'notifs','moderationLog','userWarnings','suspendedUsers','emailLog','consentLog'
+  'notifs','moderationLog','userWarnings','suspendedUsers','emailLog','consentLog','auditLog'
 ];
 const PRIVATE_FIELDS = [
   'currentUser','meals','mealHistory','myFoods','trainingLog','doneSets',
@@ -4635,8 +5014,145 @@ function _compressPhoto(dataUrl,maxW=200){
   }catch(e){return dataUrl;}
 }
 
+// 非同期版画像圧縮（全アップロードで使用）— ④画像ストレージ対策
+function _compressPhotoAsync(fileOrDataUrl, maxW=300, quality=0.7){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>{
+      let w=img.naturalWidth, h=img.naturalHeight;
+      if(w<=maxW && h<=maxW){
+        const c=document.createElement('canvas');c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0);resolve(c.toDataURL('image/jpeg',quality));return;
+      }
+      if(w>h){h=Math.round(h*(maxW/w));w=maxW;}else{w=Math.round(w*(maxW/h));h=maxW;}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      const ctx=c.getContext('2d');ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+      ctx.drawImage(img,0,0,w,h);
+      const result=c.toDataURL('image/jpeg',quality);
+      if(result.length>68000&&quality>0.4) resolve(_compressPhotoAsync(fileOrDataUrl,maxW,quality-0.15));
+      else resolve(result);
+    };
+    img.onerror=()=>reject(new Error('画像読み込みエラー'));
+    if(typeof fileOrDataUrl==='string') img.src=fileOrDataUrl;
+    else{ const r=new FileReader();r.onload=e=>{img.src=e.target.result;};r.onerror=()=>reject(new Error('ファイル読み込みエラー'));r.readAsDataURL(fileOrDataUrl); }
+  });
+}
 
-// ── Firebase診断 ──
+// ================================================================
+// データ整合性チェック — ⑧テストの部分代替
+// ================================================================
+function runDataIntegrityCheck(){
+  const issues=[];
+  const warn=(area,msg)=>issues.push({area,msg,level:'warn'});
+  const err=(area,msg)=>issues.push({area,msg,level:'error'});
+  // コーチ参照
+  DB.coaches.forEach(c=>{if(c.team&&!DB.teams.find(t=>t.id===c.team))warn('coach','コーチ '+sanitize(c.name,10)+' の所属チームが不在');});
+  // 選手チーム参照
+  DB.players.forEach(p=>{if(p.team&&!DB.teams.find(t=>t.id===p.team))warn('player','選手 '+sanitize(p.name,10)+' のチームが不在');});
+  // 支払い参照
+  _dbArr('payments').forEach(p=>{if(p.player&&!DB.players.find(x=>x.id===p.player))warn('payment','支払い('+p.id+')の選手が不在');});
+  // リクエスト参照
+  _dbArr('requests').forEach(r=>{
+    if(r.coachId&&!DB.coaches.find(c=>c.id===r.coachId))warn('request','リクエストのコーチが不在');
+    if(r.teamId&&!DB.teams.find(t=>t.id===r.teamId))warn('request','リクエストのチームが不在');
+  });
+  // データサイズ
+  try{
+    const sz=JSON.stringify(DB).length;const kb=Math.round(sz/1024);
+    if(kb>800)err('size','DBサイズ '+kb+'KB — Firestore上限に接近');
+    else if(kb>500)warn('size','DBサイズ '+kb+'KB — 肥大化傾向');
+    let photoBytes=0;
+    [...DB.coaches,...DB.teams,...DB.players].forEach(x=>{if(x.photo&&x.photo.length>500)photoBytes+=x.photo.length;if(x.logo&&x.logo.length>500)photoBytes+=x.logo.length;});
+    const pkb=Math.round(photoBytes*0.75/1024);
+    if(pkb>200)warn('photos','画像合計 '+pkb+'KB — 圧縮推奨');
+  }catch(e){}
+  // 重複ID
+  ['coaches','teams','players'].forEach(key=>{
+    const ids=DB[key].map(x=>x.id).filter(Boolean);
+    const dupes=ids.filter((id,i)=>ids.indexOf(id)!==i);
+    if(dupes.length)err('duplicate',key+'に重複ID');
+  });
+  return issues;
+}
+
+// 管理者ヘルスチェックパネル
+function openAdminHealthCheck(){
+  if(DB.currentUser?.role!=='admin'){toast('管理者権限が必要です','e');return;}
+  const issues=runDataIntegrityCheck();
+  const dbSize=Math.round(JSON.stringify(DB).length/1024);
+  const syncAge=DB._syncedAt?Math.round((Date.now()-new Date(DB._syncedAt))/60000):'不明';
+  const photoCount=[...DB.coaches,...DB.teams,...DB.players].filter(x=>x.photo&&x.photo.length>500).length;
+  let h='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">';
+  [{l:'DBサイズ',v:dbSize+'KB',c:dbSize>500?'var(--red)':dbSize>300?'var(--yel)':'var(--grn)'},
+   {l:'コーチ',v:DB.coaches.length,c:'var(--org)'},{l:'チーム',v:DB.teams.length,c:'var(--teal)'},
+   {l:'選手',v:DB.players.length,c:'var(--blue)'},{l:'画像',v:photoCount+'件',c:photoCount>10?'var(--yel)':'var(--grn)'},
+   {l:'支払い',v:_dbArr('payments').length,c:'var(--org)'},{l:'最終同期',v:syncAge+(typeof syncAge==='number'?'分前':''),c:typeof syncAge==='number'&&syncAge<10?'var(--grn)':'var(--yel)'},
+   {l:'監査ログ',v:(DB.auditLog||[]).length,c:'var(--blue)'},{l:'ユーザー数',v:_getUsers().length,c:'var(--blue)'}
+  ].forEach(s=>{h+=`<div style="text-align:center;padding:10px;background:var(--surf2);border-radius:8px"><div style="font-size:16px;font-weight:800;color:${s.c}">${s.v}</div><div style="font-size:9px;color:var(--txt3)">${s.l}</div></div>`;});
+  h+='</div><div style="font-weight:700;font-size:13px;margin-bottom:8px">🔍 整合性チェック</div>';
+  if(!issues.length){
+    h+='<div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:14px;text-align:center;margin-bottom:12px"><span style="font-size:20px">✅</span><div class="fw7 text-sm" style="color:var(--grn);margin-top:6px">問題なし</div></div>';
+  } else {
+    ['error','warn'].forEach(lv=>{
+      const items=issues.filter(i=>i.level===lv);if(!items.length)return;
+      const icon=lv==='error'?'❌':'⚠️';const col=lv==='error'?'var(--red)':'var(--yel)';
+      h+=`<div style="background:${lv==='error'?'rgba(239,68,68,.06)':'rgba(245,158,11,.06)'};border:1px solid ${lv==='error'?'rgba(239,68,68,.2)':'rgba(245,158,11,.2)'};border-radius:10px;padding:12px;margin-bottom:8px">`;
+      h+=`<div class="fw7 text-sm" style="color:${col};margin-bottom:6px">${icon} ${items.length}件</div>`;
+      items.forEach(i=>h+=`<div style="font-size:11px;color:var(--txt2);padding:2px 0">• [${i.area}] ${sanitize(i.msg,60)}</div>`);
+      h+='</div>';
+    });
+  }
+  h+='<div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-secondary btn-sm flex-1" onclick="autoFixData();closeM()">🔧 自動修復</button><button class="btn btn-ghost btn-sm flex-1" onclick="closeM()">閉じる</button></div>';
+  openM('🏥 システムヘルスチェック',h,true);
+}
+function autoFixData(){
+  if(DB.currentUser?.role!=='admin'){toast('権限がありません','e');return;}
+  let fixed=0;
+  DB.players.forEach(p=>{if(p.team&&!DB.teams.find(t=>t.id===p.team)){p.team='';fixed++;}});
+  DB.coaches.forEach(c=>{if(c.team&&!DB.teams.find(t=>t.id===c.team)){c.team='';fixed++;}});
+  [...DB.coaches,...DB.teams,...DB.players].forEach(item=>{
+    if(item.photo&&item.photo.length>100000){item.photo=_compressPhoto(item.photo,200);fixed++;}
+    if(item.logo&&item.logo.length>100000){item.logo=_compressPhoto(item.logo,200);fixed++;}
+  });
+  ['coaches','teams','players'].forEach(key=>{
+    const seen=new Set();const before=DB[key].length;
+    DB[key]=DB[key].filter(x=>{if(!x.id||seen.has(x.id))return false;seen.add(x.id);return true;});
+    fixed+=before-DB[key].length;
+  });
+  addAuditLog('auto_fix','自動修復: '+fixed+'件');saveDB();
+  toast(fixed>0?'🔧 '+fixed+'件修復':'✅ 問題なし','s');refreshPage();
+}
+
+// ================================================================
+// オフライン検知 + 接続状態インジケーター — ⑫ 部分対策
+// ================================================================
+(function(){
+  let _offlineBanner=null;
+  function showOfflineBanner(){
+    if(_offlineBanner)return;
+    _offlineBanner=document.createElement('div');
+    _offlineBanner.id='offline-banner';
+    _offlineBanner.setAttribute('role','alert');
+    _offlineBanner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99998;background:linear-gradient(90deg,#ef4444,#dc2626);color:#fff;text-align:center;padding:6px 16px;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,.15)';
+    _offlineBanner.innerHTML='<i class="fa fa-wifi" style="opacity:.7"></i> オフラインです — 変更はローカルに保存され、復帰後に同期されます';
+    document.body.prepend(_offlineBanner);
+    // アプリのtop paddingを調整
+    const app=document.getElementById('app');if(app)app.style.paddingTop='32px';
+  }
+  function hideOfflineBanner(){
+    if(!_offlineBanner)return;
+    _offlineBanner.remove();_offlineBanner=null;
+    const app=document.getElementById('app');if(app)app.style.paddingTop='';
+    // 復帰時にFirestore同期を試行
+    if(typeof _syncToFirestore==='function'){
+      toast('🌐 オンライン復帰 — クラウド同期中...','i');
+      setTimeout(()=>{try{_syncToFirestore();}catch(e){}},1000);
+    }
+  }
+  window.addEventListener('offline',showOfflineBanner);
+  window.addEventListener('online',hideOfflineBanner);
+  if(!navigator.onLine) showOfflineBanner();
+})();
 async function _fbDiag(){
   const r = {fbReady: !!window._fbReady, auth: null, uid: null, uidCache: _fbUidCache, 
     appdataExists: false, usersDocExists: false, usersByEmailExists: false,
@@ -4702,8 +5218,18 @@ function saveDB() {
   try {
     const data = {};
     PERSIST_FIELDS.forEach(k => { data[k] = DB[k]; });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch(e) { /* storage error suppressed */ }
+    const json = JSON.stringify(data);
+    // Firestoreドキュメント上限警告
+    if(json.length > 900000 && !window._dbSizeWarned){
+      window._dbSizeWarned = true;
+      console.warn('[SaveDB] サイズ警告: ' + Math.round(json.length/1024) + 'KB');
+      if(DB.currentUser?.role==='admin') toast('⚠️ データサイズがFirestore上限に接近 ('+Math.round(json.length/1024)+'KB)','w');
+    }
+    localStorage.setItem(STORAGE_KEY, json);
+  } catch(e) {
+    console.error('[SaveDB] 保存失敗:', e.message);
+    if(e.name==='QuotaExceededError') toast('⚠️ ストレージ容量不足','e');
+  }
   // ローカル変更フラグをON（onSnapshotからの上書きを防止）
   _localDirty = true;
   // Firestore sync（リフレッシュ中は抑制）
@@ -4826,6 +5352,12 @@ var _sharedUnsub = null;
 function _startSharedListener(){
   if(_sharedUnsub) return; // 既にリスナーあり
   if(!window._fbReady || !window._fbFn) return;
+  // Firebase Auth が未完了の場合はリトライ
+  if(!window._fbAuth?.currentUser){
+    console.log('[RT] Waiting for Firebase Auth...');
+    setTimeout(_startSharedListener, 2000);
+    return;
+  }
   const fn = window._fbFn;
   _sharedUnsub = fn.onSnapshot(fn.doc(window._fbDB, 'appdata', 'shared'), (snap) => {
     if(!snap.exists()) return;
@@ -4982,6 +5514,10 @@ async function _loadFromFirestore(uid){
 function resetAllData() {
   if(DB.currentUser?.role!=='admin'){toast('この操作は事務局のみ実行できます','e');return;}
   if(!confirm('⚠️ 全データを削除します。この操作は取り消せません。\n本当にリセットしますか？')) return;
+  // リセット前にSentry/コンソールに記録（リセット後はDB消去のため）
+  const resetInfo = {admin:DB.currentUser?.name, coaches:DB.coaches.length, teams:DB.teams.length, players:DB.players.length};
+  console.warn('[AUDIT] 全データリセット実行:', resetInfo);
+  if(window.Sentry) Sentry.captureMessage('Full data reset by ' + (DB.currentUser?.name||'unknown'), {extra:resetInfo});
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem('mycoach_users_v1');
   DB.coaches    = [];
@@ -5001,8 +5537,8 @@ function resetAllData() {
   DB.doneSets = {};
   DB.notifications = [];
   DB.moderationLog = [];
-  DB.userWarnings = {};
-  DB.suspendedUsers = {};
+  DB.auditLog = [];
+  DB.userWarnings = {};  DB.suspendedUsers = {};
   DB.customWorkouts = [];
   DB.nutritionLog = {};
   DB.teamFiles = [];
@@ -5189,13 +5725,13 @@ async function handlePaymentReturn(){
   if(status === 'success' && sessionId){
     try {
       // バックエンドからセッション情報を取得して確認
-      const res = await fetch(`${API_BASE}/session-status/${sessionId}`);
+      const res = await fetch(`${API_BASE}/session-status/${sessionId}`, {headers: await _apiHeaders()});
       const data = await res.json();
 
       if(data.status === 'paid'){
         const meta = data.metadata || {};
 
-        // ローカルDBを更新（実際にはWebhookが更新するが、UIの即時反映用）
+        // ローカルDBを更新（Webhookも更新するが、UIの即時反映用）
         if(meta.type === 'coach_fee' && meta.threadId){
           const pt = _dbArr('payThreads').find(p => p.id === meta.threadId);
           if(pt){
@@ -5215,20 +5751,46 @@ async function handlePaymentReturn(){
                 teamPays:Number(meta.originalAmount), coachReceives:Math.round(Number(meta.originalAmount)*.9),
                 teamFee:Number(meta.platformFee), coachFee:Number(meta.platformFee),
                 platformTotal:Number(meta.platformFee)*2});
-              saveDB();
             }
           }
         }
 
         if(meta.type === 'monthly_fee'){
-          const pay = _dbArr('payments').find(p => p.player===meta.payerId && p.team===meta.teamId);
-          if(pay){ pay.status='paid'; pay.stripeSessionId=sessionId; }
+          // playerId（バックエンドのmetadata）で月謝レコードを検索
+          const pay = _dbArr('payments').find(p =>
+            p.player === meta.playerId && p.team === meta.teamId && (p.month === meta.month || !meta.month)
+          );
+          if(pay){
+            pay.status = 'paid';
+            pay.paidAt = new Date().toISOString();
+            pay.stripeSessionId = sessionId;
+            pay.method = 'card';
+            pay.fee = Number(meta.platformFee) || 0;
+          }
         }
 
+        if(meta.type === 'adhoc' && meta.invoiceId){
+          const inv = _dbArr('adhocInvoices').find(i => i.id === meta.invoiceId);
+          if(inv){
+            inv.status = 'paid';
+            inv.paidAt = new Date().toISOString();
+            inv.stripeSessionId = sessionId;
+            inv.fee = Number(meta.platformFee) || 0;
+          }
+        }
+
+        saveDB();
         addNotif('💳 決済が完了しました', 'fa-check-circle', 'threads');
         toast('✅ 決済が完了しました！', 's');
         if(meta.threadId) setTimeout(()=>{ goTo('threads'); openThreadDetail(meta.threadId); }, 500);
-        else goTo('fee');
+        else if(meta.type === 'monthly_fee') goTo('parent-fee');
+        else goTo('dashboard');
+
+      } else if(data.status === 'unpaid'){
+        // コンビニ・銀行振込: 入金待ち状態
+        addNotif('🏪 決済手続き完了 — コンビニ/銀行振込での入金をお待ちしています', 'fa-clock', 'threads');
+        toast('📩 決済手続きが完了しました。コンビニ/銀行振込での入金が確認でき次第、ステータスが更新されます。', 'i', 6000);
+        goTo('dashboard');
 
       } else {
         toast('決済は完了していません（ステータス: ' + data.status + '）', 'w');
@@ -5284,11 +5846,14 @@ function launchApp(){
       return;
     }
   }
-  const r=DB.currentUser.role;show('app'); setTimeout(handlePaymentReturn,300);
+  const r=DB.currentUser.role;show('app'); setTimeout(handlePaymentReturn,300); setTimeout(handleJoinParam,500);
+  resetSessionTimer();
+  startPaymentSync();
   _updateAvi();
   document.getElementById('sb-name').textContent=DB.currentUser.name;
   document.getElementById('sb-role').textContent=ROLE_LABEL[r];
   buildNav(r);goTo('dashboard');toast('ようこそ、'+DB.currentUser.name+'さん！','s');
+  addAuditLog('login', DB.currentUser.name + ' がログイン (' + (ROLE_LABEL[r]||r) + ')');
   _autodiag();
   _showSetupGuideIfNeeded();
   // チャット・マッチングポーリング（リアルタイム補完）
@@ -5377,20 +5942,14 @@ window._profilePhotos = window._profilePhotos || {};
 function _loadProfilePhoto(input, previewId, prefix){
   const file = input.files?.[0];
   if(!file) return;
-  if(file.size > 5 * 1024 * 1024){
-    toast('画像は5MB以下にしてください', 'e');
-    input.value = '';
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = e => {
-    const dataUrl = e.target.result;
+  if(file.size > 5 * 1024 * 1024){ toast('画像は5MB以下にしてください', 'e'); input.value=''; return; }
+  _compressPhotoAsync(file, 400, 0.75).then(compressed => {
     const prev = document.getElementById(previewId);
-    if(prev) prev.innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover">';
-    window._profilePhotos[prefix] = dataUrl;
-    toast('写真を選択しました。「保存」ボタンで確定してください', 's');
-  };
-  reader.readAsDataURL(file);
+    if(prev) prev.innerHTML = '<img src="' + compressed + '" style="width:100%;height:100%;object-fit:cover">';
+    window._profilePhotos[prefix] = compressed;
+    const sizeKB = Math.round(compressed.length * 0.75 / 1024);
+    toast('写真を圧縮しました ('+sizeKB+'KB)。「保存」で確定', 's');
+  }).catch(()=>toast('画像の読み込みに失敗しました','e'));
 }
 
 // アバター表示更新（photo/頭文字 両対応）
@@ -5522,16 +6081,55 @@ function adminSaveCoach(cid){
   c.bio=sanitize(document.getElementById('aec-bio')?.value||'',500);
   c.verified=document.getElementById('aec-verified')?.checked||false;
   c.avail=document.getElementById('aec-avail')?.checked||false;
+  addAuditLog('coach_edit','コーチ編集: '+sanitize(c.name,20),{coachId:cid});
   saveDB();closeM();toast('コーチ情報を更新しました','s');refreshPage();
 }
 function adminDeleteCoach(cid){
   var c=DB.coaches.find(function(x){return x.id===cid;});if(!c)return;
   if(!confirm(sanitize(c.name,15)+'を削除しますか？'))return;
+  addAuditLog('coach_delete','コーチ削除: '+sanitize(c.name,20),{coachId:cid,sport:c.sport});
   DB.coaches=DB.coaches.filter(function(x){return x.id!==cid;});
   saveDB();toast('コーチを削除しました','s');refreshPage();
 }
 
 // ── Admin Team Edit/Delete ──
+function adminAddTeamForm(){
+  return `<div class="form-group"><label class="label">チーム名</label><input id="aat-name" class="input" placeholder="チーム名"></div>
+    <div class="grid-2">
+      <div class="form-group"><label class="label">種目</label><input id="aat-sport" class="input" placeholder="サッカー"></div>
+      <div class="form-group"><label class="label">エリア</label><input id="aat-area" class="input" placeholder="東京都"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label class="label">月謝（¥）</label><input id="aat-fee" class="input" type="number" placeholder="5000" min="0"></div>
+      <div class="form-group"><label class="label">手数料率（%）</label><input id="aat-feeRate" class="input" type="number" value="10" min="0" max="50"></div>
+    </div>
+    <div class="form-group"><label class="label">メール</label><input id="aat-email" class="input" type="email" placeholder="チーム管理者のメール"></div>
+    <button class="btn btn-primary w-full mt-4" onclick="adminSaveNewTeam()">✓ 追加する</button>`;
+}
+function adminSaveNewTeam(){
+  const name=sanitize(document.getElementById('aat-name')?.value.trim()||'',50);
+  if(!name){toast('チーム名を入力してください','e');return;}
+  const sport=sanitize(document.getElementById('aat-sport')?.value.trim()||'',30);
+  const area=sanitize(document.getElementById('aat-area')?.value.trim()||'',50);
+  const fee=Math.max(0,parseInt(document.getElementById('aat-fee')?.value)||0);
+  const feeRate=parseInt(document.getElementById('aat-feeRate')?.value);
+  const email=sanitize(document.getElementById('aat-email')?.value.trim()||'',100);
+  const code=(name.slice(0,3)+(Math.random()*9999|0)).toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
+  const colors=['#3b82f6','#10b981','#8b5cf6','#ec4899','#f59e0b','#06b6d4'];
+  const newTeam={
+    id:genId('t'), name, sport, area, fee, email, code,
+    members:0, color:colors[DB.teams.length%colors.length],
+    matchAvailable:true, createdAt:new Date().toISOString()
+  };
+  DB.teams.push(newTeam);
+  if(!isNaN(feeRate)&&feeRate!==10){
+    if(!DB.teamFeeRates)DB.teamFeeRates={};
+    DB.teamFeeRates[newTeam.id]={monthlyFee:feeRate,coachFee:feeRate,adhocFee:feeRate,goodsFee:feeRate};
+  }
+  addAuditLog('team_add','チーム追加: '+name,{teamId:newTeam.id});
+  saveDB();closeM();toast('チームを追加しました','s');refreshPage();
+}
+
 function adminEditTeam(tid){
   var t=DB.teams.find(function(x){return x.id===tid;});if(!t){toast('チーム不明','e');return;}
   var feeRate=getFeeRate(t.id,'monthlyFee');
@@ -5556,11 +6154,13 @@ function adminSaveTeam(tid){
   t.matchAvailable=document.getElementById('aet-matchAvail')?.checked??true;
   var newRate=parseInt(document.getElementById('aet-feeRate')?.value);
   if(!isNaN(newRate)&&newRate!==10){if(!DB.teamFeeRates)DB.teamFeeRates={};DB.teamFeeRates[tid]={monthlyFee:newRate,coachFee:newRate};}
+  addAuditLog('team_edit','チーム編集: '+sanitize(t.name,20),{teamId:tid});
   saveDB();closeM();toast('チーム情報を更新しました','s');refreshPage();
 }
 function adminDeleteTeam(tid){
   var t=DB.teams.find(function(x){return x.id===tid;});if(!t)return;
   if(!confirm(sanitize(t.name,15)+'を削除しますか？所属選手はチーム未所属になります。'))return;
+  addAuditLog('team_delete','チーム削除: '+sanitize(t.name,20),{teamId:tid,playerCount:DB.players.filter(p=>p.team===tid).length});
   DB.players.forEach(function(p){if(p.team===tid)p.team='';});
   DB.teams=DB.teams.filter(function(x){return x.id!==tid;});
   saveDB();toast('チームを削除しました','s');refreshPage();
@@ -5572,6 +6172,8 @@ function adminTogglePayStatus(payId){
   if(!p)return;
   if(p.status==='paid'){p.status='unpaid';p.paidAt=null;}
   else{p.status='paid';p.paidAt=new Date().toLocaleDateString('ja-JP');}
+  const pl=DB.players.find(x=>x.id===p.player);
+  addAuditLog('payment_toggle','支払い状態変更: '+(pl?.name||'選手')+' → '+p.status,{payId,amount:p.amount});
   saveDB();toast('支払い状態を変更しました','s');refreshPage();
 }
 
@@ -5584,6 +6186,7 @@ function adminDeleteEvent(eid){
 function adminBroadcastNotif(){
   var text=sanitize(document.getElementById('adm-notif-text')?.value||'',200);
   if(!text){toast('テキストを入力してください','e');return;}
+  addAuditLog('broadcast','一斉通知: '+text.slice(0,50));
   addNotif(text,'fa-bullhorn','dashboard');
   document.getElementById('adm-notif-text').value='';
   toast('通知を送信しました','s');refreshPage();
@@ -5962,6 +6565,7 @@ function adminPlayersMgmt(){
   let html=`<div class="pg-head flex justify-between items-center">
     <div><div class="pg-title">選手・保護者管理</div><div class="pg-sub">全${DB.players.length}選手 / ${parents.length}保護者</div></div>
     <div class="flex gap-8">
+      <button class="btn btn-primary btn-sm" onclick="openM('👤 選手追加',addPlayerForm())">+ 選手追加</button>
       <button class="btn btn-secondary btn-sm" onclick="adminExportPlayersCSV()">⬇ CSV</button>
     </div>
   </div>
@@ -6220,12 +6824,13 @@ function adminDataMgmt(){
     const cpays=_dbArr('coachPay');
     const totalPaid=cpays.filter(function(p){return p.status==='paid';}).reduce(function(s,p){return s+(p.coachReceives||0);},0);
     const totalFee=cpays.filter(function(p){return p.status==='paid';}).reduce(function(s,p){return s+(p.platformTotal||0);},0);
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span class="fw7" style="font-size:14px">💰 コーチ代管理</span><button class="btn btn-primary btn-xs" onclick="adminAddCoachPay()">+ 手動追加</button></div>';
     html+='<div class="stat-row mb-16" style="grid-template-columns:repeat(3,1fr)"><div class="stat-box"><div class="stat-l">総件数</div><div class="stat-n">'+cpays.length+'</div></div><div class="stat-box"><div class="stat-l">コーチ受取合計</div><div class="stat-n">¥'+fmtNum(totalPaid)+'</div></div><div class="stat-box"><div class="stat-l">手数料合計</div><div class="stat-n" style="color:var(--org)">¥'+fmtNum(totalFee)+'</div></div></div>';
     html+='<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:var(--surf2)"><th style="padding:8px 12px;text-align:left">コーチ</th><th style="padding:8px">チーム</th><th style="padding:8px">月</th><th style="padding:8px">金額</th><th style="padding:8px">受取</th><th style="padding:8px">手数料</th><th style="padding:8px">状態</th><th style="padding:8px">操作</th></tr></thead><tbody>';
     cpays.slice().reverse().forEach(function(p){
       var coach=DB.coaches.find(function(c){return c.id===p.coach;});
       var team=DB.teams.find(function(t){return t.id===p.team||t.id===p.teamId;});
-      html+='<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(coach?.name||p.coachName||'',15)+'</td><td style="padding:8px">'+sanitize(team?.name||'',15)+'</td><td style="padding:8px;text-align:center;font-size:11px">'+(p.month||'')+'</td><td style="padding:8px;text-align:right">¥'+fmtNum(p.amount||0)+'</td><td style="padding:8px;text-align:right;color:var(--grn)">¥'+fmtNum(p.coachReceives||0)+'</td><td style="padding:8px;text-align:right;color:var(--org)">¥'+fmtNum(p.platformTotal||0)+'</td><td style="padding:8px;text-align:center"><span class="badge '+(p.status==='paid'?'b-green':'b-yel')+'" style="font-size:10px">'+(p.status==='paid'?'済':'未')+'</span></td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeleteRecord(\'coachPay\',\''+p.id+'\')">🗑</button></td></tr>';
+      html+='<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(coach?.name||p.coachName||'',15)+'</td><td style="padding:8px">'+sanitize(team?.name||'',15)+'</td><td style="padding:8px;text-align:center;font-size:11px">'+(p.month||'')+'</td><td style="padding:8px;text-align:right">¥'+fmtNum(p.amount||0)+'</td><td style="padding:8px;text-align:right;color:var(--grn)">¥'+fmtNum(p.coachReceives||0)+'</td><td style="padding:8px;text-align:right;color:var(--org)">¥'+fmtNum(p.platformTotal||0)+'</td><td style="padding:8px;text-align:center"><span class="badge '+(p.status==='paid'?'b-green':'b-yel')+'" style="font-size:10px">'+(p.status==='paid'?'済':'未')+'</span></td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeleteRecord(\'coachPay\',\''+p.id+'\')">🗑</button>'+(p.status!=='paid'?'<button class="btn btn-ghost btn-xs" style="color:var(--grn);font-size:10px" onclick="adminMarkCoachPaid(\''+p.id+'\')">✅</button>':'<button class="btn btn-ghost btn-xs" style="color:var(--yel);font-size:10px" onclick="adminRevertCoachPay(\''+p.id+'\')">↩</button>')+'</td></tr>';
     });
     html+='</tbody></table></div></div>';
   }
@@ -6238,7 +6843,7 @@ function adminDataMgmt(){
     if(allEvts.length){
       html+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:var(--surf2)"><th style="padding:8px 12px;text-align:left">タイトル</th><th style="padding:8px">種別</th><th style="padding:8px">日付</th><th style="padding:8px">時間</th><th style="padding:8px">操作</th></tr></thead><tbody>';
       allEvts.forEach(function(e){
-        html+='<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(e.title||'',25)+'</td><td style="padding:8px;text-align:center"><span class="badge '+(e.type==='match'?'b-org':'b-blue')+'" style="font-size:10px">'+(e.type==='match'?'試合':'練習')+'</span></td><td style="padding:8px;text-align:center;font-size:11px">'+(e.year||'')+'-'+(e.month||'')+'-'+(e.date||'')+'</td><td style="padding:8px;text-align:center;font-size:11px">'+(e.time||'')+'</td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeleteEvent(\''+e.id+'\')">🗑</button></td></tr>';
+        html+='<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(e.title||'',25)+'</td><td style="padding:8px;text-align:center"><span class="badge '+(e.type==='match'?'b-org':'b-blue')+'" style="font-size:10px">'+(e.type==='match'?'試合':'練習')+'</span></td><td style="padding:8px;text-align:center;font-size:11px">'+(e.year||'')+'-'+(e.month||'')+'-'+(e.date||'')+'</td><td style="padding:8px;text-align:center;font-size:11px">'+(e.time||'')+'</td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--blue);font-size:10px" onclick="adminEditEvent(\''+e.id+'\')">✏️</button><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeleteEvent(\''+e.id+'\')">🗑</button></td></tr>';
       });
       html+='</tbody></table></div>';
     } else { html+='<div class="text-center text-muted" style="padding:30px">イベントなし</div>'; }
@@ -6321,11 +6926,130 @@ function adminDeleteRecord(arrayKey, id){
   if(!confirm('このレコードを削除しますか？'))return;
   if(!DB[arrayKey]||!Array.isArray(DB[arrayKey]))return;
   DB[arrayKey]=DB[arrayKey].filter(x=>x.id!==id);
+  addAuditLog('admin_delete','レコード削除: '+arrayKey+'/'+id,{arrayKey,id});
   saveDB();toast('削除しました','s');refreshPage();
 }
 function adminMarkPaidAdhoc(id){
   const inv=_dbArr('adhocInvoices').find(x=>x.id===id);
-  if(inv){inv.status='paid';inv.paidAt=new Date().toLocaleDateString('ja-JP');saveDB();toast('入金確認','s');refreshPage();}
+  if(inv){inv.status='paid';inv.paidAt=new Date().toLocaleDateString('ja-JP');addAuditLog('adhoc_paid','都度請求入金確認',{id});saveDB();toast('入金確認','s');refreshPage();}
+}
+// ── コーチ代ステータス変更 ──
+function adminMarkCoachPaid(id){
+  const cp=_dbArr('coachPay').find(x=>x.id===id);
+  if(!cp)return;
+  cp.status='paid';cp.paidAt=new Date().toISOString();
+  addAuditLog('coachpay_paid','コーチ代入金確認: ¥'+(cp.amount||0).toLocaleString(),{id,coach:cp.coach});
+  saveDB();toast('コーチ代の入金を確認しました','s');refreshPage();
+}
+function adminRevertCoachPay(id){
+  const cp=_dbArr('coachPay').find(x=>x.id===id);
+  if(!cp||cp.status!=='paid')return;
+  if(!confirm('この入金確認を取り消しますか？'))return;
+  cp.status='unpaid';delete cp.paidAt;
+  addAuditLog('coachpay_revert','コーチ代入金取消',{id});
+  saveDB();toast('入金確認を取り消しました','s');refreshPage();
+}
+// ── 月謝の手動追加 ──
+function adminAddPayment(){
+  const teams=DB.teams||[];
+  const playersAll=DB.players||[];
+  openM('📝 月謝レコード追加',`
+    <div class="form-group"><label class="label">チーム</label><select id="ap-team" class="input" onchange="adminPayTeamChange()">
+      <option value="">選択…</option>${teams.map(t=>'<option value="'+t.id+'">'+sanitize(t.name||'',20)+'</option>').join('')}
+    </select></div>
+    <div class="form-group"><label class="label">選手</label><select id="ap-player" class="input"><option value="">先にチームを選択</option></select></div>
+    <div class="form-group"><label class="label">月 (YYYY-MM)</label><input id="ap-month" class="input" type="month" value="${new Date().toISOString().slice(0,7)}"></div>
+    <div class="form-group"><label class="label">金額 (円)</label><input id="ap-amount" class="input" type="number" placeholder="5000"></div>
+    <div class="form-group"><label class="label">ステータス</label><select id="ap-status" class="input"><option value="unpaid">未払い</option><option value="paid">支払い済み</option></select></div>
+    <button class="btn btn-primary w-full mt-12" onclick="adminSavePayment()">保存</button>
+  `);
+}
+function adminPayTeamChange(){
+  const tid=document.getElementById('ap-team')?.value;
+  const players=(DB.players||[]).filter(p=>p.team===tid);
+  const sel=document.getElementById('ap-player');
+  if(sel) sel.innerHTML=players.length
+    ? players.map(p=>'<option value="'+p.id+'">'+sanitize(p.name||'',20)+'</option>').join('')
+    : '<option value="">選手なし</option>';
+}
+function adminSavePayment(){
+  const tid=document.getElementById('ap-team')?.value;
+  const pid=document.getElementById('ap-player')?.value;
+  const month=document.getElementById('ap-month')?.value;
+  const amount=parseInt(document.getElementById('ap-amount')?.value);
+  const status=document.getElementById('ap-status')?.value||'unpaid';
+  if(!tid||!pid){toast('チームと選手を選択してください','e');return;}
+  if(!amount||amount<0){toast('金額を入力してください','e');return;}
+  const fee=getFeeAmount(amount,tid,'monthlyFee');
+  const pay={id:genId('pay'),team:tid,player:pid,month:month||'',amount,fee,status,method:'manual',createdAt:new Date().toISOString()};
+  if(status==='paid')pay.paidAt=new Date().toISOString();
+  if(!DB.payments)DB.payments=[];
+  DB.payments.push(pay);
+  addAuditLog('payment_add','月謝手動追加: ¥'+amount.toLocaleString(),{payId:pay.id,player:pid,team:tid});
+  saveDB();closeM();toast('月謝レコードを追加しました','s');refreshPage();
+}
+// ── コーチ代の手動追加 ──
+function adminAddCoachPay(){
+  const coaches=DB.coaches||[];
+  const teams=DB.teams||[];
+  openM('💰 コーチ代レコード追加',`
+    <div class="form-group"><label class="label">コーチ</label><select id="acp-coach" class="input">
+      <option value="">選択…</option>${coaches.map(c=>'<option value="'+c.id+'">'+sanitize(c.name||'',20)+'</option>').join('')}
+    </select></div>
+    <div class="form-group"><label class="label">チーム</label><select id="acp-team" class="input">
+      <option value="">選択…</option>${teams.map(t=>'<option value="'+t.id+'">'+sanitize(t.name||'',20)+'</option>').join('')}
+    </select></div>
+    <div class="form-group"><label class="label">月 (YYYY-MM)</label><input id="acp-month" class="input" type="month" value="${new Date().toISOString().slice(0,7)}"></div>
+    <div class="form-group"><label class="label">金額 (円)</label><input id="acp-amount" class="input" type="number" placeholder="30000"></div>
+    <div class="form-group"><label class="label">ステータス</label><select id="acp-status" class="input"><option value="unpaid">未払い</option><option value="paid">支払い済み</option></select></div>
+    <button class="btn btn-primary w-full mt-12" onclick="adminSaveCoachPay()">保存</button>
+  `);
+}
+function adminSaveCoachPay(){
+  const coachId=document.getElementById('acp-coach')?.value;
+  const teamId=document.getElementById('acp-team')?.value;
+  const month=document.getElementById('acp-month')?.value;
+  const amount=parseInt(document.getElementById('acp-amount')?.value);
+  const status=document.getElementById('acp-status')?.value||'unpaid';
+  if(!coachId||!teamId){toast('コーチとチームを選択してください','e');return;}
+  if(!amount||amount<0){toast('金額を入力してください','e');return;}
+  const feeRate=getFeeRate(teamId,'coachFee');
+  const platformTotal=Math.round(amount*feeRate/100);
+  const coachReceives=amount-platformTotal;
+  const coach=DB.coaches.find(c=>c.id===coachId);
+  const cp={id:genId('cpay'),coach:coachId,coachName:coach?.name||'',team:teamId,teamId,month:month||'',amount,coachReceives,platformTotal,feeRate,status,method:'manual',createdAt:new Date().toISOString()};
+  if(status==='paid')cp.paidAt=new Date().toISOString();
+  if(!DB.coachPay)DB.coachPay=[];
+  DB.coachPay.push(cp);
+  addAuditLog('coachpay_add','コーチ代手動追加: ¥'+amount.toLocaleString(),{cpId:cp.id,coach:coachId,team:teamId});
+  saveDB();closeM();toast('コーチ代レコードを追加しました','s');refreshPage();
+}
+// ── イベント編集 ──
+function adminEditEvent(eid){
+  const ev=_dbArr('events').find(e=>e.id===eid);
+  if(!ev)return;
+  openM('📅 イベント編集',`
+    <div class="form-group"><label class="label">タイトル</label><input id="aev-title" class="input" value="${sanitize(ev.title||'',40)}"></div>
+    <div class="form-group"><label class="label">種別</label><select id="aev-type" class="input"><option value="practice" ${ev.type==='practice'?'selected':''}>練習</option><option value="match" ${ev.type==='match'?'selected':''}>試合</option></select></div>
+    <div class="form-group"><label class="label">日付</label><input id="aev-date" class="input" type="date" value="${ev.year?ev.year+'-'+String(ev.month).padStart(2,'0')+'-'+String(ev.date).padStart(2,'0'):''}"></div>
+    <div class="form-group"><label class="label">時間</label><input id="aev-time" class="input" type="time" value="${ev.time||''}"></div>
+    <div class="form-group"><label class="label">場所</label><input id="aev-place" class="input" value="${sanitize(ev.place||'',40)}"></div>
+    <div class="form-group"><label class="label">メモ</label><textarea id="aev-memo" class="input" rows="2">${sanitize(ev.memo||'',200)}</textarea></div>
+    <button class="btn btn-primary w-full mt-12" onclick="adminSaveEvent('${eid}')">保存</button>
+  `);
+}
+function adminSaveEvent(eid){
+  const ev=_dbArr('events').find(e=>e.id===eid);
+  if(!ev)return;
+  ev.title=sanitize(document.getElementById('aev-title')?.value||'',40);
+  ev.type=document.getElementById('aev-type')?.value||'practice';
+  const d=document.getElementById('aev-date')?.value;
+  if(d){const parts=d.split('-');ev.year=parseInt(parts[0]);ev.month=parseInt(parts[1]);ev.date=parseInt(parts[2]);}
+  ev.time=document.getElementById('aev-time')?.value||'';
+  ev.place=sanitize(document.getElementById('aev-place')?.value||'',40);
+  ev.memo=sanitize(document.getElementById('aev-memo')?.value||'',200);
+  addAuditLog('event_edit','イベント編集: '+ev.title,{eventId:eid});
+  saveDB();closeM();toast('イベントを更新しました','s');refreshPage();
 }
 function adminNewAnnouncement(){
   openM('📢 新規お知らせ',`
@@ -6359,6 +7083,8 @@ function adminDash(){
   const thisM=curMonth();
   const thisMonthFee=_dbArr('payments').filter(p=>p.status==='paid'&&(p.paidAt||'').slice(0,7)===thisM.replace('-','/')).reduce((s,p)=>s+(p.fee||getFeeAmount(p.amount,p.team||p.teamId||'','monthlyFee')),0);
   const totalUsers=DB.coaches.length+DB.teams.length+DB.players.length;
+  const parentCount=_getUsers().filter(u=>u.role==='parent').length;
+  const totalAllUsers=totalUsers+parentCount;
   const matchedCount=_dbArr('requests').filter(r=>r.status==='matched').length;
   const pendReqs=_dbArr('requests').filter(r=>r.status==='pending').length;
   const verifiedCoaches=DB.coaches.filter(c=>c.verified).length;
@@ -6366,51 +7092,97 @@ function adminDash(){
   const coachPayTotal=_dbArr('coachPay').filter(p=>p.status==='paid').reduce((s,p)=>s+(p.amount||0),0);
   const matchRate=_dbArr('requests').length?(matchedCount/_dbArr('requests').length*100).toFixed(0):0;
   const avgCoachPrice=DB.coaches.length?Math.round(DB.coaches.reduce((s,c)=>s+(c.price||0),0)/DB.coaches.length):0;
+  const coachApprovalRate=DB.coaches.length?Math.round(verifiedCoaches/DB.coaches.length*100):0;
+  const payCollectionRate=DB.payments.length?Math.round(_dbArr('payments').filter(p=>p.status==='paid').length/DB.payments.length*100):0;
+  const coachPayRate=DB.coachPay.length?Math.round(_dbArr('coachPay').filter(p=>p.status==='paid').length/DB.coachPay.length*100):0;
+
+  // 前月比較
+  const prevM=(()=>{const d=new Date();d.setMonth(d.getMonth()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');})();
+  const prevMonthFee=_dbArr('payments').filter(p=>p.status==='paid'&&(p.paidAt||'').slice(0,7)===prevM.replace('-','/')).reduce((s,p)=>s+(p.fee||getFeeAmount(p.amount,p.team||p.teamId||'','monthlyFee')),0);
+  const feeGrowth=prevMonthFee>0?Math.round((thisMonthFee-prevMonthFee)/prevMonthFee*100):0;
 
   // アラート
   const alerts=[];
-  if(pendCoaches>=1) alerts.push({cls:'dash-alert-warn',icon:'fa-clock',msg:`${pendCoaches}件のコーチ承認が保留中です`,action:`onclick="goTo('coaches')"`});
-  if(unp>=2) alerts.push({cls:'dash-alert-error',icon:'fa-exclamation-circle',msg:`${unp}件の月謝未払いがあります`,action:`onclick="goTo('payments')"`});
-  if(pendReqs>0) alerts.push({cls:'dash-alert-info',icon:'fa-handshake',msg:`${pendReqs}件のマッチング申請があります`,action:``});
+  if(pendCoaches>=1) alerts.push({cls:'dash-alert-warn',icon:'fa-clock',msg:`${pendCoaches}件のコーチ承認が保留中`,btn:'確認する',action:`onclick="goTo('coaches')"`});
+  if(unp>=2) alerts.push({cls:'dash-alert-error',icon:'fa-exclamation-circle',msg:`${unp}件の月謝が未払い`,btn:'確認する',action:`onclick="goTo('payments')"`});
+  if(pendReqs>0) alerts.push({cls:'dash-alert-info',icon:'fa-handshake',msg:`${pendReqs}件のマッチング申請あり`,btn:'対応する',action:`onclick="goTo('coaches')"`});
+  const noCoachTeams=DB.teams.filter(t=>!t.coach).length;
+  if(noCoachTeams>0) alerts.push({cls:'dash-alert-info',icon:'fa-user-slash',msg:`${noCoachTeams}チームがコーチ未配置`,btn:'確認',action:`onclick="goTo('teams')"`});
+  if(DB._emailNotVerified) alerts.push({cls:'dash-alert-warn',icon:'fa-envelope',msg:'メールアドレスが未確認です。受信箱の確認メールをクリックしてください。',btn:'再送信',action:`onclick="resendVerificationEmail()"`});
 
-  // 直近アクティビティ
+  // 直近アクティビティ（タイムライン形式）
   const activities=[];
-  _dbArr('requests').forEach(r=>{activities.push({date:r.createdAt||'',icon:'🤝',text:(r.teamName||'?')+'が'+(r.coachName||'?')+'に依頼',type:r.status});});
-  _dbArr('coachPay').filter(p=>p.status==='paid').forEach(p=>{activities.push({date:p.paidAt||'',icon:'💰',text:(p.coachName||'コーチ')+'への報酬支払い ¥'+(p.amount||0).toLocaleString(),type:'paid'});});
-  _dbArr('payments').filter(p=>p.status==='paid').slice(-5).forEach(p=>{const pl=DB.players.find(x=>x.id===p.player);activities.push({date:p.paidAt||'',icon:'💴',text:(pl?.name||'選手')+'の月謝回収 ¥'+(p.amount||0).toLocaleString(),type:'paid'});});
+  _dbArr('requests').forEach(r=>{activities.push({date:r.createdAt||'',icon:'🤝',text:(r.teamName||'?')+'→'+(r.coachName||'?'),type:r.status,cat:'match',color:'#a855f7'});});
+  _dbArr('coachPay').filter(p=>p.status==='paid').forEach(p=>{activities.push({date:p.paidAt||'',icon:'💰',text:(p.coachName||'コーチ')+'へ ¥'+(p.amount||0).toLocaleString(),type:'paid',cat:'pay',color:'var(--teal)'});});
+  _dbArr('payments').filter(p=>p.status==='paid').slice(-5).forEach(p=>{const pl=DB.players.find(x=>x.id===p.player);activities.push({date:p.paidAt||'',icon:'💴',text:(pl?.name||'選手')+'月謝 ¥'+(p.amount||0).toLocaleString(),type:'paid',cat:'fee',color:'var(--org)'});});
+  DB.coaches.filter(c=>!c.verified).forEach(c=>{activities.push({date:c.createdAt||'',icon:'🏅',text:sanitize(c.name,10)+'（新規申請）',type:'pending',cat:'coach',color:'var(--yel)'});});
   activities.sort((a,b)=>(b.date||'')>(a.date||'')?1:-1);
 
+  // タブ状態
+  const tab=window._adminDashTab||'overview';
+
+  // ── SVGリングヘルパー ──
+  function svgRing(pct,color,size){
+    size=size||64;const r=size/2-5;const circ=2*Math.PI*r;const off=circ*(1-Math.min(pct,100)/100);
+    return`<div class="admin-stat-ring" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--b1)" stroke-width="4"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${off}" style="transition:stroke-dashoffset .8s ease"/></svg><div class="admin-stat-ring-val" style="color:${color}">${pct}%</div></div>`;
+  }
+
   return`
-  <!-- グリーティング -->
-  <div class="dash-greeting" style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%)">
+  <!-- ヘッダー -->
+  <div class="dash-greeting" style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f2847 100%)">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
       <div>
-        <div class="dash-greeting-sub">管理コンソール</div>
+        <div class="dash-greeting-sub" style="display:flex;align-items:center;gap:6px"><i class="fa fa-shield-alt" style="font-size:10px"></i> 管理コンソール v3.2</div>
         <div class="dash-greeting-name">MyCOACH-MyTEAM 事務局</div>
-        <div class="dash-greeting-sub" style="margin-top:4px">${new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'})}</div>
+        <div class="dash-greeting-sub" style="margin-top:4px">${new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'})} · <span style="color:rgba(0,207,170,.8)">全${totalAllUsers}名稼働中</span></div>
       </div>
       <div class="dash-greeting-actions" style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="btn btn-sm" onclick="exportAdminReport()"><i class="fa fa-download" style="margin-right:4px"></i>レポート</button>
-        <button class="btn btn-sm" onclick="openAdminUserMgmt()"><i class="fa fa-users" style="margin-right:4px"></i>ユーザー管理</button>
-        <button class="btn btn-sm" onclick="openAdminMsgMonitor()"><i class="fa fa-shield-alt" style="margin-right:4px"></i>メッセージ監視</button>
+        <button class="btn btn-sm" onclick="openAdminMsgMonitor()"><i class="fa fa-shield-alt" style="margin-right:4px"></i>監視</button>
+        <button class="btn btn-sm" onclick="openAdminUserMgmt()"><i class="fa fa-users" style="margin-right:4px"></i>ユーザー</button>
+        <div class="relative">
+          <button class="btn btn-sm" onclick="toggleAdminExportMenu()" id="admin-export-btn"><i class="fa fa-download" style="margin-right:4px"></i>エクスポート ▾</button>
+          <div class="admin-export-menu" id="admin-export-menu">
+            <div class="admin-export-item" onclick="exportAdminReport();toggleAdminExportMenu()"><i class="fa fa-file-csv"></i> 全データCSV</div>
+            <div class="admin-export-item" onclick="exportAdminCoachCSV();toggleAdminExportMenu()"><i class="fa fa-user-tie"></i> コーチ一覧CSV</div>
+            <div class="admin-export-item" onclick="exportAdminTeamCSV();toggleAdminExportMenu()"><i class="fa fa-users"></i> チーム一覧CSV</div>
+            <div class="admin-export-item" onclick="exportAdminPayCSV();toggleAdminExportMenu()"><i class="fa fa-yen-sign"></i> 支払いデータCSV</div>
+            <div class="admin-export-item" onclick="exportAdminMatchCSV();toggleAdminExportMenu()"><i class="fa fa-handshake"></i> マッチング履歴CSV</div>
+            <div class="admin-export-item" onclick="exportAdminSummaryPDF();toggleAdminExportMenu()"><i class="fa fa-file-pdf" style="color:var(--red)"></i> サマリーPDF</div>
+            <div style="border-top:1px solid var(--b1);margin:4px 0"></div>
+            <div class="admin-export-item" onclick="adminFullBackup();toggleAdminExportMenu()"><i class="fa fa-database" style="color:var(--teal)"></i> フルバックアップ</div>
+          </div>
+        </div>
         <button class="btn btn-primary btn-sm" onclick="openM('コーチ追加',coachAddForm())"><i class="fa fa-plus" style="margin-right:4px"></i>コーチ追加</button>
+        <button class="btn btn-sm" style="background:rgba(16,185,129,.1);color:var(--grn);border:1px solid rgba(16,185,129,.2)" onclick="openAdminHealthCheck()"><i class="fa fa-heartbeat" style="margin-right:4px"></i>ヘルス</button>
       </div>
     </div>
   </div>
 
-  ${alerts.map(a=>`<div class="dash-alert ${a.cls}" ${a.action} style="cursor:pointer"><i class="fa ${a.icon}"></i><span>${a.msg}</span><i class="fa fa-chevron-right" style="margin-left:auto;opacity:.4;font-size:11px"></i></div>`).join('')}
+  <!-- アラート -->
+  ${alerts.map(a=>`<div class="dash-alert ${a.cls}" ${a.action} style="cursor:pointer"><i class="fa ${a.icon}"></i><div style="flex:1"><span>${a.msg}</span></div><span style="font-size:11px;font-weight:700;opacity:.7">${a.btn} →</span></div>`).join('')}
 
-  <!-- メインKPI 6列 -->
+  <!-- ダッシュボードタブ -->
+  <div class="admin-dash-tabs">
+    <button class="admin-dash-tab ${tab==='overview'?'active':''}" onclick="window._adminDashTab='overview';refreshPage()">📊 概要</button>
+    <button class="admin-dash-tab ${tab==='coaches'?'active':''}" onclick="window._adminDashTab='coaches';refreshPage()">🏅 コーチ</button>
+    <button class="admin-dash-tab ${tab==='teams'?'active':''}" onclick="window._adminDashTab='teams';refreshPage()">🏟️ チーム</button>
+    <button class="admin-dash-tab ${tab==='finance'?'active':''}" onclick="window._adminDashTab='finance';refreshPage()">💴 収益</button>
+    <button class="admin-dash-tab ${tab==='activity'?'active':''}" onclick="window._adminDashTab='activity';refreshPage()">📜 ログ</button>
+  </div>
+
+  ${tab==='overview'?`
+  <!-- ===== 概要タブ ===== -->
+  <!-- メインKPI -->
   <div class="hero-kpi" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
     <div class="hero-kpi-card" style="border-left:3px solid var(--org)">
       <div class="kpi-label">💴 総手数料収入</div>
       <div class="kpi-value" style="color:var(--org)">¥${tf.toLocaleString()}</div>
-      <div class="kpi-sub" style="color:var(--org)">今月 ¥${thisMonthFee.toLocaleString()}</div>
+      <div class="kpi-sub" style="color:${feeGrowth>=0?'var(--grn)':'var(--red)'}"><i class="fa fa-arrow-${feeGrowth>=0?'up':'down'}" style="font-size:10px"></i> 今月 ¥${thisMonthFee.toLocaleString()} (${feeGrowth>=0?'+':''}${feeGrowth}%)</div>
     </div>
     <div class="hero-kpi-card" style="border-left:3px solid var(--blue)">
       <div class="kpi-label">👥 登録ユーザー</div>
-      <div class="kpi-value" style="color:var(--blue)">${totalUsers}</div>
-      <div class="kpi-sub">コーチ${DB.coaches.length} チーム${DB.teams.length} 選手${DB.players.length}</div>
+      <div class="kpi-value" style="color:var(--blue)">${totalAllUsers}</div>
+      <div class="kpi-sub">コーチ${DB.coaches.length} チーム${DB.teams.length} 選手${DB.players.length} 保護者${parentCount}</div>
     </div>
     <div class="hero-kpi-card" style="border-left:3px solid var(--teal)">
       <div class="kpi-label">🤝 マッチング</div>
@@ -6434,95 +7206,54 @@ function adminDash(){
     </div>
   </div>
 
-  <!-- チャート -->
+  <!-- チャート + 健全性 -->
   <div class="dash-grid dash-grid-2" style="margin-bottom:16px">
     <div class="dash-section" style="margin-bottom:0">
       <div class="dash-section-head"><span class="dash-section-title">📊 手数料収入推移</span></div>
       <div style="height:200px"><canvas id="admin-fee-chart"></canvas></div>
     </div>
     <div class="dash-section" style="margin-bottom:0">
-      <div class="dash-section-head"><span class="dash-section-title">👥 ユーザー内訳</span></div>
-      <div style="height:200px"><canvas id="admin-users-chart"></canvas></div>
+      <div class="dash-section-head"><span class="dash-section-title">🩺 プラットフォーム健全性</span></div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:8px 0">
+        <div style="display:flex;align-items:center;gap:12px">${svgRing(coachApprovalRate,'var(--teal)')}<div><div style="font-size:11px;font-weight:700">コーチ承認率</div><div style="font-size:10px;color:var(--txt3)">${verifiedCoaches}/${DB.coaches.length}名</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px">${svgRing(parseInt(matchRate)||0,'var(--blue)')}<div><div style="font-size:11px;font-weight:700">マッチング成立率</div><div style="font-size:10px;color:var(--txt3)">${matchedCount}件成立</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px">${svgRing(payCollectionRate,'var(--org)')}<div><div style="font-size:11px;font-weight:700">月謝回収率</div><div style="font-size:10px;color:var(--txt3)">${unp}件未回収</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px">${svgRing(coachPayRate,'#a855f7')}<div><div style="font-size:11px;font-weight:700">報酬支払率</div><div style="font-size:10px;color:var(--txt3)">¥${coachPayTotal.toLocaleString()}</div></div></div>
+      </div>
     </div>
   </div>
 
-  <!-- プラットフォーム健全性 + クイックアクション -->
+  <!-- ユーザー内訳 + クイックアクション -->
   <div class="dash-grid dash-grid-2" style="margin-bottom:16px">
     <div class="dash-section" style="margin-bottom:0">
-      <div class="dash-section-head"><span class="dash-section-title">🩺 プラットフォーム健全性</span></div>
-      ${(()=>{
-        const metrics=[
-          {label:'コーチ承認率',val:DB.coaches.length?Math.round(verifiedCoaches/DB.coaches.length*100):0,unit:'%',good:80,color:'var(--teal)'},
-          {label:'マッチング成立率',val:parseInt(matchRate)||0,unit:'%',good:50,color:'var(--blue)'},
-          {label:'月謝回収率',val:DB.payments.length?Math.round(_dbArr('payments').filter(p=>p.status==='paid').length/DB.payments.length*100):0,unit:'%',good:90,color:'var(--org)'},
-          {label:'コーチ報酬支払率',val:DB.coachPay.length?Math.round(_dbArr('coachPay').filter(p=>p.status==='paid').length/DB.coachPay.length*100):0,unit:'%',good:90,color:'#a855f7'},
-        ];
-        return metrics.map(m=>{
-          const status=m.val>=m.good?'✅':'⚠️';
-          return`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--b1)">
-            <span style="font-size:12px;flex:1">${m.label}</span>
-            <div style="width:80px;height:6px;background:var(--b2);border-radius:3px"><div style="width:${Math.min(100,m.val)}%;height:100%;background:${m.color};border-radius:3px"></div></div>
-            <span style="font-size:13px;font-weight:800;color:${m.color};min-width:40px;text-align:right">${m.val}${m.unit}</span>
-            <span style="font-size:12px">${status}</span>
-          </div>`;
-        }).join('');
-      })()}
+      <div class="dash-section-head"><span class="dash-section-title">👥 ユーザー内訳</span></div>
+      <div style="height:200px"><canvas id="admin-users-chart"></canvas></div>
     </div>
     <div class="dash-section" style="margin-bottom:0">
       <div class="dash-section-head"><span class="dash-section-title">⚡ クイックアクション</span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <div class="admin-quick-grid">
         ${[
-          {icon:'🏅',label:'コーチ承認',sub:pendCoaches+'件待ち',action:"goTo('coaches')",color:'var(--org)'},
-          {icon:'💴',label:'収益管理',sub:'月謝・支払確認',action:"goTo('payments')",color:'var(--blue)'},
-          {icon:'📢',label:'全体連絡',sub:'通知配信',action:"document.getElementById('broadcast-msg')?.focus()",color:'var(--teal)'},
-          {icon:'🤝',label:'マッチング',sub:pendReqs+'件保留',action:"goTo('threads')",color:'#a855f7'},
-          {icon:'📊',label:'CSVレポート',sub:'全データ出力',action:"exportAdminReport()",color:'#f59e0b'},
-          {icon:'⚙️',label:'設定',sub:'手数料率・規約',action:"goTo('settings')",color:'var(--txt3)'},
-        ].map(q=>`<div style="padding:10px;background:var(--surf2);border-radius:10px;cursor:pointer;border:1px solid var(--b1);transition:all .15s" onclick="${q.action}" onmouseover="this.style.borderColor='${q.color}'" onmouseout="this.style.borderColor='var(--b1)'">
-          <div style="font-size:18px;margin-bottom:4px">${q.icon}</div>
-          <div style="font-size:12px;font-weight:700">${q.label}</div>
-          <div style="font-size:9px;color:var(--txt3)">${q.sub}</div>
+          {icon:'🏅',label:'コーチ承認',sub:pendCoaches+'件待ち',action:"goTo('coaches')",bg:'rgba(249,115,22,.08)'},
+          {icon:'💴',label:'収益管理',sub:'月謝・支払確認',action:"goTo('payments')",bg:'rgba(37,99,235,.08)'},
+          {icon:'📢',label:'全体連絡',sub:'通知配信',action:"document.getElementById('broadcast-msg')?.focus()",bg:'rgba(0,207,170,.08)'},
+          {icon:'🤝',label:'マッチング',sub:pendReqs+'件保留',action:"goTo('threads')",bg:'rgba(168,85,247,.08)'},
+          {icon:'👦',label:'選手管理',sub:DB.players.length+'名',action:"goTo('admin-players')",bg:'rgba(236,72,153,.08)'},
+          {icon:'⚙️',label:'設定',sub:'手数料率・規約',action:"goTo('settings')",bg:'rgba(100,116,139,.08)'},
+        ].map(q=>`<div class="admin-quick-btn" onclick="${q.action}">
+          <div class="q-icon" style="background:${q.bg}">${q.icon}</div>
+          <div class="q-label">${q.label}</div>
+          <div class="q-sub">${q.sub}</div>
         </div>`).join('')}
       </div>
     </div>
   </div>
 
-  <!-- コーチ一覧 + 未払い -->
-  <div class="dash-grid dash-grid-2" style="margin-bottom:16px">
-    <div class="dash-section" style="margin-bottom:0">
-      <div class="dash-section-head">
-        <span class="dash-section-title">🏅 コーチ一覧</span>
-        <button class="btn btn-ghost btn-xs" onclick="goTo('coaches')">全件 →</button>
-      </div>
-      ${DB.coaches.length?DB.coaches.slice(0,5).map(c=>`<div class="dash-list-item" style="cursor:pointer" onclick="openCoachDetail('${c.id}')">
-        <div class="avi" style="background:${c.color||'var(--org)'};${c.photo?'background-image:url('+c.photo+');background-size:cover;background-position:center':''};width:34px;height:34px;font-size:13px;flex-shrink:0">${c.photo?'':(c.name||'?')[0]}</div>
-        <div style="flex:1;min-width:0"><div class="fw7 text-sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sanitize(c.name,20)}</div><div class="text-xs text-muted">${sanitize(c.sport||'--',12)} · ${c.exp||'--'}年</div></div>
-        <span class="badge ${c.verified?'b-green':'b-yel'}" style="flex-shrink:0">${c.verified?'承認済':'審査中'}</span>
-        ${!c.verified?`<button class="btn btn-primary btn-xs" onclick="event.stopPropagation();approveCoach('${c.id}')">承認</button>`:''}
-      </div>`).join(''):'<div class="text-muted text-sm text-center" style="padding:24px">コーチ未登録</div>'}
-    </div>
-    <div class="dash-section" style="margin-bottom:0">
-      <div class="dash-section-head">
-        <span class="dash-section-title">💴 未払い月謝</span>
-        <button class="btn btn-ghost btn-xs" onclick="goTo('payments')">全件 →</button>
-      </div>
-      ${_dbArr('payments').filter(p=>p.status==='unpaid').slice(0,5).map(p=>{
-        const pl=DB.players.find(x=>x.id===p.player);
-        const tm=DB.teams.find(x=>x.id===p.team);
-        return`<div class="dash-list-item">
-          <div style="flex:1;min-width:0"><div class="fw7 text-sm">${sanitize(pl?.name||'--',20)}</div><div class="text-xs text-muted">${sanitize(tm?.name||'--',16)} / ¥${(p.amount||0).toLocaleString()}</div></div>
-          <button class="btn btn-secondary btn-xs" onclick="markPaid('${p.id}')">確認</button>
-        </div>`;
-      }).join('') || '<div class="text-muted text-sm text-center" style="padding:24px">未払いなし ✅</div>'}
-    </div>
-  </div>
-
-  <!-- マッチング + 直近アクティビティ -->
+  <!-- マッチング + アクティビティタイムライン -->
   <div class="dash-grid dash-grid-2" style="margin-bottom:16px">
     <div class="dash-section" style="margin-bottom:0">
       <div class="dash-section-head">
         <span class="dash-section-title">🤝 マッチング状況</span>
-        <span class="badge b-blue">${_dbArr('requests').filter(r=>r.status==='pending').length}件保留</span>
+        <span class="badge b-blue">${pendReqs}件保留</span>
       </div>
       ${(()=>{
         const reqs=[...DB.requests].sort((a,b)=>b.createdAt>a.createdAt?1:-1).slice(0,5);
@@ -6538,50 +7269,17 @@ function adminDash(){
       })()}
     </div>
     <div class="dash-section" style="margin-bottom:0">
-      <div class="dash-section-head">
-        <span class="dash-section-title">📜 直近アクティビティ</span>
-      </div>
-      ${activities.length?activities.slice(0,6).map(a=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--b1)">
-        <span style="font-size:14px">${a.icon}</span>
-        <div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sanitize(a.text,50)}</div></div>
+      <div class="dash-section-head"><span class="dash-section-title">📜 最新アクティビティ</span></div>
+      <div class="admin-timeline">
+      ${activities.length?activities.slice(0,8).map(a=>`<div class="admin-timeline-item">
+        <div class="admin-timeline-dot" style="background:${a.color}"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.icon} ${sanitize(a.text,40)}</div>
+          <div style="font-size:9px;color:var(--txt3)">${a.date?(a.date).slice(0,10):''}</div>
+        </div>
         <span class="badge ${a.type==='pending'?'b-yel':a.type==='matched'?'b-green':'b-blue'}" style="font-size:9px;flex-shrink:0">${a.type==='pending'?'保留':a.type==='matched'?'成立':'完了'}</span>
       </div>`).join(''):'<div class="text-muted text-sm text-center" style="padding:24px">アクティビティなし</div>'}
-    </div>
-  </div>
-
-  <!-- チーム一覧 + ユーザー -->
-  <div class="dash-grid dash-grid-2" style="margin-bottom:16px">
-    <div class="dash-section" style="margin-bottom:0">
-      <div class="dash-section-head">
-        <span class="dash-section-title">🏟️ チーム一覧</span>
       </div>
-      ${DB.teams.length?DB.teams.slice(0,5).map(t=>{
-        const playerCount=DB.players.filter(p=>p.team===t.id).length;
-        const coach=DB.coaches.find(c=>c.id===t.coach);
-        return`<div class="dash-list-item">
-          <div class="avi" style="background:var(--blue);width:30px;height:30px;font-size:11px;flex-shrink:0">${(t.name||'?')[0]}</div>
-          <div style="flex:1;min-width:0"><div class="fw7 text-sm">${sanitize(t.name||'--',20)}</div><div class="text-xs text-muted">${sanitize(t.sport||'',12)} · ${playerCount}名${coach?' · コーチ:'+sanitize(coach.name,10):''}</div></div>
-        </div>`;
-      }).join(''):'<div class="text-muted text-sm text-center" style="padding:24px">チーム未登録</div>'}
-    </div>
-    <div class="dash-section" style="margin-bottom:0">
-      <div class="dash-section-head">
-        <span class="dash-section-title">📋 登録ユーザー</span>
-        <button class="btn btn-ghost btn-xs" onclick="goTo('settings')">全件 →</button>
-      </div>
-      ${(()=>{
-        const allUsers=_getUsers().slice(0,6);
-        if(!allUsers.length) return '<div class="text-muted text-sm text-center" style="padding:24px">ユーザー未登録</div>';
-        return allUsers.map(u=>{
-          const roleLabel={admin:'事務局',team:'チーム',coach:'コーチ',player:'選手',parent:'保護者'}[u.role]||u.role;
-          const roleColor={admin:'var(--red)',team:'var(--blue)',coach:'var(--org)',player:'var(--teal)',parent:'#a855f7'}[u.role]||'var(--txt3)';
-          return`<div class="dash-list-item">
-            <div class="avi" style="background:${roleColor};width:30px;height:30px;font-size:11px;flex-shrink:0">${(u.name||'?')[0]}</div>
-            <div style="flex:1;min-width:0"><div class="fw7 text-sm">${sanitize(u.name||'--',18)}</div><div class="text-xs text-muted">${sanitize(u.email||'',22)}</div></div>
-            <span class="badge" style="background:${roleColor}18;color:${roleColor};font-size:10px;flex-shrink:0">${roleLabel}</span>
-          </div>`;
-        }).join('');
-      })()}
     </div>
   </div>
 
@@ -6595,9 +7293,250 @@ function adminDash(){
       <input id="broadcast-msg" class="input" placeholder="全体連絡メッセージを入力…" style="flex:1">
       <button class="btn btn-primary btn-sm" onclick="sendBroadcastMsg()">📢 送信</button>
     </div>
-  </div>`;
+  </div>
+  `:''}
+
+  ${tab==='coaches'?`
+  <!-- ===== コーチタブ ===== -->
+  <div class="dash-section">
+    <div class="dash-section-head">
+      <span class="dash-section-title">🏅 コーチ一覧 (${DB.coaches.length}名)</span>
+      <div class="flex gap-6">
+        <button class="btn btn-ghost btn-xs" onclick="exportAdminCoachCSV()"><i class="fa fa-download" style="margin-right:3px"></i>CSV</button>
+        <button class="btn btn-primary btn-xs" onclick="openM('コーチ追加',coachAddForm())">+ 追加</button>
+      </div>
+    </div>
+    <div style="margin-bottom:12px"><input class="input" placeholder="🔍 名前・種目・エリアで検索…" oninput="adminFilterCoachTable(this.value)" style="font-size:12px;height:36px"></div>
+    <div style="overflow-x:auto;max-height:480px;overflow-y:auto">
+    <table class="admin-data-table" id="admin-coach-table">
+      <thead><tr><th>コーチ名</th><th>種目</th><th>エリア</th><th>指導歴</th><th>料金</th><th>評価</th><th>ステータス</th><th style="text-align:center">操作</th></tr></thead>
+      <tbody>
+      ${DB.coaches.map(c=>{
+        const teamCount=DB.teams.filter(t=>t.coach===c.id).length;
+        return`<tr class="admin-coach-row" data-search="${(c.name||'').toLowerCase()} ${(c.sport||'').toLowerCase()} ${(c.area||'').toLowerCase()}">
+          <td><div style="display:flex;align-items:center;gap:8px"><div class="avi" style="background:${c.color||'var(--org)'};${c.photo?'background-image:url('+c.photo+');background-size:cover;background-position:center':''};width:32px;height:32px;font-size:12px;flex-shrink:0">${c.photo?'':(c.name||'?')[0]}</div><div><div class="fw7">${sanitize(c.name||'',20)}</div><div class="text-xs text-muted">${teamCount}チーム担当</div></div></div></td>
+          <td><span class="badge b-org" style="font-size:10px">${sanitize(c.sport||'--',12)}</span></td>
+          <td style="font-size:11px">${sanitize(c.area||'--',15)}</td>
+          <td style="font-weight:700">${c.exp||'--'}年</td>
+          <td><div class="fw7" style="color:var(--org)">¥${(c.price||0).toLocaleString()}</div><div class="text-xs text-muted">都度: ¥${(c.priceOnetime||0).toLocaleString()}</div></td>
+          <td style="color:#f59e0b;font-weight:700">${'★'.repeat(Math.round(c.rating||0))} ${c.rating||'--'}</td>
+          <td>${c.verified?'<span class="badge b-green">承認済</span>':'<span class="badge b-yel">審査中</span>'} ${c.avail?'<span class="badge b-blue" style="font-size:9px">募集中</span>':''}</td>
+          <td style="text-align:center"><div class="flex gap-4 justify-center">
+            <button class="btn btn-ghost btn-xs" onclick="openCoachDetail('${c.id}')" title="詳細">📋</button>
+            <button class="btn btn-ghost btn-xs" onclick="adminEditCoach('${c.id}')" title="編集">✏️</button>
+            ${!c.verified?`<button class="btn btn-primary btn-xs" onclick="approveCoach('${c.id}')">承認</button>`:''}
+          </div></td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+    </table></div>
+    ${!DB.coaches.length?'<div class="text-muted text-sm text-center" style="padding:32px">コーチ未登録</div>':''}
+    <!-- コーチ集計 -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--b1)">
+      <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--org)">${DB.coaches.length}</div><div style="font-size:10px;color:var(--txt3)">総コーチ数</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--grn)">${verifiedCoaches}</div><div style="font-size:10px;color:var(--txt3)">承認済</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--yel)">${pendCoaches}</div><div style="font-size:10px;color:var(--txt3)">審査中</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">¥${avgCoachPrice?Math.round(avgCoachPrice/1000)+'K':'--'}</div><div style="font-size:10px;color:var(--txt3)">平均月額</div></div>
+    </div>
+  </div>
+  `:''}
+
+  ${tab==='teams'?`
+  <!-- ===== チームタブ ===== -->
+  <div class="dash-section">
+    <div class="dash-section-head">
+      <span class="dash-section-title">🏟️ チーム一覧 (${DB.teams.length}チーム)</span>
+      <div class="flex gap-6">
+        <button class="btn btn-ghost btn-xs" onclick="exportAdminTeamCSV()"><i class="fa fa-download" style="margin-right:3px"></i>CSV</button>
+      </div>
+    </div>
+    <div style="margin-bottom:12px"><input class="input" placeholder="🔍 チーム名・種目で検索…" oninput="adminFilterTeamTable(this.value)" style="font-size:12px;height:36px"></div>
+    <div style="overflow-x:auto;max-height:480px;overflow-y:auto">
+    <table class="admin-data-table" id="admin-team-table">
+      <thead><tr><th>チーム名</th><th>種目</th><th>エリア</th><th>選手数</th><th>コーチ</th><th>月謝</th><th>回収状況</th></tr></thead>
+      <tbody>
+      ${DB.teams.map(t=>{
+        const playerCount=DB.players.filter(p=>p.team===t.id).length;
+        const coach=DB.coaches.find(c=>c.id===t.coach);
+        const teamPay=_dbArr('payments').filter(p=>(p.team===t.id||p.teamId===t.id));
+        const teamPaid=teamPay.filter(p=>p.status==='paid').length;
+        const teamTotal=teamPay.length;
+        const collectRate=teamTotal?Math.round(teamPaid/teamTotal*100):0;
+        return`<tr class="admin-team-row" data-search="${(t.name||'').toLowerCase()} ${(t.sport||'').toLowerCase()}">
+          <td><div style="display:flex;align-items:center;gap:8px"><div class="avi" style="background:var(--blue);width:32px;height:32px;font-size:12px">${(t.name||'?')[0]}</div><div><div class="fw7">${sanitize(t.name||'',20)}</div><div class="text-xs text-muted">${t.id}</div></div></div></td>
+          <td><span class="badge b-blue" style="font-size:10px">${sanitize(t.sport||'--',12)}</span></td>
+          <td style="font-size:11px">${sanitize(t.area||'--',15)}</td>
+          <td style="font-weight:700;text-align:center">${playerCount}名</td>
+          <td>${coach?'<span class="badge b-green" style="font-size:10px">'+sanitize(coach.name,10)+'</span>':'<span class="badge b-yel" style="font-size:10px">未配置</span>'}</td>
+          <td style="font-weight:700">¥${(t.fee||0).toLocaleString()}</td>
+          <td><div style="display:flex;align-items:center;gap:6px"><div class="admin-progress" style="width:60px"><div class="admin-progress-bar" style="width:${collectRate}%;background:${collectRate>=80?'var(--grn)':collectRate>=50?'var(--yel)':'var(--red)'}"></div></div><span style="font-size:11px;font-weight:700">${collectRate}%</span></div></td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+    </table></div>
+    ${!DB.teams.length?'<div class="text-muted text-sm text-center" style="padding:32px">チーム未登録</div>':''}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--b1)">
+      <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">${DB.teams.length}</div><div style="font-size:10px;color:var(--txt3)">総チーム数</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--teal)">${DB.players.length}</div><div style="font-size:10px;color:var(--txt3)">総選手数</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:${noCoachTeams?'var(--red)':'var(--grn)'}">${noCoachTeams}</div><div style="font-size:10px;color:var(--txt3)">コーチ未配置</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--org)">${DB.players.length&&DB.teams.length?Math.round(DB.players.length/DB.teams.length):0}</div><div style="font-size:10px;color:var(--txt3)">平均選手数</div></div>
+    </div>
+  </div>
+  `:''}
+
+  ${tab==='finance'?`
+  <!-- ===== 収益タブ ===== -->
+  <div class="hero-kpi" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
+    <div class="hero-kpi-card" style="border-left:3px solid var(--org)">
+      <div class="kpi-label">💴 総手数料収入</div>
+      <div class="kpi-value" style="color:var(--org)">¥${tf.toLocaleString()}</div>
+      <div class="kpi-sub" style="color:${feeGrowth>=0?'var(--grn)':'var(--red)'}"><i class="fa fa-arrow-${feeGrowth>=0?'up':'down'}" style="font-size:10px"></i> 前月比 ${feeGrowth>=0?'+':''}${feeGrowth}%</div>
+    </div>
+    <div class="hero-kpi-card" style="border-left:3px solid var(--blue)">
+      <div class="kpi-label">📥 月謝収入（総額）</div>
+      <div class="kpi-value" style="color:var(--blue)">¥${totalMonthlyRevenue.toLocaleString()}</div>
+      <div class="kpi-sub">回収率 ${payCollectionRate}%</div>
+    </div>
+    <div class="hero-kpi-card" style="border-left:3px solid var(--teal)">
+      <div class="kpi-label">💸 コーチ報酬総額</div>
+      <div class="kpi-value" style="color:var(--teal)">¥${coachPayTotal.toLocaleString()}</div>
+      <div class="kpi-sub">支払率 ${coachPayRate}%</div>
+    </div>
+    <div class="hero-kpi-card" style="border-left:3px solid ${unp?'var(--red)':'var(--grn)'}">
+      <div class="kpi-label">⚠️ 未回収</div>
+      <div class="kpi-value" style="color:${unp?'var(--red)':'var(--grn)'}">${unp}件</div>
+      <div class="kpi-sub">¥${_dbArr('payments').filter(p=>p.status==='unpaid').reduce((s,p)=>s+(p.amount||0),0).toLocaleString()} 未回収</div>
+    </div>
+  </div>
+  <div class="dash-section">
+    <div class="dash-section-head"><span class="dash-section-title">📊 手数料収入推移（6ヶ月）</span></div>
+    <div style="height:260px"><canvas id="admin-fee-chart"></canvas></div>
+  </div>
+  <div class="dash-grid dash-grid-2" style="margin-bottom:16px">
+    <div class="dash-section" style="margin-bottom:0">
+      <div class="dash-section-head">
+        <span class="dash-section-title">💴 未払い月謝</span>
+        <button class="btn btn-ghost btn-xs" onclick="goTo('payments')">全件 →</button>
+      </div>
+      ${_dbArr('payments').filter(p=>p.status==='unpaid').slice(0,8).map(p=>{
+        const pl=DB.players.find(x=>x.id===p.player);
+        const tm=DB.teams.find(x=>x.id===p.team);
+        return`<div class="dash-list-item">
+          <div style="flex:1;min-width:0"><div class="fw7 text-sm">${sanitize(pl?.name||'--',20)}</div><div class="text-xs text-muted">${sanitize(tm?.name||'--',16)} / ¥${(p.amount||0).toLocaleString()}</div></div>
+          <button class="btn btn-secondary btn-xs" onclick="markPaid('${p.id}')">入金確認</button>
+        </div>`;
+      }).join('') || '<div class="text-muted text-sm text-center" style="padding:24px">未払いなし ✅</div>'}
+    </div>
+    <div class="dash-section" style="margin-bottom:0">
+      <div class="dash-section-head"><span class="dash-section-title">💰 コーチ報酬履歴</span></div>
+      ${_dbArr('coachPay').slice(-8).reverse().map(p=>{
+        return`<div class="dash-list-item">
+          <div style="flex:1;min-width:0"><div class="fw7 text-sm">${sanitize(p.coachName||'コーチ',16)}</div><div class="text-xs text-muted">¥${(p.amount||0).toLocaleString()} · ${(p.paidAt||'').slice(0,10)}</div></div>
+          <span class="badge ${p.status==='paid'?'b-green':'b-yel'}" style="font-size:9px">${p.status==='paid'?'支払済':'未払い'}</span>
+        </div>`;
+      }).join('') || '<div class="text-muted text-sm text-center" style="padding:24px">支払い履歴なし</div>'}
+    </div>
+  </div>
+  <div class="flex gap-8 justify-center" style="padding:8px 0">
+    <button class="btn btn-ghost btn-sm" onclick="exportAdminPayCSV()"><i class="fa fa-download" style="margin-right:4px"></i>支払いCSV</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportAdminSummaryPDF()"><i class="fa fa-file-pdf" style="margin-right:4px;color:var(--red)"></i>収益レポートPDF</button>
+  </div>
+  `:''}
+
+  ${tab==='activity'?`
+  <!-- ===== アクティビティログタブ ===== -->
+  <div class="dash-section">
+    <div class="dash-section-head">
+      <span class="dash-section-title">📜 操作・イベントログ</span>
+      <span class="text-xs text-muted">${activities.length}件のイベント</span>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn btn-xs ${!window._adminLogFilter?'btn-primary':'btn-ghost'}" onclick="window._adminLogFilter='';refreshPage()">全て</button>
+      <button class="btn btn-xs ${window._adminLogFilter==='match'?'btn-primary':'btn-ghost'}" onclick="window._adminLogFilter='match';refreshPage()">🤝 マッチング</button>
+      <button class="btn btn-xs ${window._adminLogFilter==='fee'?'btn-primary':'btn-ghost'}" onclick="window._adminLogFilter='fee';refreshPage()">💴 月謝</button>
+      <button class="btn btn-xs ${window._adminLogFilter==='pay'?'btn-primary':'btn-ghost'}" onclick="window._adminLogFilter='pay';refreshPage()">💰 報酬</button>
+      <button class="btn btn-xs ${window._adminLogFilter==='coach'?'btn-primary':'btn-ghost'}" onclick="window._adminLogFilter='coach';refreshPage()">🏅 コーチ</button>
+    </div>
+    <div class="admin-timeline" style="max-height:500px;overflow-y:auto">
+    ${(()=>{
+      const filtered=window._adminLogFilter?activities.filter(a=>a.cat===window._adminLogFilter):activities;
+      if(!filtered.length) return '<div class="text-muted text-sm text-center" style="padding:32px">該当するログがありません</div>';
+      return filtered.slice(0,30).map(a=>`<div class="admin-timeline-item">
+        <div class="admin-timeline-dot" style="background:${a.color}"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600">${a.icon} ${sanitize(a.text,50)}</div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:2px">${a.date?(a.date).slice(0,16).replace('T',' '):''} · ${a.cat==='match'?'マッチング':a.cat==='fee'?'月謝':a.cat==='pay'?'報酬':'コーチ'}</div>
+        </div>
+        <span class="badge ${a.type==='pending'?'b-yel':a.type==='matched'?'b-green':'b-blue'}" style="font-size:9px;flex-shrink:0">${a.type==='pending'?'保留':a.type==='matched'?'成立':'完了'}</span>
+      </div>`).join('');
+    })()}
+    </div>
+  </div>
+  <!-- モデレーション履歴 -->
+  <div class="dash-section">
+    <div class="dash-section-head"><span class="dash-section-title">🛡️ モデレーション履歴</span></div>
+    ${(()=>{
+      const modLog=DB.moderationLog||[];
+      if(!modLog.length) return '<div class="text-muted text-sm text-center" style="padding:20px">モデレーション記録なし</div>';
+      return modLog.slice(-15).reverse().map(l=>{
+        const icon=l.type==='delete'?'🗑️':l.type==='warn'?'⚠️':l.type==='suspend'?'🚫':'🧹';
+        const label=l.type==='delete'?'削除':l.type==='warn'?'忠告':l.type==='suspend'?'停止':'全削除';
+        const color=l.type==='delete'?'var(--red)':l.type==='warn'?'var(--yel)':l.type==='suspend'?'var(--red)':'var(--txt3)';
+        return`<div class="dash-list-item">
+          <span style="font-size:16px">${icon}</span>
+          <div style="flex:1;min-width:0"><div class="fw7 text-sm" style="color:${color}">${label}</div><div class="text-xs text-muted">${sanitize(l.userName||'',15)} ${l.originalText?'「'+sanitize(l.originalText,25)+'…」':''}</div></div>
+          <span style="font-size:10px;color:var(--txt3)">${(l.date||'').slice(0,10)}</span>
+        </div>`;
+      }).join('');
+    })()}
+  </div>
+  <!-- 監査ログ -->
+  <div class="dash-section">
+    <div class="dash-section-head">
+      <span class="dash-section-title">📋 監査ログ (Audit Trail)</span>
+      <div class="flex gap-4">
+        <span class="text-xs text-muted">${(DB.auditLog||[]).length}件</span>
+        <button class="btn btn-ghost btn-xs" onclick="exportAuditLogCSV()"><i class="fa fa-download" style="margin-right:3px"></i>CSV</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap">
+      ${['','login','logout','user_register','coach_approve','payment_confirm','gdpr_delete','error','data_export'].map(f=>{
+        const labels={'':'全て',login:'ログイン',logout:'ログアウト',user_register:'登録',coach_approve:'承認',payment_confirm:'入金',gdpr_delete:'削除',error:'エラー',data_export:'エクスポート'};
+        return`<button class="btn btn-xs ${(window._auditFilter||'')===f?'btn-primary':'btn-ghost'}" onclick="window._auditFilter='${f}';refreshPage()">${labels[f]}</button>`;
+      }).join('')}
+    </div>
+    <div style="max-height:400px;overflow-y:auto">
+    ${(()=>{
+      const logs=(DB.auditLog||[]).slice(-100).reverse();
+      const filtered=window._auditFilter?logs.filter(l=>l.action===window._auditFilter):logs;
+      if(!filtered.length) return '<div class="text-muted text-sm text-center" style="padding:20px">監査ログなし</div>';
+      const actionIcons={login:'🔓',logout:'🔒',user_register:'👤',coach_approve:'✅',payment_confirm:'💰',gdpr_delete:'🗑️',error:'❌',data_export:'📤',settings_change:'⚙️'};
+      const actionColors={login:'var(--blue)',logout:'var(--txt3)',user_register:'var(--teal)',coach_approve:'var(--grn)',payment_confirm:'var(--org)',gdpr_delete:'var(--red)',error:'var(--red)',data_export:'var(--blue)',settings_change:'var(--yel)'};
+      return filtered.slice(0,40).map(l=>`<div class="dash-list-item" style="padding:8px 0">
+        <span style="font-size:14px">${actionIcons[l.action]||'📋'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:600">${sanitize(l.detail||l.action,50)}</div>
+          <div style="font-size:9px;color:var(--txt3)">${l.user?sanitize(l.user.name||'',12)+' ('+l.user.role+')':'system'} · ${(l.timestamp||'').slice(0,16).replace('T',' ')}</div>
+        </div>
+        <span class="badge" style="background:${actionColors[l.action]||'var(--txt3)'}18;color:${actionColors[l.action]||'var(--txt3)'};font-size:9px">${l.action||'--'}</span>
+      </div>`).join('');
+    })()}
+    </div>
+  </div>
+  `:''}
+  `;
 }
 
+// 監査ログCSVエクスポート
+function exportAuditLogCSV(){
+  if(DB.currentUser?.role!=='admin'){toast('権限がありません','e');return;}
+  const rows=[['日時','操作','詳細','ユーザー名','ロール','UA']];
+  (DB.auditLog||[]).forEach(l=>{
+    rows.push([l.timestamp||'',l.action||'',l.detail||'',l.user?.name||'system',l.user?.role||'',l.ua||'']);
+  });
+  _downloadCSV(rows,'audit_log_'+curMonth()+'.csv');
+  toast('監査ログをエクスポートしました','s');
+}
 
 function openAdminMsgMonitor(){
   var allRooms=Object.entries(DB.chats);
@@ -6765,15 +7704,150 @@ function sendBroadcastMsg(){
 
 function exportAdminReport(){
   if(DB.currentUser?.role!=='admin'){toast('権限がありません','e');return;}
-  const rows=[['種別','名前','スポーツ','地域','ステータス']];
-  DB.coaches.forEach(c=>rows.push(['コーチ',c.name,c.sport,c.area,c.verified?'承認済':'審査中']));
-  DB.teams.forEach(t=>rows.push(['チーム',t.name,t.sport,t.area,'登録済']));
-  DB.players.forEach(p=>rows.push(['選手',p.name,'--','--',p.status==='paid'?'支払済':'未払い']));
+  const rows=[['種別','名前','スポーツ','地域','ステータス','メール','登録日']];
+  DB.coaches.forEach(c=>rows.push(['コーチ',c.name,c.sport,c.area,c.verified?'承認済':'審査中',c.email||'',c.createdAt||'']));
+  DB.teams.forEach(t=>rows.push(['チーム',t.name,t.sport,t.area,'登録済',t.email||'',t.createdAt||'']));
+  DB.players.forEach(p=>{const t=DB.teams.find(x=>x.id===p.team);rows.push(['選手',p.name,t?.sport||'--',t?.area||'--',p.status==='paid'?'支払済':'未払い','',p.createdAt||'']);});
+  _getUsers().filter(u=>u.role==='parent').forEach(u=>rows.push(['保護者',u.name,'--','--','登録済',u.email||'',u.createdAt||'']));
   const csv=rows.map(r=>r.map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
   const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='admin_report_'+curMonth()+'.csv';a.click();
-  toast('レポートをダウンロードしました','s');
+  a.download='admin_full_report_'+curMonth()+'.csv';a.click();
+  toast('全データレポートをダウンロードしました','s');
+}
+
+function exportAdminCoachCSV(){
+  if(DB.currentUser?.role!=='admin'){toast('権限がありません','e');return;}
+  const rows=[['名前','種目','エリア','指導歴','月額料金','都度料金','評価','レビュー数','承認','募集中','担当チーム数','メール','自己紹介']];
+  DB.coaches.forEach(c=>{
+    const teamCount=DB.teams.filter(t=>t.coach===c.id).length;
+    rows.push([c.name,c.sport,c.area,(c.exp||'')+'年',c.price||0,c.priceOnetime||0,c.rating||'',c.reviews||0,c.verified?'承認済':'審査中',c.avail?'募集中':'契約中',teamCount,c.email||'',c.bio||c.pr||'']);
+  });
+  _downloadCSV(rows,'coaches_'+curMonth()+'.csv');
+  toast('コーチ一覧CSVをダウンロードしました','s');
+}
+
+function exportAdminTeamCSV(){
+  if(DB.currentUser?.role!=='admin'){toast('権限がありません','e');return;}
+  const rows=[['チーム名','種目','エリア','選手数','コーチ','月謝','月謝回収率','代表者メール']];
+  DB.teams.forEach(t=>{
+    const playerCount=DB.players.filter(p=>p.team===t.id).length;
+    const coach=DB.coaches.find(c=>c.id===t.coach);
+    const teamPay=_dbArr('payments').filter(p=>(p.team===t.id||p.teamId===t.id));
+    const rate=teamPay.length?Math.round(teamPay.filter(p=>p.status==='paid').length/teamPay.length*100):0;
+    rows.push([t.name,t.sport,t.area,playerCount,coach?.name||'未配置',t.fee||0,rate+'%',t.email||'']);
+  });
+  _downloadCSV(rows,'teams_'+curMonth()+'.csv');
+  toast('チーム一覧CSVをダウンロードしました','s');
+}
+
+function exportAdminPayCSV(){
+  if(DB.currentUser?.role!=='admin'){toast('権限がありません','e');return;}
+  const rows=[['種別','選手/コーチ名','チーム','金額','手数料','ステータス','月','支払日']];
+  _dbArr('payments').forEach(p=>{
+    const pl=DB.players.find(x=>x.id===p.player);
+    const tm=DB.teams.find(x=>x.id===p.team);
+    rows.push(['月謝',pl?.name||'不明',tm?.name||'--',p.amount||0,p.fee||0,p.status,p.month||'',p.paidAt||'']);
+  });
+  _dbArr('coachPay').forEach(p=>{
+    rows.push(['コーチ報酬',p.coachName||'不明',p.teamName||'--',p.amount||0,p.platformTotal||0,p.status,'',p.paidAt||'']);
+  });
+  _downloadCSV(rows,'payments_'+curMonth()+'.csv');
+  toast('支払いデータCSVをダウンロードしました','s');
+}
+
+function exportAdminMatchCSV(){
+  if(DB.currentUser?.role!=='admin'){toast('権限がありません','e');return;}
+  const rows=[['コーチ名','チーム名','申請種別','ステータス','申請日']];
+  _dbArr('requests').forEach(r=>{
+    rows.push([r.coachName||'不明',r.teamName||'不明',r.type==='team_to_coach'?'チーム→コーチ':'コーチ→チーム',r.status==='pending'?'保留':r.status==='matched'?'成立':'却下',r.createdAt||'']);
+  });
+  _downloadCSV(rows,'matching_'+curMonth()+'.csv');
+  toast('マッチング履歴CSVをダウンロードしました','s');
+}
+
+function _downloadCSV(rows,filename){
+  const csv=rows.map(r=>r.map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+}
+
+function exportAdminSummaryPDF(){
+  if(DB.currentUser?.role!=='admin'){toast('権限がありません','e');return;}
+  if(typeof jspdf==='undefined'&&typeof window.jspdf==='undefined'){toast('PDF生成ライブラリを読み込み中…','i');return;}
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF('p','mm','a4');
+    const now=new Date();
+    const dateStr=now.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+    // ヘッダー
+    doc.setFillColor(15,23,42);doc.rect(0,0,210,40,F='F');
+    doc.setTextColor(255,255,255);doc.setFontSize(18);
+    doc.text('MyCOACH-MyTEAM 管理レポート',15,20);
+    doc.setFontSize(10);doc.text(dateStr,15,30);
+    // KPI
+    doc.setTextColor(30,50,86);doc.setFontSize(12);
+    let y=55;
+    const tf2=_dbArr('payments').filter(p=>p.status==='paid').reduce((s,p)=>s+(p.fee||0),0)+_dbArr('coachPay').filter(p=>p.status==='paid').reduce((s,p)=>s+(p.platformTotal||0),0);
+    const kpis=[
+      ['Total Fee Revenue','¥'+tf2.toLocaleString()],
+      ['Coaches',DB.coaches.length+' (Verified: '+DB.coaches.filter(c=>c.verified).length+')'],
+      ['Teams',DB.teams.length+''],
+      ['Players',DB.players.length+''],
+      ['Unpaid',_dbArr('payments').filter(p=>p.status==='unpaid').length+' items'],
+      ['Match Rate',(_dbArr('requests').length?((_dbArr('requests').filter(r=>r.status==='matched').length/_dbArr('requests').length)*100).toFixed(0):0)+'%'],
+    ];
+    doc.setFontSize(14);doc.text('Key Metrics',15,y);y+=8;
+    kpis.forEach(k=>{doc.setFontSize(10);doc.text(k[0]+': '+k[1],20,y);y+=6;});
+    // コーチ一覧
+    y+=8;doc.setFontSize(14);doc.text('Coach List',15,y);y+=8;
+    doc.setFontSize(9);
+    DB.coaches.slice(0,15).forEach(c=>{
+      if(y>270){doc.addPage();y=20;}
+      doc.text(c.name+' | '+c.sport+' | '+(c.verified?'Approved':'Pending')+' | ¥'+(c.price||0).toLocaleString(),20,y);
+      y+=5;
+    });
+    // チーム
+    y+=8;if(y>250){doc.addPage();y=20;}
+    doc.setFontSize(14);doc.text('Team List',15,y);y+=8;
+    doc.setFontSize(9);
+    DB.teams.slice(0,15).forEach(t=>{
+      if(y>270){doc.addPage();y=20;}
+      const pc=DB.players.filter(p=>p.team===t.id).length;
+      doc.text(t.name+' | '+t.sport+' | '+pc+' players | Fee: ¥'+(t.fee||0).toLocaleString(),20,y);
+      y+=5;
+    });
+    doc.save('admin_summary_'+curMonth()+'.pdf');
+    toast('サマリーPDFをダウンロードしました','s');
+  }catch(e){
+    console.error('PDF export error:',e);
+    toast('PDF生成でエラーが発生しました: '+e.message,'e');
+  }
+}
+
+function toggleAdminExportMenu(){
+  const m=document.getElementById('admin-export-menu');
+  if(m)m.classList.toggle('show');
+  // 外側クリックで閉じる
+  if(m?.classList.contains('show')){
+    setTimeout(()=>{
+      const handler=function(e){if(!m.contains(e.target)&&e.target.id!=='admin-export-btn'){m.classList.remove('show');document.removeEventListener('click',handler);}};
+      document.addEventListener('click',handler);
+    },10);
+  }
+}
+
+function adminFilterCoachTable(q){
+  const query=q.toLowerCase();
+  document.querySelectorAll('.admin-coach-row').forEach(r=>{
+    r.style.display=(r.getAttribute('data-search')||'').includes(query)?'':'none';
+  });
+}
+function adminFilterTeamTable(q){
+  const query=q.toLowerCase();
+  document.querySelectorAll('.admin-team-row').forEach(r=>{
+    r.style.display=(r.getAttribute('data-search')||'').includes(query)?'':'none';
+  });
 }
 function coachMgmt(){if(DB.currentUser?.role!=='admin'){toast('このページは事務局のみ利用できます','e');return '<div class="pg-head"><div class="pg-title">アクセス拒否</div></div><div class="card text-center" style="padding:40px"><div style="font-size:40px;margin-bottom:12px">🔒</div><div class="fw7">このページへのアクセス権がありません</div></div>';}
   return`<div class="pg-head flex justify-between items-center"><div><div class="pg-title">コーチ管理</div><div class="pg-sub">登録コーチの審査・管理</div></div><button class="btn btn-primary btn-sm" onclick="openM(&quot;コーチ追加&quot;,coachAddForm())">+ コーチ追加</button></div>
@@ -6804,6 +7878,7 @@ function teamMgmt(){
   return`<div class="pg-head flex justify-between items-center">
     <div><div class="pg-title">チーム管理</div><div class="pg-sub">登録チームの管理・マッチング確認</div></div>
     <div class="flex gap-8">
+      <button class="btn btn-primary btn-sm" onclick="openM('チーム追加',adminAddTeamForm())">+ チーム追加</button>
       <button class="btn btn-secondary btn-sm" onclick="exportAllUsersCSV()">⬇ CSV</button>
     </div>
   </div>
@@ -6951,6 +8026,7 @@ function payMgmt(){
   return`<div class="pg-head flex justify-between items-center">
     <div><div class="pg-title">収益管理</div><div class="pg-sub">手数料・月謝・コーチ報酬の一覧</div></div>
     <div class="flex gap-8">
+      <button class="btn btn-primary btn-sm" onclick="adminAddPayment()">+ 月謝追加</button>
       <button class="btn btn-secondary btn-sm" onclick="exportPaymentsCSV()">⬇ CSV</button>
     </div>
   </div>
@@ -7045,8 +8121,8 @@ function payMgmt(){
   </div>
 
   <div class="card mt-20">
-    <div class="fw7 mb-14" style="font-size:14px">💰 コーチ代支払い（${_dbArr('coachPay').length}件）</div>
-    ${_dbArr('coachPay').length?'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:var(--surf2);color:var(--txt3)"><th style="padding:8px 12px;text-align:left">コーチ</th><th style="padding:8px">チーム</th><th style="padding:8px;text-align:center">月</th><th style="padding:8px;text-align:right">総額</th><th style="padding:8px;text-align:right">受取</th><th style="padding:8px;text-align:right">手数料</th><th style="padding:8px;text-align:center">状態</th><th style="padding:8px;text-align:center">操作</th></tr></thead><tbody>'+_dbArr('coachPay').slice().reverse().map(cp=>{const co=DB.coaches.find(x=>x.id===cp.coach);const tm=DB.teams.find(x=>x.id===(cp.team||cp.teamId));return'<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(co?.name||cp.coachName||'',15)+'</td><td style="padding:8px">'+sanitize(tm?.name||'',15)+'</td><td style="padding:8px;text-align:center;font-size:11px">'+(cp.month||'')+'</td><td style="padding:8px;text-align:right">¥'+(cp.amount||0).toLocaleString()+'</td><td style="padding:8px;text-align:right;color:var(--grn)">¥'+(cp.coachReceives||0).toLocaleString()+'</td><td style="padding:8px;text-align:right;color:var(--org)">¥'+(cp.platformTotal||0).toLocaleString()+'</td><td style="padding:8px;text-align:center"><span class="badge '+(cp.status==='paid'?'b-green':'b-yel')+'" style="font-size:10px">'+(cp.status==='paid'?'済':'未')+'</span></td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeleteRecord(\'coachPay\',\''+cp.id+'\')">🗑</button></td></tr>';}).join('')+'</tbody></table></div>':'<div class="text-muted text-sm text-center py-16">コーチ代支払い記録なし</div>'}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span class="fw7" style="font-size:14px">💰 コーチ代支払い（${_dbArr('coachPay').length}件）</span><button class="btn btn-primary btn-xs" onclick="adminAddCoachPay()">+ 手動追加</button></div>
+    ${_dbArr('coachPay').length?'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:var(--surf2);color:var(--txt3)"><th style="padding:8px 12px;text-align:left">コーチ</th><th style="padding:8px">チーム</th><th style="padding:8px;text-align:center">月</th><th style="padding:8px;text-align:right">総額</th><th style="padding:8px;text-align:right">受取</th><th style="padding:8px;text-align:right">手数料</th><th style="padding:8px;text-align:center">状態</th><th style="padding:8px;text-align:center">操作</th></tr></thead><tbody>'+_dbArr('coachPay').slice().reverse().map(cp=>{const co=DB.coaches.find(x=>x.id===cp.coach);const tm=DB.teams.find(x=>x.id===(cp.team||cp.teamId));return'<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:8px 12px">'+sanitize(co?.name||cp.coachName||'',15)+'</td><td style="padding:8px">'+sanitize(tm?.name||'',15)+'</td><td style="padding:8px;text-align:center;font-size:11px">'+(cp.month||'')+'</td><td style="padding:8px;text-align:right">¥'+(cp.amount||0).toLocaleString()+'</td><td style="padding:8px;text-align:right;color:var(--grn)">¥'+(cp.coachReceives||0).toLocaleString()+'</td><td style="padding:8px;text-align:right;color:var(--org)">¥'+(cp.platformTotal||0).toLocaleString()+'</td><td style="padding:8px;text-align:center"><span class="badge '+(cp.status==='paid'?'b-green':'b-yel')+'" style="font-size:10px">'+(cp.status==='paid'?'済':'未')+'</span></td><td style="padding:8px;text-align:center"><button class="btn btn-ghost btn-xs" style="color:var(--red);font-size:10px" onclick="adminDeleteRecord(\'coachPay\',\''+cp.id+'\')">🗑</button>'+(cp.status!=='paid'?'<button class="btn btn-ghost btn-xs" style="color:var(--grn);font-size:10px" onclick="adminMarkCoachPaid(\''+cp.id+'\')">✅</button>':'<button class="btn btn-ghost btn-xs" style="color:var(--yel);font-size:10px" onclick="adminRevertCoachPay(\''+cp.id+'\')">↩</button>')+'</td></tr>';}).join('')+'</tbody></table></div>':'<div class="text-muted text-sm text-center py-16">コーチ代支払い記録なし</div>'}
   </div>`;
 }
 
@@ -7227,13 +8303,64 @@ function settingsPage(){
       <button class="btn btn-ghost btn-sm w-full" style="color:var(--red);border-color:var(--red)" onclick="confirmDeleteAccount()">🗑️ アカウントを削除</button>
     </div>
 
+    <!-- プライバシー・データ管理 (GDPR) -->
+    <div class="card" style="padding:18px">
+      <div class="fw7 mb-14" style="font-size:15px">🛡️ プライバシー・データ管理</div>
+      <div style="font-size:11px;color:var(--txt3);line-height:1.6;margin-bottom:14px">
+        お客様のデータに関する権利を保障します。個人データのエクスポート・削除が可能です。
+      </div>
+      <div style="display:grid;gap:8px">
+        <button class="btn btn-secondary btn-sm w-full" onclick="exportMyData()">
+          <i class="fa fa-download" style="margin-right:6px"></i>個人データをダウンロード (JSON)
+        </button>
+        <button class="btn btn-ghost btn-sm w-full" onclick="showMyConsentLog()">
+          <i class="fa fa-history" style="margin-right:6px"></i>同意・データ処理履歴
+        </button>
+        ${isAdmin?`
+        <div style="border-top:1px solid var(--b1);margin-top:8px;padding-top:12px">
+          <div class="fw7 text-sm mb-8" style="color:var(--red)">管理者用</div>
+          <button class="btn btn-ghost btn-sm w-full mb-6" style="color:var(--red);border-color:rgba(239,68,68,.3)" onclick="openAdminGDPRPanel()">
+            <i class="fa fa-user-slash" style="margin-right:6px"></i>ユーザーデータ完全削除 (GDPR)
+          </button>
+          <button class="btn btn-ghost btn-sm w-full" onclick="showConsentLogAdmin()">
+            <i class="fa fa-clipboard-list" style="margin-right:6px"></i>全ユーザー同意ログ
+          </button>
+          <div style="border-top:1px solid var(--b1);margin-top:8px;padding-top:12px">
+            <div class="fw7 text-sm mb-8">📦 バックアップ・復元</div>
+            <button class="btn btn-secondary btn-sm w-full mb-6" onclick="adminFullBackup()">
+              <i class="fa fa-download" style="margin-right:6px"></i>フルバックアップ
+            </button>
+            <button class="btn btn-ghost btn-sm w-full" onclick="adminRestoreBackup()">
+              <i class="fa fa-upload" style="margin-right:6px"></i>バックアップから復元
+            </button>
+          </div>
+        </div>
+        `:''}
+      </div>
+    </div>
+
+    <!-- PWAインストール -->
+    <div class="card" style="padding:18px">
+      <div class="fw7 mb-14" style="font-size:15px">📱 アプリ</div>
+      <div style="font-size:11px;color:var(--txt3);line-height:1.6;margin-bottom:12px">
+        ホーム画面に追加すると、ネイティブアプリのように使えます
+      </div>
+      <button id="pwa-install-btn" class="btn btn-secondary btn-sm w-full mb-8" onclick="installPWA()" style="display:${typeof _deferredInstallPrompt!=='undefined'&&_deferredInstallPrompt?'inline-flex':'none'}">
+        <i class="fa fa-download" style="margin-right:6px"></i>ホーム画面に追加
+      </button>
+      <div style="display:flex;gap:8px;align-items:center;font-size:11px">
+        <span style="width:8px;height:8px;border-radius:50%;background:${navigator.onLine?'var(--grn)':'var(--red)'};flex-shrink:0"></span>
+        <span class="text-muted">${navigator.onLine?'オンライン':'オフライン'} · SW ${navigator.serviceWorker?.controller?'有効':'未登録'}</span>
+      </div>
+    </div>
+
     <!-- 法的 -->
     <div class="card" style="padding:18px">
       <div class="fw7 mb-14" style="font-size:15px">📄 法的情報</div>
       <div style="display:grid;gap:8px">
         <button class="btn btn-ghost btn-sm w-full" onclick="openM('📄 利用規約',legalText('terms'))">📄 利用規約</button>
         <button class="btn btn-ghost btn-sm w-full" onclick="openM('🛡️ プライバシーポリシー',legalText('privacy'))">🛡️ プライバシーポリシー</button>
-        <div class="text-xs text-muted text-center mt-8">部勝 v1.0.0 (Production Ready)</div>
+        <div class="text-xs text-muted text-center mt-8">部勝 v3.3.0 (Production Ready)</div>
       </div>
     </div>
 
@@ -7269,7 +8396,9 @@ function saveNotifPref(key,val){
 function saveRateSetting(key){
   const val=parseInt(document.getElementById(`set-${key}`)?.value||'10');
   if(!DB.settings)DB.settings={};
+  const oldVal=DB.settings[key]||10;
   DB.settings[key]=Math.min(100,Math.max(0,val));
+  addAuditLog('settings_change','手数料率変更: '+key+' '+oldVal+'% → '+val+'%',{key,oldVal,newVal:val});
   saveDB();toast('手数料率を保存しました','s');
 }
 function saveApiKey(){
@@ -7622,11 +8751,30 @@ function myTeam(){
   }).join('');
 
   return`<div class="pg-head flex justify-between items-center">
-    <div><div class="pg-title">${sanitize(t.name,20)}</div><div class="pg-sub">${t.sport} · 招待コード: <b style="color:var(--org)">${t.code}</b></div></div>
+    <div><div class="pg-title">${sanitize(t.name,20)}</div><div class="pg-sub">${t.sport} · 招待コード: <b style="color:var(--org)">${t.code||'未設定'}</b></div></div>
     <div class="flex gap-8" style="flex-wrap:wrap">
       <button class="btn btn-ghost btn-sm" onclick="exportRosterCSV()">⬇️ 名簿CSV</button>
       <button class="btn btn-secondary btn-sm" onclick="goTo('fee')">💴 月謝管理</button>
       <button class="btn btn-primary btn-sm" onclick="openM('👤 選手追加',addPlayerForm())">👤+ 追加</button>
+    </div>
+  </div>
+
+  <!-- 招待コード共有カード -->
+  <div class="card" style="padding:14px;margin-bottom:14px;border:1px solid rgba(99,91,255,.15);background:rgba(99,91,255,.03)">
+    <div class="flex justify-between items-center mb-10">
+      <div class="fw7 text-sm" style="color:var(--org)">📨 選手・保護者を招待する</div>
+      <button class="btn btn-ghost btn-xs" onclick="regenerateTeamCode()" title="コード再発行">🔄 再発行</button>
+    </div>
+    <div class="flex gap-8 items-center flex-wrap">
+      <div style="flex:1;min-width:180px;background:var(--surf2);border:1.5px dashed var(--org);border-radius:8px;padding:10px 14px;text-align:center">
+        <div style="font-size:22px;font-weight:800;letter-spacing:4px;color:var(--org)">${t.code||'---'}</div>
+        <div style="font-size:10px;color:var(--txt3);margin-top:2px">招待コード</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="copyInviteCode()" style="white-space:nowrap">📋 コピー</button>
+      <button class="btn btn-secondary btn-sm" onclick="shareInviteLink()" style="white-space:nowrap">📤 共有</button>
+    </div>
+    <div style="font-size:11px;color:var(--txt3);margin-top:8px;line-height:1.6">
+      選手または保護者にこのコードを伝えてください。アカウント登録時、またはプロフィール画面から入力して参加できます。
     </div>
   </div>
   ${pls.filter(p=>p.status!=='paid'&&p.status!=='free').length>0?`<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
@@ -16387,25 +17535,29 @@ async function processStripePayment(btn, opts={}){
       const myPlayer = DB.players.find(p=>p.id===me?.id);
       const myTeam   = myPlayer ? DB.teams.find(t=>t.id===myPlayer.team) : null;
       endpoint = '/create-tuition-session';
+      const _tid = opts.teamId || myTeam?.id || '';
       payload  = {
         teamName:   opts.teamName   || myTeam?.name || 'チーム',
         playerName: opts.playerName || myPlayer?.name || me?.name || '選手',
         amount:     opts.amount     || myTeam?.fee  || 5000,
         month:      opts.month      || new Date().toISOString().slice(0,7),
         playerId:   opts.playerId   || me?.id || '',
-        teamId:     opts.teamId     || myTeam?.id || '',
+        teamId:     _tid,
+        feeRate:    getFeeRate(_tid, 'monthlyFee'),
       };
     } else if(type === 'coach'){
       // コーチ代支払い（チーム → コーチ）
       endpoint = '/create-coach-payment-session';
+      const _ctid = opts.teamId || me?.id || '';
       payload  = {
         coachName:  opts.coachName  || 'コーチ',
         teamName:   opts.teamName   || me?.name || 'チーム',
         amount:     opts.amount     || 30000,
         month:      opts.month      || new Date().toISOString().slice(0,7),
         coachId:    opts.coachId    || '',
-        teamId:     opts.teamId     || me?.id || '',
+        teamId:     _ctid,
         threadId:   opts.threadId   || '',
+        feeRate:    getFeeRate(_ctid, 'coachFee'),
       };
     } else {
       throw new Error('不明な決済タイプ: ' + type);
@@ -16414,7 +17566,7 @@ async function processStripePayment(btn, opts={}){
     // バックエンドAPIを呼び出してStripe Checkoutセッションを作成
     const res = await fetch(`${API_BASE}${endpoint}`, {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await _apiHeaders(),
       body:    JSON.stringify(payload),
     });
 
@@ -16489,21 +17641,44 @@ function paymentForm(){
 }
 
 function openM(title,body,large=false){
-  document.getElementById('modal-box').className='modal'+(large?' modal-lg':'');
+  const box=document.getElementById('modal-box');
+  box.className='modal'+(large?' modal-lg':'');
+  box.setAttribute('role','dialog');
+  box.setAttribute('aria-modal','true');
+  box.setAttribute('aria-label',title);
   const inner=document.getElementById('modal-inner');
   // XSS対策: titleはtextContent、bodyは信頼済みHTML（ページ関数が生成）
   const titleEl=document.createElement('div');
   titleEl.className='modal-title';
+  titleEl.id='modal-title-text';
   titleEl.textContent=title;  // textContentでXSS完全防止
   inner.innerHTML='';
   inner.appendChild(titleEl);
   const bodyEl=document.createElement('div');
   bodyEl.innerHTML=body;      // bodyはアプリ内関数が生成する信頼済みHTML
   inner.appendChild(bodyEl);
-  document.getElementById('overlay').classList.add('open');
+  const ov=document.getElementById('overlay');
+  ov.classList.add('open');
+  // フォーカストラップ: モーダル内の最初のフォーカス可能要素にフォーカス
+  setTimeout(()=>{
+    const focusable=box.querySelector('input,button,textarea,select,[tabindex]');
+    if(focusable) focusable.focus();
+  },100);
 }
-function closeM(){document.getElementById('overlay').classList.remove('open')}
+function closeM(){
+  document.getElementById('overlay').classList.remove('open');
+  // フォーカスを戻す
+  const trigger=document.activeElement;
+  if(trigger) try{trigger.blur();}catch(e){}
+}
 function handleOverlayClick(e){if(e.target===document.getElementById('overlay'))closeM()}
+// キーボードナビゲーション
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    const ov=document.getElementById('overlay');
+    if(ov&&ov.classList.contains('open')){closeM();e.preventDefault();}
+  }
+});
 function openCoachDetail(id){
   const c=DB.coaches.find(x=>x.id===id);
   if(!c){toast('コーチ情報が見つかりません','e');return;}
@@ -16532,6 +17707,7 @@ function openCoachDetail(id){
     actionBtn+=`<button class="btn btn-success w-full" style="margin-top:8px" onclick="approveCoach('${c.id}')">✓ コーチを承認する</button>`;
   }
   if(DB.currentUser?.role==='admin'){
+    actionBtn+=`<button class="btn btn-secondary w-full" style="margin-top:8px" onclick="closeM();adminEditCoach('${c.id}')">✏️ コーチ情報を編集</button>`;
     actionBtn+=`<button class="btn btn-ghost w-full" style="margin-top:8px;color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="confirmDeleteCoach('${c.id}')">🗑 コーチを削除</button>`;
   }
 
@@ -16603,7 +17779,45 @@ function openCoachDetail(id){
   const titleEl=document.querySelector('#modal-inner .modal-title');
   if(titleEl) titleEl.style.display='none';
 }
-function approveCoach(id){if(DB.currentUser?.role!=='admin'){toast('この操作は事務局のみ実行できます','e');return;}const c=DB.coaches.find(c=>c.id===id);if(!c){toast('コーチが見つかりません','e');return;}c.verified=true;saveDB();closeM();toast('コーチを承認しました','s');if(curPage==='coaches')goTo('coaches')}
+function approveCoach(id){if(DB.currentUser?.role!=='admin'){toast('この操作は事務局のみ実行できます','e');return;}const c=DB.coaches.find(c=>c.id===id);if(!c){toast('コーチが見つかりません','e');return;}c.verified=true;addAuditLog('coach_approve','コーチ承認: '+sanitize(c.name,20),{coachId:id});saveDB();closeM();toast('コーチを承認しました','s');if(curPage==='coaches')goTo('coaches')}
+
+function adminEditCoach(cid){
+  const c=DB.coaches.find(x=>x.id===cid);
+  if(!c){toast('コーチが見つかりません','e');return;}
+  openM('✏️ コーチ編集: '+sanitize(c.name,15),`
+    <div class="grid-2">
+      <div class="form-group"><label class="label">氏名</label><input id="ace-name" class="input" value="${sanitize(c.name||'')}"></div>
+      <div class="form-group"><label class="label">種目</label><input id="ace-sport" class="input" value="${sanitize(c.sport||'')}"></div>
+      <div class="form-group"><label class="label">専門分野</label><input id="ace-spec" class="input" value="${sanitize(c.spec||'')}"></div>
+      <div class="form-group"><label class="label">地域</label><input id="ace-area" class="input" value="${sanitize(c.area||'')}"></div>
+      <div class="form-group"><label class="label">月額（¥）</label><input id="ace-price" class="input" type="number" value="${c.price||0}" min="0"></div>
+      <div class="form-group"><label class="label">指導歴（年）</label><input id="ace-exp" class="input" type="number" value="${c.exp||0}" min="0"></div>
+    </div>
+    <div class="form-group"><label class="label">メール</label><input id="ace-email" class="input" type="email" value="${sanitize(c.email||'')}"></div>
+    <div class="form-group"><label class="label">自己紹介</label><textarea id="ace-bio" class="input" rows="3">${sanitize(c.bio||'')}</textarea></div>
+    <div class="payment-method-row"><div><div class="text-sm fw7">募集中</div></div><label class="toggle-switch"><input type="checkbox" id="ace-avail" ${c.avail?'checked':''}><span class="toggle-slider"></span></label></div>
+    <div class="payment-method-row"><div><div class="text-sm fw7">承認済み</div></div><label class="toggle-switch"><input type="checkbox" id="ace-verified" ${c.verified?'checked':''}><span class="toggle-slider"></span></label></div>
+    <div class="flex gap-8 mt-16">
+      <button class="btn btn-primary flex-1" onclick="adminSaveCoach('${c.id}')">💾 保存</button>
+      <button class="btn btn-ghost flex-1" onclick="closeM()">キャンセル</button>
+    </div>
+  `);
+}
+function adminSaveCoach(cid){
+  const c=DB.coaches.find(x=>x.id===cid);if(!c)return;
+  c.name=sanitize(document.getElementById('ace-name')?.value||c.name,50);
+  c.sport=sanitize(document.getElementById('ace-sport')?.value||'',30);
+  c.spec=sanitize(document.getElementById('ace-spec')?.value||'',50);
+  c.area=sanitize(document.getElementById('ace-area')?.value||'',50);
+  c.price=Math.max(0,parseInt(document.getElementById('ace-price')?.value)||0);
+  c.exp=Math.max(0,parseInt(document.getElementById('ace-exp')?.value)||0);
+  c.email=sanitize(document.getElementById('ace-email')?.value||'',100);
+  c.bio=sanitize(document.getElementById('ace-bio')?.value||'',500);
+  c.avail=document.getElementById('ace-avail')?.checked??true;
+  c.verified=document.getElementById('ace-verified')?.checked??false;
+  addAuditLog('coach_edit','コーチ編集: '+sanitize(c.name,20),{coachId:cid});
+  saveDB();closeM();toast('コーチ情報を更新しました','s');refreshPage();
+}
 
 function confirmDeleteCoach(id){
   const c=DB.coaches.find(x=>x.id===id);
@@ -16697,6 +17911,8 @@ function toast(msg, type='i', duration=3200){
   t.className=`toast ${type}`;
   t.style.cursor='pointer';
   t.title='クリックして閉じる';
+  t.setAttribute('role', type==='e'?'alert':'status');
+  t.setAttribute('aria-live', type==='e'?'assertive':'polite');
   // アイコン
   const ico=document.createElement('i');
   ico.className=`fa ${icons[type]||icons.i} ti`;
@@ -17084,7 +18300,7 @@ async function confirmPayment(ptId, invId){
     const team=DB.teams.find(t=>t.id===pt.teamId);
     try {
       const res=await fetch(`${API_BASE}/create-coach-payment-session`,{
-        method:'POST',headers:{'Content-Type':'application/json'},
+        method:'POST',headers:await _apiHeaders(),
         body:JSON.stringify({coachName:coach?.name||'コーチ',teamName:team?.name||'チーム',
           amount:pt.contractAmount,month:inv.month,coachId:pt.coachId,teamId:pt.teamId,threadId:pt.id}),
       });
@@ -17467,6 +18683,156 @@ function joinTeamByCode(){
   toast(team.name+'に参加しました！','s');
   addNotif(team.name+'に参加しました','fa-users','dashboard');
   refreshPage();
+}
+
+// ── 招待コード管理 ──
+function copyInviteCode(){
+  const t=getMyTeam();
+  if(!t||!t.code){toast('招待コードがありません','e');return;}
+  const text=`【${t.name}】招待コード: ${t.code}\n\n部勝（ブカツ）アプリからこのコードを入力してチームに参加してください。\nhttps://myteam-mycoach.web.app`;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>toast('📋 招待コードをコピーしました','s'));
+  } else {
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    toast('📋 コピーしました','s');
+  }
+}
+function shareInviteLink(){
+  const t=getMyTeam();
+  if(!t||!t.code){toast('招待コードがありません','e');return;}
+  const url=`https://myteam-mycoach.web.app?join=${t.code}`;
+  const text=`${t.name}に参加しよう！\n招待コード: ${t.code}`;
+  if(navigator.share){
+    navigator.share({title:t.name+'への招待',text:text,url:url}).catch(()=>{});
+  } else {
+    navigator.clipboard?.writeText(url).then(()=>toast('📤 招待リンクをコピーしました','s'));
+  }
+}
+function regenerateTeamCode(){
+  const t=getMyTeam();
+  if(!t){toast('チーム情報がありません','e');return;}
+  if(!confirm('招待コードを再発行しますか？\n旧コードは無効になります。'))return;
+  t.code='T'+Date.now().toString().slice(-6);
+  saveDB();
+  toast('🔄 新しい招待コード: '+t.code,'s');
+  refreshPage();
+}
+
+// ── 招待リンクからの自動参加処理（URLパラメータ ?join=XXXXXX）──
+function handleJoinParam(){
+  const params=new URLSearchParams(location.search);
+  const joinCode=params.get('join');
+  if(!joinCode)return;
+  history.replaceState({},'',location.pathname);
+  // ログイン済みの場合
+  if(DB.currentUser){
+    const team=DB.teams.find(t=>t.code===joinCode.toUpperCase());
+    if(!team){toast('この招待コードは存在しません','e');return;}
+    const p=DB.players.find(x=>x.id===DB.currentUser?.id);
+    if(p&&!p.team){
+      p.team=team.id;team.members=(team.members||0)+1;
+      if(team.fee>0){_dbArr('payments').push({id:genId('pay'),player:p.id,team:team.id,amount:team.fee,month:curMonth(),status:'unpaid',at:null});}
+      saveDB();toast(team.name+'に参加しました！','s');refreshPage();
+    } else {
+      toast('既にチームに所属しています','i');
+    }
+  } else {
+    // 未ログイン: 保存して登録後に処理
+    DB.pendingJoinCode=joinCode.toUpperCase();
+    saveDB();
+    toast('アカウント登録後にチームに参加できます','i');
+  }
+}
+
+// ── セッションタイムアウト（30分操作なしで自動ログアウト）──
+let _sessionTimer=null;
+const SESSION_TIMEOUT=30*60*1000; // 30分
+function resetSessionTimer(){
+  if(_sessionTimer)clearTimeout(_sessionTimer);
+  if(!DB.currentUser)return;
+  _sessionTimer=setTimeout(()=>{
+    if(DB.currentUser){
+      toast('⏰ セッションがタイムアウトしました。再度ログインしてください。','w');
+      doLogout();
+    }
+  },SESSION_TIMEOUT);
+}
+// ユーザー操作でタイマーリセット
+['click','keydown','touchstart','scroll'].forEach(ev=>{
+  document.addEventListener(ev,()=>resetSessionTimer(),{passive:true});
+});
+
+// ── メール確認再送信 ──
+async function resendVerificationEmail(){
+  if(!window._fbAuth?.currentUser){toast('Firebase未接続です','e');return;}
+  try{
+    await window._fbFn.sendEmailVerification(window._fbAuth.currentUser);
+    toast('📧 確認メールを再送信しました。受信箱をご確認ください。','s');
+  }catch(e){
+    if(e.code==='auth/too-many-requests') toast('送信制限に達しました。しばらくお待ちください。','w');
+    else toast('送信に失敗しました: '+e.message,'e');
+  }
+}
+
+// ── Firestore決済ステータス同期（ポーリング: 3分ごと）──
+let _paymentSyncInterval=null;
+function startPaymentSync(){
+  if(_paymentSyncInterval) clearInterval(_paymentSyncInterval);
+  _paymentSyncInterval=setInterval(syncPaymentsFromFirestore, 3*60*1000);
+  // 初回は10秒後
+  setTimeout(syncPaymentsFromFirestore, 10000);
+}
+async function syncPaymentsFromFirestore(){
+  if(!window._fbDB||!window._fbFn) return;
+  try{
+    // 自チームの決済記録を取得
+    const myTeamId = getMyTeam()?.id || DB.currentUser?.id;
+    if(!myTeamId) return;
+    const snap = await window._fbFn.getDocs(
+      window._fbFn.query(
+        window._fbFn.collection(window._fbDB,'payments'),
+        window._fbFn.where('teamId','==',myTeamId),
+        window._fbFn.where('status','==','paid')
+      )
+    );
+    let updated=0;
+    snap.forEach(doc=>{
+      const d=doc.data();
+      // ローカルDB内の月謝レコードを更新
+      if(d.type==='monthly_fee' && d.playerId && d.month){
+        const local=_dbArr('payments').find(p=>p.player===d.playerId && p.team===d.teamId && p.month===d.month && p.status!=='paid');
+        if(local){
+          local.status='paid';
+          local.paidAt=d.createdAt?.toDate?.()?.toISOString()||new Date().toISOString();
+          local.stripeSessionId=d.stripeSessionId||'';
+          local.method=d.method||'card';
+          local.fee=d.platformFee||0;
+          updated++;
+        }
+      }
+      // 都度請求
+      if(d.type==='adhoc' && d.invoiceId){
+        const inv=_dbArr('adhocInvoices').find(i=>i.id===d.invoiceId && i.status!=='paid');
+        if(inv){
+          inv.status='paid';
+          inv.paidAt=d.createdAt?.toDate?.()?.toISOString()||new Date().toISOString();
+          inv.stripeSessionId=d.stripeSessionId||'';
+          inv.fee=d.platformFee||0;
+          updated++;
+        }
+      }
+    });
+    if(updated>0){
+      saveDB();
+      console.log(`[PaySync] ${updated}件の決済ステータスを同期`);
+      if(document.querySelector('.pg-title')?.textContent?.includes('月謝')||
+         document.querySelector('.pg-title')?.textContent?.includes('支払い')){
+        refreshPage();
+      }
+    }
+  }catch(e){
+    console.log('[PaySync] 同期エラー:', e.message);
+  }
 }
 
 function savePlayerProfile(){
@@ -19388,6 +20754,9 @@ function approveRequest(reqId){
   const req=_dbArr('requests').find(r=>r.id===reqId);
   if(!req){toast('申請が見つかりません','e');return;}
   req.status='matched';
+  const _c=DB.coaches.find(c=>c.id===req.coachId);
+  const _t=DB.teams.find(t=>t.id===req.teamId);
+  addAuditLog('match_approve','マッチング承認: '+sanitize(_c?.name||'',15)+' ↔ '+sanitize(_t?.name||'',15),{reqId,coachId:req.coachId,teamId:req.teamId,type:req.contractType||'monthly'});
 
   if(req.contractType==='onetime'){
     // 臨時コーチ: チーム・コーチの永続紐付けはしない。単発スレッドを作成
@@ -19451,6 +20820,9 @@ function rejectRequest(reqId){
   const req=_dbArr('requests').find(r=>r.id===reqId);
   if(!req){toast('申請が見つかりません','e');return;}
   req.status='rejected';
+  const _rc=DB.coaches.find(c=>c.id===req.coachId);
+  const _rt=DB.teams.find(t=>t.id===req.teamId);
+  addAuditLog('match_reject','マッチング却下: '+sanitize(_rc?.name||'',15)+' ↔ '+sanitize(_rt?.name||'',15),{reqId,coachId:req.coachId,teamId:req.teamId});
   const chatKey=Object.keys(DB.chats).find(k=>DB.chats[k].reqId===reqId);
   if(chatKey){
     DB.chats[chatKey].sub='申請却下';
@@ -19505,7 +20877,7 @@ function quickRejectMatch(reqId){ rejectRequest(reqId); }
 function openRequestChat(reqId){ openMatchChat(reqId); }
 
 function feeBadge(s){if(!s)return'<span class="badge b-gray">未請求</span>';if(s==='paid')return'<span class="fee-badge f-paid">✓ 支払済</span>';if(s==='pending')return'<span class="fee-badge f-pending">🕐 確認中</span>';return'<span class="fee-badge f-unpaid">✕ 未払い</span>'}
-function markPaid(id){if(DB.currentUser?.role!=='admin'){toast('この操作は事務局のみ実行できます','e');return;}const p=_dbArr('payments').find(x=>x.id===id);if(p)p.status='paid';saveDB();toast('入金を確認しました','s');addNotif('月謝の入金を確認しました','fa-check-circle','fee');goTo(curPage)}
+function markPaid(id){if(DB.currentUser?.role!=='admin'){toast('この操作は事務局のみ実行できます','e');return;}const p=_dbArr('payments').find(x=>x.id===id);if(p){p.status='paid';p.paidAt=new Date().toISOString();const pl=DB.players.find(x=>x.id===p.player);addAuditLog('payment_confirm','入金確認: '+(pl?.name||'選手')+' ¥'+(p.amount||0).toLocaleString(),{payId:id,player:p.player});}saveDB();toast('入金を確認しました','s');addNotif('月謝の入金を確認しました','fa-check-circle','fee');goTo(curPage)}
 function markPaidPl(pid){const p=DB.players.find(x=>x.id===pid);if(p)p.status='paid';const pay=_dbArr('payments').find(x=>x.player===pid&&x.month===curMonth());if(pay)pay.status='paid';saveDB();toast('入金を確認しました','s');addNotif('月謝の入金を確認しました','fa-check-circle','fee');goTo(curPage)}
 function showDayEvt(d,y,m){
   y=y||new Date().getFullYear();m=m!=null?m:new Date().getMonth();
@@ -19591,7 +20963,7 @@ async function startStripeConnect(){
   try {
     const res = await fetch(API_BASE+'/create-connect-account', {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers: await _apiHeaders(),
       body: JSON.stringify({userId:user.id, email:user.email, name:user.name, role:user.role})
     });
     const data = await res.json();
@@ -20049,10 +21421,12 @@ function sendEmailNotif(toEmail, toName, subject, body){
   saveDB();
   // バックエンド経由で実際にメール送信
   if(typeof API_BASE!=='undefined'&&API_BASE){
-    fetch(API_BASE+'/api/email/send',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({to:toEmail,toName:toName||'',subject,body})
+    _apiHeaders().then(function(hdrs){
+      return fetch(API_BASE+'/api/email/send',{
+        method:'POST',
+        headers:hdrs,
+        body:JSON.stringify({to:toEmail,toName:toName||'',subject,body})
+      });
     }).then(function(r){
       if(r.ok){entry.status='sent';}else{entry.status='failed';}
       saveDB();
@@ -20518,14 +21892,7 @@ function contactHTML(){return`<div class="legal-sec" style="text-align:center;pa
 
 // ==================== INIT ====================
 window.addEventListener('DOMContentLoaded', function() {
-  // Service Worker 登録
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/sw.js').then(function(reg){
-      console.log('[SW] Registered:', reg.scope);
-    }).catch(function(err){
-      console.warn('[SW] Registration failed:', err);
-    });
-  }
+  // Service Worker はページ下部で1回だけ登録
   try{const _s=JSON.parse(localStorage.getItem('mycoach_myteam_db_v1')||'{}')?.settings;if(_s?.theme)document.documentElement.setAttribute('data-theme',_s.theme);if(_s?.accent)document.documentElement.style.setProperty('--org',_s.accent);}catch(e){}
   // Hide all pages first
   ['loader','landing','auth','onboarding','app','page-legal'].forEach(id => {
@@ -20723,17 +22090,56 @@ window._onFirebaseAuth = async function(fbUser){
 })();
 
 // PWA Service Worker 登録
+// 注意: インラインSWはblob:プロトコルで登録できないため、
+// 別ファイル(sw.js)が必要です。存在する場合のみ登録を試行。
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    const swContent = [
-      "const CACHE='mycoach-v7';",
-      "self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./']))));",
-      "self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>new Response('offline')))));",
-      "self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));",
-    ].join('\n');
-    const blob=new Blob([swContent],{type:'application/javascript'});
-    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg=>console.log('[SW] Registered:',reg.scope))
+      .catch(()=>{
+        // sw.jsが存在しない場合はキャッシュAPIで基本的なオフライン対応
+        console.log('[SW] sw.js not found — offline caching disabled');
+        // 次回デプロイ時にsw.jsを配置すれば自動で有効化されます
+      });
   });
+}
+
+// ================================================================
+// PWA インストールプロンプト
+// ================================================================
+let _deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  _deferredInstallPrompt = e;
+  console.log('[PWA] Install prompt captured');
+  // インストールバナーを設定画面に表示
+  setTimeout(() => {
+    const installBtn = document.getElementById('pwa-install-btn');
+    if(installBtn) installBtn.style.display = 'inline-flex';
+  }, 2000);
+});
+window.addEventListener('appinstalled', () => {
+  _deferredInstallPrompt = null;
+  console.log('[PWA] App installed');
+  addAuditLog('pwa_install', (DB.currentUser?.name||'ユーザー') + ' がアプリをインストール');
+  toast('🎉 アプリをインストールしました！','s');
+});
+function installPWA(){
+  if(!_deferredInstallPrompt){toast('インストールプロンプトが利用できません','w');return;}
+  _deferredInstallPrompt.prompt();
+  _deferredInstallPrompt.userChoice.then(choice=>{
+    if(choice.outcome==='accepted') console.log('[PWA] Install accepted');
+    _deferredInstallPrompt=null;
+  });
+}
+
+// ================================================================
+// パフォーマンス最適化
+// ================================================================
+// 遅延初期化（非クリティカルタスクを idle 時に実行）
+function _runWhenIdle(fn){
+  if('requestIdleCallback' in window) requestIdleCallback(fn, {timeout:3000});
+  else setTimeout(fn, 500);
 }
 
 // ============================================================
@@ -22276,30 +23682,446 @@ function legalText(type){
 
 </script>
 
-<!-- Google Analytics 4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-D80NJPNXTK"></script>
+<!-- ================================================================ -->
+<!-- v33 追加機能: セキュリティ・パフォーマンス・UX強化 -->
+<!-- ================================================================ -->
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-D80NJPNXTK'); // ← ご自身のGA4測定IDに差し替え
+// ================================================================
+// ① セッションタイムアウト（30分無操作で自動ログアウト）
+// ================================================================
+(function(){
+  const TIMEOUT_MS = 30 * 60 * 1000; // 30分
+  let _timer = null;
+  function resetTimer(){
+    clearTimeout(_timer);
+    if(!DB.currentUser) return;
+    _timer = setTimeout(()=>{
+      if(!DB.currentUser) return;
+      const name = DB.currentUser.name || '';
+      addAuditLog('session_timeout', name + ' がセッションタイムアウト');
+      DB.currentUser = null;
+      saveDB();
+      toast('⏰ 30分間操作がなかったためログアウトしました','w');
+      location.reload();
+    }, TIMEOUT_MS);
+  }
+  ['click','keydown','scroll','touchstart','mousemove'].forEach(ev => {
+    document.addEventListener(ev, resetTimer, {passive:true});
+  });
+  resetTimer();
+})();
+
+// ================================================================
+// ② パフォーマンスモニタリング
+// ================================================================
+window.addEventListener('load', () => {
+  _runWhenIdle(() => {
+    try {
+      const perf = performance.getEntriesByType('navigation')[0];
+      if(perf){
+        const metrics = {
+          dns: Math.round(perf.domainLookupEnd - perf.domainLookupStart),
+          tcp: Math.round(perf.connectEnd - perf.connectStart),
+          ttfb: Math.round(perf.responseStart - perf.requestStart),
+          domLoad: Math.round(perf.domContentLoadedEventEnd - perf.startTime),
+          fullLoad: Math.round(perf.loadEventEnd - perf.startTime),
+        };
+        console.log('[Perf]', `DOM:${metrics.domLoad}ms Full:${metrics.fullLoad}ms TTFB:${metrics.ttfb}ms`);
+        // 3秒以上かかった場合に警告
+        if(metrics.fullLoad > 3000){
+          console.warn('[Perf] 読み込みに ' + (metrics.fullLoad/1000).toFixed(1) + '秒かかりました');
+        }
+      }
+    } catch(e){}
+    // LCP (Largest Contentful Paint)
+    try {
+      new PerformanceObserver(list => {
+        const entries = list.getEntries();
+        const last = entries[entries.length-1];
+        if(last) console.log('[Perf] LCP:', Math.round(last.startTime) + 'ms');
+      }).observe({type:'largest-contentful-paint',buffered:true});
+    } catch(e){}
+  });
+});
+
+// ================================================================
+// ③ キーボードショートカット
+// ================================================================
+document.addEventListener('keydown', (e) => {
+  // モーダル中はEscapeで閉じる（既存のcloseM()を利用）
+  if(e.key === 'Escape'){
+    const modal = document.querySelector('.modal-bg');
+    if(modal && typeof closeM === 'function') closeM();
+    return;
+  }
+  // Ctrl/Cmd + K: 検索にフォーカス
+  if((e.ctrlKey || e.metaKey) && e.key === 'k'){
+    e.preventDefault();
+    const searchInput = document.querySelector('.search-box input, #search-input, input[type="search"]');
+    if(searchInput){ searchInput.focus(); searchInput.select(); }
+  }
+  // Ctrl/Cmd + S: データ保存
+  if((e.ctrlKey || e.metaKey) && e.key === 's'){
+    e.preventDefault();
+    if(typeof saveDB === 'function'){ saveDB(); toast('💾 データを保存しました','s'); }
+  }
+});
+
+// ================================================================
+// ④ 同期インジケーター
+// ================================================================
+(function(){
+  const el = document.createElement('div');
+  el.className = 'sync-indicator';
+  el.id = 'sync-indicator';
+  el.innerHTML = '<span class="sync-dot" style="background:var(--org)"></span><span>同期中...</span>';
+  document.body.appendChild(el);
+
+  // saveDB呼び出し時に表示
+  const _origSaveDB = window.saveDB;
+  if(typeof _origSaveDB === 'function'){
+    // saveDBが定義された後に上書き（DOMContentLoaded後）
+    setTimeout(()=>{
+      const origFn = window.saveDB;
+      window.saveDB = function(){
+        const indicator = document.getElementById('sync-indicator');
+        if(indicator) indicator.classList.add('show');
+        origFn.apply(this, arguments);
+        setTimeout(()=>{
+          if(indicator) indicator.classList.remove('show');
+        }, 1500);
+      };
+    }, 3000);
+  }
+})();
+
+// ================================================================
+// ⑤ 本番環境 console.log 抑制
+// ================================================================
+if(location.hostname !== 'localhost' && location.hostname !== '127.0.0.1'){
+  const _origLog = console.log;
+  const _origWarn = console.warn;
+  console.log = function(){
+    // [Perf]と[Login]は残す、それ以外は抑制
+    if(arguments[0] && typeof arguments[0] === 'string' &&
+       (arguments[0].includes('[Perf]') || arguments[0].includes('[Login]') || arguments[0].includes('[SW]'))){
+      _origLog.apply(console, arguments);
+    }
+  };
+  // console.warn と console.error はそのまま保持
+}
+
+// ================================================================
+// ⑥ ダークモード自動検知（初回訪問時のみ）
+// ================================================================
+(function(){
+  if(DB.settings?.theme) return; // 既にユーザーが選択済み
+  if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+    document.documentElement.setAttribute('data-theme','dark');
+  }
+  // OS設定変更時にも追従（ユーザー選択がない場合のみ）
+  window.matchMedia?.('(prefers-color-scheme: dark)')?.addEventListener('change', (e) => {
+    if(DB.settings?.theme) return;
+    document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+  });
+})();
+
+// ================================================================
+// ⑦ 管理者フルバックアップ・リストア
+// ================================================================
+function adminFullBackup(){
+  if(DB.currentUser?.role !== 'admin'){ toast('管理者権限が必要です','e'); return; }
+  const backup = {
+    version: '3.3.0',
+    exportedAt: new Date().toISOString(),
+    exportedBy: DB.currentUser.name,
+    data: {}
+  };
+  PERSIST_FIELDS.forEach(k => { backup.data[k] = DB[k]; });
+  backup.data.auditLog = DB.auditLog || [];
+  backup.data.consentLog = DB.consentLog || [];
+  const json = JSON.stringify(backup, null, 2);
+  const sizeKB = Math.round(json.length / 1024);
+  const blob = new Blob([json], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bukatsu_fullbackup_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  addAuditLog('full_backup', '管理者フルバックアップ実行 ('+sizeKB+'KB)');
+  toast('📦 フルバックアップを保存しました ('+sizeKB+'KB)','s');
+}
+
+function adminRestoreBackup(){
+  if(DB.currentUser?.role !== 'admin'){ toast('管理者権限が必要です','e'); return; }
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = async (e) => {
+    const file = e.target.files?.[0];
+    if(!file) return;
+    try {
+      const text = await file.text();
+      const backup = JSON.parse(text);
+      if(!backup.version || !backup.data){
+        toast('無効なバックアップファイルです','e');
+        return;
+      }
+      // 確認ダイアログ
+      const h = `<div style="text-align:center">
+        <div style="font-size:40px;margin-bottom:12px">⚠️</div>
+        <div class="fw7" style="margin-bottom:8px">データの復元</div>
+        <div class="text-sm text-muted" style="margin-bottom:4px">バックアップ日時: ${new Date(backup.exportedAt).toLocaleString('ja-JP')}</div>
+        <div class="text-sm text-muted" style="margin-bottom:4px">バージョン: ${backup.version}</div>
+        <div class="text-sm text-muted" style="margin-bottom:12px">作成者: ${backup.exportedBy||'不明'}</div>
+        <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;font-size:12px;color:var(--red);margin-bottom:16px">
+          現在のデータは全て上書きされます。この操作は取り消せません。
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm flex-1" onclick="closeM()">キャンセル</button>
+          <button class="btn btn-sm flex-1" style="background:var(--red);color:#fff" onclick="_executeRestore(window._pendingRestore);closeM()">復元する</button>
+        </div>
+      </div>`;
+      window._pendingRestore = backup;
+      openM('🔄 データ復元', h, true);
+    } catch(err){
+      toast('ファイルの読み込みに失敗しました: '+err.message,'e');
+    }
+  };
+  input.click();
+}
+
+function _executeRestore(backup){
+  if(!backup?.data) return;
+  addAuditLog('restore_start', '管理者データ復元開始');
+  PERSIST_FIELDS.forEach(k => {
+    if(backup.data[k] !== undefined) DB[k] = backup.data[k];
+  });
+  if(backup.data.auditLog) DB.auditLog = backup.data.auditLog;
+  if(backup.data.consentLog) DB.consentLog = backup.data.consentLog;
+  addAuditLog('restore_complete', '管理者データ復元完了 (v'+backup.version+' from '+backup.exportedAt+')');
+  saveDB();
+  toast('✅ データを復元しました。ページを再読み込みします...','s');
+  setTimeout(()=>location.reload(), 1500);
+  window._pendingRestore = null;
+}
+
+// ================================================================
+// ⑧ 接続状態のリアルタイム監視
+// ================================================================
+(function(){
+  let _fbConnected = false;
+  setInterval(()=>{
+    const isOnline = navigator.onLine;
+    const hasFbAuth = !!window._fbAuth?.currentUser;
+    const newState = isOnline && hasFbAuth;
+    if(newState !== _fbConnected){
+      _fbConnected = newState;
+      console.warn('[Connectivity]', isOnline ? '🟢 Online' : '🔴 Offline', hasFbAuth ? 'Auth:✅' : 'Auth:❌');
+    }
+  }, 10000);
+})();
+
+// ================================================================
+// ⑨ API通信リトライ + タイムアウト
+// ================================================================
+const _origFetch = window.fetch;
+window.fetch = async function(url, opts = {}){
+  // API_BASEへのリクエストのみリトライ対象
+  const isApi = typeof url === 'string' && url.includes('bukatsu-backend');
+  if(!isApi) return _origFetch.call(this, url, opts);
+
+  const MAX_RETRIES = 2;
+  const TIMEOUT_MS = 15000;
+
+  for(let attempt = 0; attempt <= MAX_RETRIES; attempt++){
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+      const res = await _origFetch.call(this, url, {...opts, signal: controller.signal});
+      clearTimeout(timeoutId);
+
+      // 5xx はリトライ、4xx はそのまま返す
+      if(res.status >= 500 && attempt < MAX_RETRIES){
+        console.warn(`[API] ${res.status} retry ${attempt+1}/${MAX_RETRIES}: ${url}`);
+        await new Promise(r => setTimeout(r, 1000 * (attempt+1)));
+        continue;
+      }
+      return res;
+    } catch(e){
+      if(e.name === 'AbortError'){
+        console.warn(`[API] Timeout ${TIMEOUT_MS}ms: ${url}`);
+      }
+      if(attempt < MAX_RETRIES){
+        await new Promise(r => setTimeout(r, 1000 * (attempt+1)));
+        continue;
+      }
+      throw e;
+    }
+  }
+};
+
+// ================================================================
+// ⑩ window.open 安全ラッパー（noopener強制）
+// ================================================================
+const _origOpen = window.open;
+window.open = function(url, target, features){
+  // 外部URLには必ずnoopenerを付与
+  if(target === '_blank' || !target){
+    return _origOpen.call(this, url, '_blank', 'noopener,noreferrer' + (features ? ','+features : ''));
+  }
+  return _origOpen.call(this, url, target, features);
+};
+
+// ================================================================
+// ⑪ 機密データのlocalStorage難読化
+// ================================================================
+(function(){
+  const SENSITIVE_KEYS = ['mc_login_attempts','mc_users_v1'];
+  const _k = location.hostname.split('.').reverse().join('');
+
+  // 簡易XOR難読化（暗号化ではないが平文よりは安全）
+  function _obf(str){
+    try {
+      return btoa(str.split('').map((c,i) => String.fromCharCode(c.charCodeAt(0) ^ _k.charCodeAt(i % _k.length))).join(''));
+    } catch(e){ return str; }
+  }
+  function _deobf(str){
+    try {
+      const decoded = atob(str);
+      return decoded.split('').map((c,i) => String.fromCharCode(c.charCodeAt(0) ^ _k.charCodeAt(i % _k.length))).join('');
+    } catch(e){ return str; }
+  }
+
+  const _origSet = localStorage.setItem.bind(localStorage);
+  const _origGet = localStorage.getItem.bind(localStorage);
+  localStorage.setItem = function(key, val){
+    if(SENSITIVE_KEYS.includes(key)){
+      return _origSet(key, '_obf:' + _obf(val));
+    }
+    return _origSet(key, val);
+  };
+  localStorage.getItem = function(key){
+    const raw = _origGet(key);
+    if(raw && raw.startsWith('_obf:') && SENSITIVE_KEYS.includes(key)){
+      return _deobf(raw.slice(5));
+    }
+    return raw;
+  };
+})();
+
+// ================================================================
+// ⑫ Subresource Integrity チェック（CDN改ざん検知）
+// ================================================================
+window.addEventListener('load', () => {
+  _runWhenIdle(() => {
+    document.querySelectorAll('script[src*="cdnjs.cloudflare.com"]').forEach(el => {
+      if(!el.integrity && !el.dataset.sriChecked){
+        console.warn('[Security] SRI missing for:', el.src.split('/').pop());
+        el.dataset.sriChecked = 'warned';
+      }
+    });
+  });
+});
+
+// ================================================================
+// ⑬ コピーペースト保護（パスワード欄）
+// ================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // パスワード入力欄へのペースト警告
+  document.addEventListener('paste', (e) => {
+    const target = e.target;
+    if(target?.type === 'password'){
+      // ペースト自体は許可（パスワードマネージャー対応）
+      // ただし手動ペーストの場合は監査ログ
+      if(typeof addAuditLog === 'function'){
+        addAuditLog('paste_password', 'パスワード欄へのペースト検知', {field: target.id||'unknown'});
+      }
+    }
+  });
+});
+
+// ================================================================
+// ⑭ フォーム自動入力攻撃防止
+// ================================================================
+(function(){
+  // 不可視のhoneypot fieldを検知
+  document.addEventListener('submit', (e) => {
+    const form = e.target;
+    if(!form || form.tagName !== 'FORM') return;
+    const honeypot = form.querySelector('[name="hp_field"], [name="website"], .hp-field');
+    if(honeypot && honeypot.value){
+      e.preventDefault();
+      console.warn('[Security] Bot form submission blocked');
+      if(typeof addAuditLog === 'function'){
+        addAuditLog('bot_blocked', 'ボットフォーム送信をブロック');
+      }
+    }
+  });
+})();
+
+// ================================================================
+// ⑮ デバッグツール検知（本番のみ）
+// ================================================================
+if(location.hostname !== 'localhost' && location.hostname !== '127.0.0.1'){
+  // DevTools open検知（コンソール経由のデータ窃取を監査）
+  let _devToolsOpen = false;
+  const _devCheck = setInterval(() => {
+    const threshold = 160;
+    const isOpen = (window.outerWidth - window.innerWidth > threshold) ||
+                   (window.outerHeight - window.innerHeight > threshold);
+    if(isOpen && !_devToolsOpen){
+      _devToolsOpen = true;
+      if(typeof addAuditLog === 'function'){
+        addAuditLog('devtools_open', '開発者ツールが開かれました');
+      }
+    } else if(!isOpen && _devToolsOpen){
+      _devToolsOpen = false;
+    }
+  }, 3000);
+}
 </script>
 
-<!-- Sentry Error Tracking -->
+<!-- Sentry Error Tracking (本番用: DSNを設定してください) -->
 <script src="https://browser.sentry-cdn.com/8.0.0/bundle.min.js" crossorigin="anonymous"></script>
 <script>
   if(typeof Sentry !== 'undefined'){
+    const _sentryDsn = 'https://YOUR_KEY@o0.ingest.sentry.io/0'; // ← Sentry DSNを設定
+    if(_sentryDsn.includes('YOUR_KEY')){
+      console.log('[Sentry] DSN未設定 — エラー監視は無効です');
+    } else {
     Sentry.init({
-      dsn: 'https://YOUR_KEY@o0.ingest.sentry.io/0', // ← ご自身のSentry DSNに差し替え
+      dsn: _sentryDsn,
       tracesSampleRate: 0.1,
-      environment: 'production',
+      replaysSessionSampleRate: 0,
+      environment: location.hostname === 'localhost' ? 'development' : 'production',
+      release: 'mycoach-myteam@3.3.0',
+      ignoreErrors: [
+        'Network request failed','Failed to fetch','Load failed',
+        'ResizeObserver loop','Non-Error promise rejection',
+        'TypeError: cancelled','AbortError'
+      ],
       beforeSend(event){
-        // PIIフィルタリング: メール・名前を除去
-        if(event.user) { delete event.user.email; delete event.user.username; }
+        // PII除去
+        if(event.user){ delete event.user.email; delete event.user.username; delete event.user.ip_address; }
+        // localStorage系のエラーは頻発するので抑制
+        if(event.message && event.message.includes('localStorage')) return null;
         return event;
       }
     });
+    } // end if DSN configured
   }
+  // グローバルエラーハンドラー
+  window.onerror = function(msg, src, line, col, err){
+    console.error('[GlobalError]', msg, src, line);
+    if(typeof Sentry !== 'undefined' && Sentry.captureException) Sentry.captureException(err || new Error(msg));
+    // 監査ログに記録
+    if(typeof addAuditLog === 'function') addAuditLog('error', 'システムエラー: ' + (msg||'').slice(0,100), {src,line});
+    return false;
+  };
+  window.addEventListener('unhandledrejection', function(e){
+    console.error('[UnhandledRejection]', e.reason);
+    if(typeof Sentry !== 'undefined' && Sentry.captureException) Sentry.captureException(e.reason);
+  });
 </script>
 <!-- Google Analytics 4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-D80NJPNXTK"></script>
@@ -22307,23 +24129,12 @@ function legalText(type){
   window.dataLayer=window.dataLayer||[];
   function gtag(){dataLayer.push(arguments);}
   gtag('js',new Date());
-  gtag('config','G-D80NJPNXTK');
-</script>
-<!-- Sentry Error Tracking -->
-<script src="https://browser.sentry-cdn.com/8.0.0/bundle.min.js" crossorigin="anonymous"></script>
-<script>
-  if(typeof Sentry!=='undefined'){
-    Sentry.init({
-      dsn:'https://YOUR_DSN@o0.ingest.sentry.io/0',
-      tracesSampleRate:0.1,
-      replaysSessionSampleRate:0,
-      environment:'production',
-      ignoreErrors:['Network request failed','Failed to fetch','Load failed']
-    });
-  }
+  gtag('config','G-D80NJPNXTK'); // ← GA4測定IDを設定
 </script>
 </head>
 <body>
+<!-- スキップリンク (アクセシビリティ) -->
+<a href="#page-body" class="skip-link" style="position:absolute;top:-100%;left:50%;transform:translateX(-50%);background:var(--org);color:#fff;padding:8px 24px;border-radius:0 0 12px 12px;font-size:14px;font-weight:700;z-index:99999;text-decoration:none;transition:top .2s" onfocus="this.style.top='0'" onblur="this.style.top='-100%'">メインコンテンツへスキップ</a>
 
 <!-- LOADER -->
 <div id="loader">
@@ -22728,7 +24539,7 @@ function legalText(type){
       <div>
         <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-style:italic;font-size:1.2rem;color:#fff;">MyCOACH<span style="color:#0ea5e9">-</span>MyTEAM</div>
         <div class="footer-tagline">部活動・スポーツチーム運営プラットフォーム</div>
-        <a href="https://ymozfleet-creator.github.io/Ark/" target="_blank"
+        <a href="https://ymozfleet-creator.github.io/Ark/" target="_blank" rel="noopener noreferrer"
            style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#334155;text-decoration:none;display:block;margin-top:.35rem;transition:color .2s;">
             Produced by Ark inc.
         </a>
@@ -22925,27 +24736,27 @@ function legalText(type){
 <!-- APP -->
 <div id="app" style="display:none">
   <div class="app-grid">
-    <aside class="sidebar" id="sidebar">
-      <div class="sb-head"><div class="mc-brand" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none"><div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#0ea5e9,#0369a1);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 12px rgba(14,165,233,.4);position:relative;overflow:hidden"><div style="position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;background:rgba(59,100,180,.16)"></div><svg viewBox="0 0 24 24" width="14px" height="14px" fill="none"><path d="M12 2L3 7.5v4.5c0 5.25 3.75 10.15 9 11.5 5.25-1.35 9-6.25 9-11.5V7.5L12 2z" fill="rgba(255,255,255,.92)"/><path d="M9.5 12l2 2 3.5-3.5" stroke="#0369a1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div style="line-height:1"><div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:.82rem;letter-spacing:-.03em;color:#1e3256;white-space:nowrap">MyCOACH<span style="color:#0ea5e9;margin:0 2px">·</span>MyTEAM</div></div></div></div>
-      <div class="sb-user">
-        <div class="avi" id="sb-avi">A</div>
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="メインナビゲーション">
+      <div class="sb-head"><div class="mc-brand" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none"><div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#0ea5e9,#0369a1);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 12px rgba(14,165,233,.4);position:relative;overflow:hidden"><div style="position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;background:rgba(59,100,180,.16)"></div><svg viewBox="0 0 24 24" width="14px" height="14px" fill="none" aria-hidden="true"><path d="M12 2L3 7.5v4.5c0 5.25 3.75 10.15 9 11.5 5.25-1.35 9-6.25 9-11.5V7.5L12 2z" fill="rgba(255,255,255,.92)"/><path d="M9.5 12l2 2 3.5-3.5" stroke="#0369a1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div style="line-height:1"><div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:.82rem;letter-spacing:-.03em;color:#1e3256;white-space:nowrap">MyCOACH<span style="color:#0ea5e9;margin:0 2px">·</span>MyTEAM</div></div></div></div>
+      <div class="sb-user" role="status" aria-label="ログインユーザー情報">
+        <div class="avi" id="sb-avi" aria-hidden="true">A</div>
         <div><div class="sb-name" id="sb-name">管理者</div><div class="sb-role" id="sb-role">事務局</div></div>
       </div>
-      <nav class="sb-nav" id="sb-nav"></nav>
+      <nav class="sb-nav" id="sb-nav" role="menubar" aria-label="ページナビゲーション"></nav>
       <div class="sb-foot">
-        <button class="nav-item" style="color:var(--txt3)" onclick="doLogout()">• ログアウト</button>
+        <button class="nav-item" style="color:var(--txt3)" onclick="doLogout()" aria-label="ログアウト">• ログアウト</button>
       </div>
     </aside>
-    <div class="main">
-      <div class="topbar">
-        <div class="topbar-title" id="topbar-title">ダッシュボード</div>
+    <div class="main" role="main">
+      <div class="topbar" role="banner">
+        <div class="topbar-title" id="topbar-title" aria-live="polite">ダッシュボード</div>
         <div class="topbar-actions">
-          <div class="relative"><button class="btn btn-ghost btn-icon" onclick="showNotifs()" style="position:relative">🔔<span id="notif-count" style="position:absolute;top:2px;right:2px;background:var(--red);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 3px;border:1.5px solid var(--surf);line-height:1"></span></button></div>
-          <button class="btn btn-ghost btn-icon">❓</button>
-          <div class="avi btn-icon" id="top-avi" style="cursor:pointer;font-size:12px">A</div>
+          <div class="relative"><button class="btn btn-ghost btn-icon" onclick="showNotifs()" style="position:relative" aria-label="通知を表示">🔔<span id="notif-count" style="position:absolute;top:2px;right:2px;background:var(--red);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 3px;border:1.5px solid var(--surf);line-height:1" aria-live="assertive"></span></button></div>
+          <button class="btn btn-ghost btn-icon" aria-label="ヘルプ">❓</button>
+          <div class="avi btn-icon" id="top-avi" style="cursor:pointer;font-size:12px" role="button" tabindex="0" aria-label="プロフィール">A</div>
         </div>
       </div>
-      <div class="page-body" id="page-body"></div>
+      <div class="page-body" id="page-body" role="region" aria-label="メインコンテンツ"></div>
     </div>
   </div>
 </div>
@@ -22960,10 +24771,10 @@ function legalText(type){
 </div>
 
 <!-- MODAL -->
-<div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
-  <div class="modal" id="modal-box"><div id="modal-inner"></div></div>
+<div class="overlay" id="overlay" onclick="handleOverlayClick(event)" role="presentation">
+  <div class="modal" id="modal-box" role="dialog" aria-modal="true"><div id="modal-inner"></div></div>
 </div>
-<div class="toast-c" id="toast-c"></div>
+<div class="toast-c" id="toast-c" role="log" aria-live="polite" aria-label="通知"></div>
 
 <!-- ボトムナビゲーション (モバイル用) -->
 <nav class="bottom-nav" id="bottom-nav">
@@ -22974,21 +24785,11 @@ function legalText(type){
 <button class="fab" id="fab-btn" onclick="fabAction()" title="クイックアクション">＋</button>
 
 
-<!-- PWA Service Worker -->
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('/sw.js')
-      .then(function(reg){ console.log('[SW] Registered:', reg.scope); })
-      .catch(function(err){ console.warn('[SW] Failed:', err); });
-  });
-}
-</script>
 <!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
-  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail }
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, sendEmailVerification }
     from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
   import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, addDoc,
     onSnapshot, query, where, orderBy, serverTimestamp, Timestamp }
@@ -23017,6 +24818,7 @@ if('serviceWorker' in navigator){
     signOut,
     onAuthStateChanged,
     sendPasswordResetEmail,
+    sendEmailVerification,
     doc, getDoc, setDoc, deleteDoc, collection, getDocs, addDoc,
     onSnapshot, query, where, orderBy, serverTimestamp, Timestamp
   };
